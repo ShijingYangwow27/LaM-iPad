@@ -73,7 +73,6 @@ module.exports = async function afterPack(context) {
         '--deep',
         '--force',
         '--sign', '-',
-        '--options', 'runtime',
         appPath,
       ], { stdio: 'inherit' });
     } catch (e) {

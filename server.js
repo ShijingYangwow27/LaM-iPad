@@ -61,12 +61,18 @@ const UA = process.platform === 'win32'
   : process.platform === 'darwin'
     ? 'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
     : 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
-const COOKIE_FILE = process.env.COOKIE_FILE || path.join(__dirname, '.cookie');
-const QQ_COOKIE_FILE = process.env.QQ_COOKIE_FILE || path.join(__dirname, '.qq-cookie');
+const USER_DATA_DIR = process.platform === 'darwin'
+  ? path.join(require('os').homedir(), 'Library', 'Application Support', 'Mineradio')
+  : process.platform === 'win32'
+    ? path.join(process.env.APPDATA || require('os').homedir(), 'Mineradio')
+    : path.join(require('os').homedir(), '.config', 'Mineradio');
+try { fs.mkdirSync(USER_DATA_DIR, { recursive: true }); } catch (e) {}
+const COOKIE_FILE = process.env.COOKIE_FILE || path.join(USER_DATA_DIR, '.cookie');
+const QQ_COOKIE_FILE = process.env.QQ_COOKIE_FILE || path.join(USER_DATA_DIR, '.qq-cookie');
 const UPDATE_WORK_DIR = process.env.MINERADIO_UPDATE_DIR || path.join(__dirname, 'updates');
 const UPDATE_DOWNLOAD_DIR = process.env.MINERADIO_UPDATE_DOWNLOAD_DIR || path.join(UPDATE_WORK_DIR, 'downloads');
 const UPDATE_PATCH_BACKUP_DIR = process.env.MINERADIO_PATCH_BACKUP_DIR || path.join(UPDATE_WORK_DIR, 'backups', 'patches');
-const BEATMAP_CACHE_DIR = process.env.MINERADIO_BEAT_CACHE_DIR || path.join(__dirname, 'beatmaps');
+const BEATMAP_CACHE_DIR = process.env.MINERADIO_BEAT_CACHE_DIR || path.join(USER_DATA_DIR, 'beatmaps');
 const APP_PACKAGE = readPackageInfo();
 const APP_VERSION = process.env.MINERADIO_VERSION || APP_PACKAGE.version || '0.9.11';
 const UPDATE_CONFIG = readUpdateConfig(APP_PACKAGE);

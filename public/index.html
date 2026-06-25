@@ -40,8 +40,8 @@ body.desktop-shell #desktop-window-shell{display:block;position:fixed;inset:0;ov
 body.desktop-shell.desktop-maximized #desktop-window-shell,body.desktop-shell.desktop-fullscreen #desktop-window-shell,html:fullscreen body.desktop-shell #desktop-window-shell{border-radius:0!important;clip-path:none!important;box-shadow:none!important}
 body.desktop-shell #desktop-titlebar{position:fixed;z-index:500;top:0;left:0;right:0;height:44px;padding:0 12px 0 18px;display:flex;align-items:center;justify-content:space-between;background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none;-webkit-app-region:drag}
 body.desktop-shell #desktop-titlebar::after{content:none}
-body.platform-darwin.desktop-shell #desktop-titlebar{padding-left:78px}
-body.platform-darwin.desktop-shell .desktop-window-controls .desktop-window-btn[data-window-action]{display:none}
+body.platform-darwin.desktop-shell #desktop-titlebar{padding-left:78px;-webkit-app-region:drag}
+body.platform-darwin.desktop-shell .desktop-window-controls .desktop-window-btn[data-window-action]{display:none!important}
 .desktop-drag-region{height:100%;flex:1;display:flex;align-items:center;gap:9px;min-width:0;color:rgba(224,250,255,.74);font-size:12px;font-weight:600;letter-spacing:0;text-transform:uppercase;-webkit-app-region:drag;pointer-events:auto}
 .desktop-app-mark{display:none}
 .desktop-app-title{display:none}

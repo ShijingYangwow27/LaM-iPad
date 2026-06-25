@@ -1380,9 +1380,11 @@ async function createWindow() {
     minHeight: 540,
     show: false,
     frame: isMac,
-    fullscreenable: isMac,
+    fullscreenable: true,
     transparent: !isMac,
     backgroundColor: isMac ? '#0a0a0a' : '#00000000',
+    titleBarStyle: isMac ? 'hiddenInset' : undefined,
+    trafficLightPosition: isMac ? { x: 14, y: 12 } : undefined,
     hasShadow: true,
     autoHideMenuBar: true,
     title: APP_NAME,
@@ -1417,18 +1419,8 @@ async function createWindow() {
     sendWindowState(mainWindow);
   });
 
-  mainWindow.on('maximize', () => {
-    if (process.platform === 'darwin' && !mainWindow.isFullScreen()) {
-      mainWindow.setFullScreen(true);
-    }
-    sendWindowState(mainWindow);
-  });
-  mainWindow.on('unmaximize', () => {
-    if (process.platform === 'darwin' && mainWindow.isFullScreen()) {
-      mainWindow.setFullScreen(false);
-    }
-    sendWindowState(mainWindow);
-  });
+  mainWindow.on('maximize', () => sendWindowState(mainWindow));
+  mainWindow.on('unmaximize', () => sendWindowState(mainWindow));
   mainWindow.on('minimize', () => sendWindowState(mainWindow));
   mainWindow.on('restore', () => sendWindowState(mainWindow));
   mainWindow.on('show', () => sendWindowState(mainWindow));
@@ -1437,6 +1429,12 @@ async function createWindow() {
   mainWindow.on('blur', () => sendWindowState(mainWindow));
   mainWindow.on('move', () => scheduleWindowStateSend(mainWindow));
   mainWindow.on('resize', () => scheduleWindowStateSend(mainWindow));
+  mainWindow.on('close', (e) => {
+    if (process.platform === 'darwin' && !app.isQuitting) {
+      e.preventDefault();
+      mainWindow.hide();
+    }
+  });
   mainWindow.on('closed', () => {
     if (mainWindowStateTimer) {
       clearTimeout(mainWindowStateTimer);
@@ -1496,7 +1494,14 @@ if (!gotSingleInstanceLock) {
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
-    else focusMainWindow();
+    else {
+      const win = mainWindow;
+      if (win && !win.isDestroyed()) {
+        if (!win.isVisible()) win.show();
+        if (win.isMinimized()) win.restore();
+        win.focus();
+      }
+    }
   });
 
   app.on('window-all-closed', () => {
@@ -1504,6 +1509,7 @@ if (!gotSingleInstanceLock) {
   });
 
   app.on('before-quit', () => {
+    app.isQuitting = true;
     unregisterMineradioGlobalHotkeys();
     closeOverlayWindows();
     if (localServer && localServer.close) localServer.close();
