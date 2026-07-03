@@ -40,6 +40,9 @@ SingletonCookie
 SingletonLock
 SingletonSocket
 
+# Local tools and utilities
+tools/
+
 # Historical local experiment files
 public/index.*.html
 !public/index.html

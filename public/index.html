@@ -238,12 +238,13 @@ body.simple-mode .mini-queue-popover{width:min(380px,calc(100vw - 32px))}
 
 /* ---------- 空场 Home ---------- */
 #empty-home{position:fixed;z-index:4;left:50%;top:158px;bottom:58px;width:min(1240px,calc(100vw - 72px));transform:translateX(-50%) translateY(18px) scale(.992);opacity:0;pointer-events:none;transition:opacity .72s cubic-bezier(.16,1,.3,1),transform .72s cubic-bezier(.16,1,.3,1)}
-body.empty-home-active #empty-home{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0) scale(1)}
+body.empty-home-active #empty-home{opacity:1!important;pointer-events:auto!important;transform:translateX(-50%) translateY(0) scale(1)}
 body.splash-active #empty-home,body.immersive-mode #empty-home{opacity:0!important;pointer-events:none!important}
+body.empty-home-active #empty-home{pointer-events:auto!important}
 body.empty-home-active #canvas-container{filter:none}
 body.home-wallpaper-preview #canvas-container{filter:none}
 .empty-home-shell{height:100%;min-height:440px;display:grid;grid-template-columns:minmax(370px,.94fr) minmax(520px,1.06fr);grid-template-rows:auto 1fr;gap:14px;align-content:stretch}
-.home-hero{position:relative;grid-row:1 / span 2;min-height:438px;padding:28px;border-radius:28px;border:1px solid color-mix(in srgb,var(--home-accent) 22%,rgba(255,255,255,.085));background:linear-gradient(145deg,rgba(33,29,34,.64),rgba(9,10,14,.76) 48%,rgba(17,20,25,.70));box-shadow:0 28px 90px rgba(0,0,0,.34),0 0 0 1px color-mix(in srgb,var(--home-accent) 7%,transparent),inset 0 1px 0 rgba(255,255,255,.065);backdrop-filter:blur(30px) saturate(1.16);-webkit-backdrop-filter:blur(30px) saturate(1.16);overflow:hidden}
+.home-hero{position:relative;grid-row:1 / span 2;min-height:438px;padding:28px;border-radius:28px;border:1px solid color-mix(in srgb,var(--home-accent) 22%,rgba(255,255,255,.085));background:linear-gradient(145deg,rgba(33,29,34,.64),rgba(9,10,14,.76) 48%,rgba(17,20,25,.70));box-shadow:0 28px 90px rgba(0,0,0,.34),0 0 0 1px color-mix(in srgb,var(--home-accent) 7%,transparent),inset 0 1px 0 rgba(255,255,255,.065);backdrop-filter:blur(30px) saturate(1.16);-webkit-backdrop-filter:blur(30px) saturate(1.16);overflow:visible}
 .home-hero::before{content:'';position:absolute;inset:0;background:linear-gradient(118deg,rgba(255,255,255,.060),transparent 24%,rgba(255,83,103,.070) 54%,rgba(122,215,194,.055) 82%,transparent 100%),linear-gradient(90deg,rgba(255,255,255,.032) 0 1px,transparent 1px 48px),linear-gradient(0deg,rgba(255,255,255,.024) 0 1px,transparent 1px 44px);opacity:.72;pointer-events:none}
 .home-hero::after{content:'';position:absolute;left:28px;right:28px;bottom:22px;height:1px;background:linear-gradient(90deg,color-mix(in srgb,var(--home-accent) 0%,transparent),color-mix(in srgb,var(--home-accent) 52%,transparent),rgba(36,66,255,.24),rgba(248,244,238,.18),color-mix(in srgb,var(--home-accent) 0%,transparent));opacity:.82;pointer-events:none}
 .home-hero-inner{position:relative;z-index:2;height:100%;display:grid;grid-template-columns:minmax(0,1.16fr) minmax(150px,.64fr);grid-template-rows:auto auto auto auto minmax(150px,1fr);column-gap:18px}
@@ -254,10 +255,10 @@ body.home-wallpaper-preview #canvas-container{filter:none}
 .home-sub{grid-column:1;margin-top:14px;font-size:13px;line-height:1.62;color:rgba(255,255,255,.62);max-width:348px}
 .home-weather-meta{grid-column:1;display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
 .home-weather-pill{height:28px;padding:0 10px;border-radius:999px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.050);display:inline-flex;align-items:center;color:rgba(255,255,255,.70);font-size:11px;font-weight:680}
-.home-quick-row{grid-column:1;position:relative;z-index:3;display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
+.home-weather-pill-btn{cursor:pointer;transition:background .2s,border-color .2s,color .2s}
+.home-weather-pill-btn:hover{background:rgba(232,160,107,.14);border-color:rgba(232,160,107,.52);color:rgba(232,160,107,.96)}
 .home-chip{height:32px;padding:0 13px;border-radius:999px;border:1px solid rgba(255,255,255,.11);background:rgba(255,255,255,.060);color:rgba(255,255,255,.76);font-family:inherit;font-size:11.5px;font-weight:680;cursor:pointer;transition:background .18s,border-color .18s,color .18s,transform .18s,box-shadow .18s}
 .home-chip:hover{background:color-mix(in srgb,var(--home-accent) 10%,transparent);border-color:color-mix(in srgb,var(--home-accent) 38%,rgba(255,255,255,.10));color:#fff;box-shadow:0 10px 26px color-mix(in srgb,var(--home-accent) 8%,transparent);transform:translateY(-1px)}
-.home-console-chip{height:36px;border-color:color-mix(in srgb,var(--home-accent) 34%,rgba(255,255,255,.12));background:color-mix(in srgb,var(--home-accent) 12%,rgba(255,255,255,.055));color:#fff}
 .home-visual{grid-column:2;grid-row:2 / span 2;position:relative;align-self:center;justify-self:end;width:100%;max-width:300px;height:74px;margin-top:0;pointer-events:none;filter:drop-shadow(0 18px 34px rgba(0,0,0,.28))}
 .home-visual.generated .home-sleeve,.home-visual.generated .home-disc{display:none}
 .home-radio-img{display:none}
@@ -274,13 +275,27 @@ body.home-wallpaper-preview #canvas-container{filter:none}
 .home-wave-track span{flex:1;min-width:3px;border-radius:999px;background:linear-gradient(180deg,#fff,var(--home-accent));box-shadow:0 0 12px color-mix(in srgb,var(--home-accent) 55%,transparent);height:5px;transform-origin:bottom;transition:height .08s linear,opacity .08s linear}
 @keyframes home-disc-turn{to{transform:rotate(360deg)}}
 @keyframes home-eq-rise{0%,100%{transform:scaleY(.68);opacity:.66}45%{transform:scaleY(1);opacity:1}}
-.home-mosaic{grid-column:1 / -1;grid-row:5;align-self:end;display:grid;grid-template-columns:1.18fr .82fr;grid-template-rows:1fr 1fr;gap:10px;height:min(216px,26vh);min-height:150px;margin-top:18px}
-.home-mosaic-cell{position:relative;border-radius:20px;background:linear-gradient(135deg,rgba(255,255,255,.12),rgba(255,255,255,.035));background-size:cover;background-position:center;overflow:hidden;border:1px solid color-mix(in srgb,var(--home-accent) 12%,rgba(255,255,255,.075));box-shadow:0 18px 44px rgba(0,0,0,.26)}
-.home-mosaic-cell:first-child{grid-row:1 / span 2}
-.home-mosaic-cell:not(.has-cover)::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,245,212,.62),rgba(36,66,255,.36) 46%,rgba(10,10,14,.20)),repeating-linear-gradient(110deg,rgba(255,255,255,.16) 0 2px,transparent 2px 18px)}
-.home-mosaic-cell:nth-child(2):not(.has-cover)::before{background:linear-gradient(135deg,rgba(122,215,194,.74),rgba(157,184,207,.46) 48%,rgba(10,10,14,.24)),repeating-linear-gradient(0deg,rgba(255,255,255,.16) 0 2px,transparent 2px 16px)}
-.home-mosaic-cell:nth-child(3):not(.has-cover)::before{background:linear-gradient(135deg,rgba(248,244,238,.38),rgba(0,245,212,.40) 58%,rgba(10,10,14,.24)),repeating-linear-gradient(90deg,rgba(255,255,255,.15) 0 2px,transparent 2px 15px)}
-.home-mosaic-cell::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.05),transparent 42%,rgba(0,0,0,.42));pointer-events:none}
+.home-mosaic{grid-column:1 / -1;grid-row:5;align-self:end;display:grid;grid-template-columns:1.18fr 1fr 1fr;grid-template-rows:1fr 1fr;gap:12px;height:min(260px,32vh);min-height:190px;margin-top:18px}
+.home-mosaic-cell{position:relative;border-radius:20px;overflow:hidden;border:1px solid color-mix(in srgb,var(--home-accent) 12%,rgba(255,255,255,.075));box-shadow:0 18px 44px rgba(0,0,0,.26);cursor:pointer;transition:transform .18s,border-color .18s}
+.home-mosaic-cell:hover{transform:translateY(-1px);border-color:color-mix(in srgb,var(--home-accent) 28%,rgba(255,255,255,.12))}
+.home-mosaic-radio{grid-column:1;grid-row:1 / span 2;display:flex;flex-direction:column;align-items:center;min-height:0;padding:clamp(10px,2vw,16px) clamp(10px,2vw,16px) clamp(40px,5vw,52px);gap:clamp(6px,1.2vw,10px);text-align:center;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(16px) saturate(1.1);-webkit-backdrop-filter:blur(16px) saturate(1.1)}
+.home-mosaic-radio::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.04) 0%,transparent 55%,rgba(0,0,0,.02) 100%);pointer-events:none;border-radius:inherit}
+.home-mosaic-radio-head{display:flex;align-items:center;gap:clamp(6px,1vw,10px);flex-shrink:0}
+.home-mosaic-radio-logo{width:clamp(32px,4vw,48px);height:clamp(32px,4vw,48px);border-radius:clamp(8px,1.2vw,12px);object-fit:contain;position:relative;z-index:1;filter:drop-shadow(0 clamp(1px,.2vw,3px) clamp(2px,.6vw,8px) rgba(0,0,0,.4));flex-shrink:0}
+.home-mosaic-radio-title{font-size:clamp(12px,1.5vw,16px);font-weight:650;letter-spacing:clamp(.01em,.1vw,.04em);position:relative;z-index:1;text-shadow:0 clamp(1px,.2vw,2px) clamp(1px,.4vw,4px) rgba(0,0,0,.5);line-height:clamp(1.2,1.25vw,1.3);white-space:nowrap}
+.home-mosaic-radio-desc{font-size:clamp(8px,1vw,10px);line-height:clamp(1.35,1.45vw,1.55);color:rgba(255,255,255,.78);position:relative;z-index:1;max-width:92%;flex:1 1 0%;min-height:0;padding:4px 0;text-shadow:0 clamp(1px,.15vw,2px) clamp(1px,.3vw,3px) rgba(0,0,0,.5);overflow:hidden;word-break:break-word}
+.home-mosaic-radio-btn{position:absolute;z-index:1;bottom:clamp(4px,.6vw,8px);left:50%;transform:translateX(-50%);height:clamp(24px,2.8vw,34px);padding:0 clamp(12px,1.8vw,24px);border-radius:999px;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.10);color:rgba(255,255,255,.88);font-family:inherit;font-size:clamp(10px,1.2vw,13px);font-weight:500;cursor:pointer;transition:all .2s;flex-shrink:0;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.home-mosaic-radio-btn:hover{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.40);transform:translateX(-50%) translateY(-1px);box-shadow:0 clamp(4px,.8vw,8px) clamp(12px,2vw,24px) rgba(255,255,255,.12)}
+.home-mosaic-shortcut{border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:10px 6px;text-align:center;background:rgba(255,255,255,.075);border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(16px) saturate(1.1);-webkit-backdrop-filter:blur(16px) saturate(1.1);transition:border-color .2s,border-width .2s,background .2s,box-shadow .2s,transform .22s cubic-bezier(.16,1,.3,1);color:rgba(255,255,255,.82)}
+.home-mosaic-shortcut::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.06) 0%,transparent 55%,rgba(0,0,0,.04) 100%);pointer-events:none;border-radius:inherit}
+.home-mosaic-shortcut:hover{border-color:rgba(255,255,255,.32);background:rgba(255,255,255,.13);box-shadow:0 12px 36px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.14)}
+.home-mosaic-shortcut-icon{font-size:22px;line-height:1;position:relative;z-index:1;filter:drop-shadow(0 2px 6px rgba(0,0,0,.25));transition:transform .2s cubic-bezier(.16,1,.3,1),filter .2s}
+.home-mosaic-shortcut-label{font-size:11px;font-weight:700;letter-spacing:.03em;position:relative;z-index:1;color:rgba(255,255,255,.85);text-shadow:0 1px 3px rgba(0,0,0,.32);line-height:1.2;white-space:nowrap;transition:color .2s,text-shadow .2s}
+.home-mosaic-shortcut-hint{font-size:8px;font-weight:560;color:rgba(255,255,255,.48);letter-spacing:.14em;text-transform:uppercase;position:relative;z-index:1;transition:color .2s}
+.home-mosaic-shortcut.active{border-color:rgba(255,255,255,.85);background:rgba(255,255,255,.20);box-shadow:0 0 20px rgba(255,255,255,.50),0 0 60px rgba(255,255,255,.30),0 0 120px rgba(255,255,255,.15),0 0 240px rgba(255,255,255,.06),inset 0 1px 0 rgba(255,255,255,.50),0 0 0 3px rgba(255,255,255,.20);transform:translateY(-3px)}
+.home-mosaic-shortcut.active .home-mosaic-shortcut-icon{transform:scale(1.16);filter:drop-shadow(0 3px 10px rgba(255,255,255,.45))}
+.home-mosaic-shortcut.active .home-mosaic-shortcut-label{color:#fff;text-shadow:0 0 14px rgba(255,255,255,.42)}
+.home-mosaic-shortcut.active .home-mosaic-shortcut-hint{color:rgba(255,255,255,.80)}
 .home-section-head{display:flex;align-items:end;justify-content:space-between;gap:12px;min-height:38px}
 .home-section-title{font-size:13px;font-weight:760;color:rgba(255,255,255,.84);letter-spacing:.04em}
 .home-section-note{font-size:11px;color:rgba(255,255,255,.38);white-space:nowrap}
@@ -321,13 +336,14 @@ body.empty-home-active .home-visual{animation:home-visual-drift 8.8s ease-in-out
 .home-tile-cover:not(.has-cover)::after{content:'';position:absolute;right:12px;top:14px;width:46px;height:48px;border-radius:999px;background:repeating-linear-gradient(0deg,rgba(255,255,255,.72) 0 3px,transparent 3px 9px);opacity:.32}
 .home-tile-title{font-size:12px;font-weight:720;color:rgba(255,255,255,.90);line-height:1.28;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .home-tile-sub{display:none;font-size:10.5px;color:rgba(255,255,255,.42);margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.home-tile-reason{position:absolute;left:0;right:0;bottom:0;z-index:2;padding:5px 9px 5px;font-size:9px;color:rgba(232,160,107,.96);background:linear-gradient(to top,rgba(0,0,0,.82),rgba(0,0,0,.42) 55%,transparent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.02em;pointer-events:none}
 .home-skeleton{position:relative;overflow:hidden}
 .home-skeleton::before{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent,rgba(255,255,255,.08),transparent);transform:translateX(-100%);animation:home-shimmer 1.5s ease-in-out infinite}
 @keyframes home-shimmer{100%{transform:translateX(100%)}}
-@media (max-width:1120px){#empty-home{width:calc(100vw - 48px)}.empty-home-shell{grid-template-columns:minmax(300px,.88fr) minmax(440px,1.12fr);gap:12px}.home-hero{padding:24px}.home-hero-inner{grid-template-columns:minmax(0,1.16fr) minmax(128px,.52fr);column-gap:14px}.home-title{font-size:clamp(30px,4vw,48px);max-width:340px}.home-sub{font-size:12.5px;line-height:1.5;max-width:314px}.home-visual{height:198px;max-width:236px}.home-mosaic{height:142px;min-height:126px;margin-top:14px}.home-grid{gap:10px}.home-card{min-height:126px;padding:14px;border-radius:20px}.home-card-label{margin-bottom:6px}.home-card-title{font-size:16.5px;max-width:66%}.home-card-sub{margin-top:6px;font-size:10.8px;line-height:1.34;max-width:64%;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.home-card-art{right:11px;bottom:11px;width:80px;height:80px;border-radius:18px}.home-card-art:not(.has-cover)::before{inset:14px;box-shadow:inset 0 0 0 11px rgba(5,5,8,.44),0 10px 24px rgba(0,0,0,.24)}.home-card::after{right:88px;bottom:14px;width:30px;height:56px}.home-rail{gap:8px}.home-tile{min-height:128px}.home-tile-cover{height:66px}}
-@media (max-height:760px){#empty-home{top:132px;bottom:44px}.empty-home-shell{min-height:0}.home-hero{min-height:0;padding:22px}.home-hero-inner{grid-template-columns:minmax(0,1.22fr) minmax(136px,.54fr);column-gap:14px}.home-title{font-size:clamp(31px,3.75vw,48px);max-width:360px}.home-sub{font-size:12.5px;line-height:1.55;max-width:330px}.home-quick-row{margin-top:16px}.home-visual{height:206px;max-width:246px}.home-mosaic{height:132px;min-height:120px;margin-top:14px}.home-card{min-height:134px;padding:14px}.home-card-title{font-size:17px}.home-card-art{width:92px;height:92px;border-radius:21px}.home-tile{min-height:132px}.home-tile-cover{height:72px}}
-@media (max-height:700px){#empty-home{top:126px;bottom:34px}.home-hero{padding:20px}.home-title{font-size:clamp(28px,3.55vw,42px)}.home-sub{font-size:12px;line-height:1.42}.home-weather-meta{margin-top:12px}.home-quick-row{margin-top:12px}.home-visual{height:174px;max-width:216px}.home-mosaic{height:112px;min-height:104px}.home-card{min-height:112px;padding:12px}.home-card-title{font-size:15.5px}.home-card-sub{font-size:10.5px;line-height:1.28;-webkit-line-clamp:2}.home-card-art{width:70px;height:70px;border-radius:16px}.home-card::after{right:78px;height:48px}.home-tile{min-height:112px;padding:9px}.home-tile-cover{height:54px;margin-bottom:8px}.home-section-head{min-height:30px}}
-@media (max-width:840px){.empty-home-shell{grid-template-columns:minmax(250px,.86fr) minmax(360px,1.14fr)}.home-hero-inner{grid-template-columns:minmax(0,1fr)}.home-visual{display:none}.home-mosaic{height:124px;min-height:108px}.home-card{min-height:108px}.home-card-title{font-size:15px;max-width:68%}.home-card-sub{font-size:10.3px;max-width:62%}.home-card-art{width:66px;height:66px;border-radius:15px}.home-card::after{right:72px;width:24px;height:44px}.home-tile-title{font-size:11.5px}}
+@media (max-width:1120px){#empty-home{width:calc(100vw - 48px)}.empty-home-shell{grid-template-columns:minmax(300px,.88fr) minmax(440px,1.12fr);gap:12px}.home-hero{padding:24px}.home-hero-inner{grid-template-columns:minmax(0,1.16fr) minmax(128px,.52fr);column-gap:14px}.home-title{font-size:clamp(30px,4vw,48px);max-width:340px}.home-sub{font-size:12.5px;line-height:1.5;max-width:314px}.home-visual{height:198px;max-width:236px}.home-mosaic{height:280px;min-height:240px;margin-top:14px}.home-grid{gap:10px}.home-card{min-height:126px;padding:14px;border-radius:20px}.home-card-label{margin-bottom:6px}.home-card-title{font-size:16.5px;max-width:66%}.home-card-sub{margin-top:6px;font-size:10.8px;line-height:1.34;max-width:64%;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.home-card-art{right:11px;bottom:11px;width:80px;height:80px;border-radius:18px}.home-card-art:not(.has-cover)::before{inset:14px;box-shadow:inset 0 0 0 11px rgba(5,5,8,.44),0 10px 24px rgba(0,0,0,.24)}.home-card::after{right:88px;bottom:14px;width:30px;height:56px}.home-rail{gap:8px}.home-tile{min-height:128px}.home-tile-cover{height:66px}}
+@media (max-height:760px){#empty-home{top:132px;bottom:44px}.empty-home-shell{min-height:0}.home-hero{min-height:0;padding:22px}.home-hero-inner{grid-template-columns:minmax(0,1.22fr) minmax(136px,.54fr);column-gap:14px}.home-title{font-size:clamp(31px,3.75vw,48px);max-width:360px}.home-sub{font-size:12.5px;line-height:1.55;max-width:330px}.home-visual{height:206px;max-width:246px}.home-mosaic{height:200px;min-height:180px;margin-top:14px}.home-card{min-height:134px;padding:14px}.home-card-title{font-size:17px}.home-card-art{width:92px;height:92px;border-radius:21px}.home-tile{min-height:132px}.home-tile-cover{height:72px}}
+@media (max-height:700px){#empty-home{top:126px;bottom:34px}.home-hero{padding:20px}.home-title{font-size:clamp(28px,3.55vw,42px)}.home-sub{font-size:12px;line-height:1.42}.home-weather-meta{margin-top:12px}.home-visual{height:174px;max-width:216px}.home-mosaic{height:170px;min-height:150px}.home-card{min-height:112px;padding:12px}.home-card-title{font-size:15.5px}.home-card-sub{font-size:10.5px;line-height:1.28;-webkit-line-clamp:2}.home-card-art{width:70px;height:70px;border-radius:16px}.home-card::after{right:78px;height:48px}.home-tile{min-height:112px;padding:9px}.home-tile-cover{height:54px;margin-bottom:8px}.home-section-head{min-height:30px}}
+@media (max-width:840px){.empty-home-shell{grid-template-columns:minmax(250px,.86fr) minmax(360px,1.14fr)}.home-hero-inner{grid-template-columns:minmax(0,1fr)}.home-visual{display:none}.home-mosaic{height:240px;min-height:210px}.home-card{min-height:108px}.home-card-title{font-size:15px;max-width:68%}.home-card-sub{font-size:10.3px;max-width:62%}.home-card-art{width:66px;height:66px;border-radius:15px}.home-card::after{right:72px;width:24px;height:44px}.home-tile-title{font-size:11.5px}}
 @media (max-width:760px){#empty-home{top:150px;bottom:56px;width:calc(100vw - 40px)}.empty-home-shell{grid-template-columns:1fr;grid-template-rows:auto auto 1fr;overflow:auto;padding-bottom:4px}.home-hero{grid-row:auto;min-height:344px}.home-mosaic{height:172px;min-height:150px}.home-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.home-tile-row{grid-template-columns:repeat(3,minmax(0,1fr))}}
 body.empty-home-active.controls-visible #empty-home{bottom:128px}
 @media (max-height:760px){body.empty-home-active.controls-visible #empty-home{bottom:112px}}
@@ -412,7 +428,6 @@ body.desktop-shell.desktop-fullscreen .home-mosaic-cell.has-cover,html:fullscree
   body.desktop-shell .home-title{font-size:clamp(27px,3.5vw,40px)}
   body.desktop-shell .home-sub{font-size:11.8px;line-height:1.4}
   body.desktop-shell .home-weather-meta{margin-top:11px}
-  body.desktop-shell .home-quick-row{margin-top:12px}
   body.desktop-shell .home-visual{height:166px;max-width:206px}
   body.desktop-shell .home-mosaic{height:104px;min-height:98px}
   body.desktop-shell .home-card{min-height:104px;padding:12px}
@@ -1037,6 +1052,19 @@ body.fx-fab-auto-hide.fx-fab-peek #fx-fab-hide-btn{right:84px;opacity:1;visibili
 body.controls-visible #fx-fab-hide-btn,
 body.desktop-shell.diy-mode.controls-visible #fx-fab-hide-btn{bottom:139px}
 body.immersive-mode #fx-fab-hide-btn{opacity:0!important;visibility:hidden!important;pointer-events:none!important}
+#edge-glow-toggle{position:fixed;z-index:20;right:112px;bottom:37px;width:28px;height:28px;border-radius:50%;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.035);color:rgba(255,255,255,.34);display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:.55;transform:translateX(0) scale(1);transition:right .28s cubic-bezier(.16,1,.3,1),bottom .38s cubic-bezier(.16,1,.3,1),opacity .18s,transform .18s,background .18s,color .18s,border-color .18s,box-shadow .28s}
+#edge-glow-toggle:hover{opacity:1}
+#edge-glow-toggle.on{opacity:1;border-color:rgba(0,245,212,.34);background:rgba(0,245,212,.10);color:#00f5d4;box-shadow:0 0 12px rgba(0,245,212,.30)}
+body.fx-fab-auto-hide #edge-glow-toggle{right:-76px;opacity:0;visibility:hidden;pointer-events:none;transform:translateX(6px) scale(.92);transition:right .28s cubic-bezier(.16,1,.3,1),bottom .38s cubic-bezier(.16,1,.3,1),opacity .18s,visibility 0s linear .18s,transform .18s,background .18s,color .18s,border-color .18s}
+body.fx-fab-auto-hide.fx-fab-peek #edge-glow-toggle{right:112px;opacity:1;visibility:visible;pointer-events:auto;transform:translateX(0) scale(1);transition:right .28s cubic-bezier(.16,1,.3,1),bottom .38s cubic-bezier(.16,1,.3,1),opacity .16s,transform .18s,background .18s,color .18s,border-color .18s}
+body.controls-visible #edge-glow-toggle,
+body.desktop-shell.diy-mode.controls-visible #edge-glow-toggle{bottom:139px}
+body.immersive-mode #edge-glow-toggle{opacity:0!important;visibility:hidden!important;pointer-events:none!important}
+body.desktop-shell.diy-mode #edge-glow-toggle{bottom:37px}
+@media (max-height:760px){
+  body.desktop-shell.diy-mode #edge-glow-toggle{bottom:35px}
+  body.desktop-shell.diy-mode.controls-visible #edge-glow-toggle{bottom:125px}
+}
 body.desktop-shell.diy-mode #fx-panel{top:64px;bottom:132px;max-height:none}
 body.desktop-shell.diy-mode #fx-fab{bottom:24px}
 body.desktop-shell.diy-mode #fx-fab-hide-btn{bottom:37px}
@@ -1868,9 +1896,18 @@ html.control-glass-svg-ok #visual-guide-btn:hover{
   .fx-slider{grid-template-columns:74px minmax(0,1fr) 40px 28px;gap:8px;padding:8px}
   .lyric-color-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
 }
+#edge-glow {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  width: 100%;
+  height: 100%;
+}
 </style>
 </head>
 <body>
+<canvas id="edge-glow"></canvas>
 <div id="desktop-window-shell">
 <div id="desktop-titlebar" aria-label="window controls">
   <div class="desktop-drag-region">
@@ -1959,9 +1996,46 @@ html.control-glass-svg-ok #visual-guide-btn:hover{
 <section id="empty-home" aria-label="Mineradio home">
   <div class="empty-home-shell">
     <div class="home-hero">
-      <div class="home-hero-inner home-construction-inner">
-        <div class="home-title home-construction-title">🚧此处施工，敬请期待🚧</div>
-        <button class="home-chip home-console-chip" type="button" onclick="openHomePlayerConsole()">展开播放器控制台</button>
+      <div class="home-hero-inner">
+        <div class="home-kicker" id="home-weather-kicker">Mineradio · Your Library</div>
+        <h1 class="home-title" id="home-weather-title">我的音乐库</h1>
+        <p class="home-sub" id="home-subtitle">从你的歌单、最近播放和常听歌手开始，天气电台放在需要氛围的时候再开。</p>
+        <div class="home-weather-meta" id="home-weather-meta"></div>
+        <div class="home-visual" id="home-visual">
+          <div class="home-sleeve"></div>
+          <div class="home-disc"></div>
+          <div class="home-wave-track" id="home-wave-track"></div>
+        </div>
+        <div class="home-mosaic" id="home-mosaic">
+          <div class="home-mosaic-cell home-mosaic-radio">
+            <div class="home-mosaic-radio-head">
+              <img class="home-mosaic-radio-logo" src="./images/weather-radio-logo.png" alt="天气电台" />
+              <div class="home-mosaic-radio-title">天气电台</div>
+            </div>
+            <div class="home-mosaic-radio-desc">给你放点不一样的歌</div>
+            <button class="home-mosaic-radio-btn" type="button" data-home-radio-start>启动</button>
+          </div>
+          <div class="home-mosaic-cell home-mosaic-shortcut" data-shortcut="wallpaper">
+            <div class="home-mosaic-shortcut-icon">🌌</div>
+            <div class="home-mosaic-shortcut-label">壁纸模式</div>
+            <div class="home-mosaic-shortcut-hint">WALLPAPER</div>
+          </div>
+          <div class="home-mosaic-cell home-mosaic-shortcut" data-shortcut="lyrics">
+            <div class="home-mosaic-shortcut-icon">📝</div>
+            <div class="home-mosaic-shortcut-label">桌面歌词</div>
+            <div class="home-mosaic-shortcut-hint">LYRICS</div>
+          </div>
+          <div class="home-mosaic-cell home-mosaic-shortcut" data-shortcut="preset">
+            <div class="home-mosaic-shortcut-icon">🎬</div>
+            <div class="home-mosaic-shortcut-label">随机预设特效</div>
+            <div class="home-mosaic-shortcut-hint">PRESET</div>
+          </div>
+          <div class="home-mosaic-cell home-mosaic-shortcut" data-shortcut="shelf">
+            <div class="home-mosaic-shortcut-icon">💿</div>
+            <div class="home-mosaic-shortcut-label">3D 歌单</div>
+            <div class="home-mosaic-shortcut-hint">SHELF</div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -2029,6 +2103,9 @@ html.control-glass-svg-ok #visual-guide-btn:hover{
   <svg width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.9" viewBox="0 0 24 24"><path d="M4 7h8"/><path d="M16 7h4"/><circle cx="14" cy="7" r="2"/><path d="M4 17h4"/><path d="M12 17h8"/><circle cx="10" cy="17" r="2"/></svg>
 </button>
 <button id="fx-fab-hide-btn" type="button" onclick="toggleFxFabAutoHide(event)" title="自动隐藏视觉控制台">‹</button>
+<button id="edge-glow-toggle" type="button" onclick="toggleEdgeGlow()" title="氛围光开关">
+  <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+</button>
 
 <!-- 控制台 (右侧贴边自动显示, 无关闭按钮) -->
 <div id="fx-panel">
@@ -2795,7 +2872,45 @@ var homeVisualPresetActive = false;
 var homeVisualPrevPreset = 0;
 var HOME_LISTEN_STATS_KEY = 'mineradio-listen-stats-v1';
 var HOME_WEATHER_CITY_KEY = 'mineradio-weather-city';
-var homeWeatherRadioState = { loading: false, loaded: false, city: localStorage.getItem(HOME_WEATHER_CITY_KEY) || '上海', weather: null, radio: null, error: '', updatedAt: 0 };
+var HOME_WEATHER_GEO_KEY = 'mineradio-weather-geo';
+function getHomeWeatherGeoCache() {
+  try {
+    var raw = localStorage.getItem(HOME_WEATHER_GEO_KEY);
+    if (!raw) return null;
+    var obj = JSON.parse(raw);
+    if (!obj || !Number.isFinite(obj.lat) || !Number.isFinite(obj.lon)) return null;
+    if (Date.now() - (obj.ts || 0) > 30 * 24 * 3600 * 1000) return null;
+    return { lat: obj.lat, lon: obj.lon };
+  } catch (e) { return null; }
+}
+function setHomeWeatherGeoCache(lat, lon) {
+  try {
+    localStorage.setItem(HOME_WEATHER_GEO_KEY, JSON.stringify({ lat: lat, lon: lon, ts: Date.now() }));
+  } catch (e) {}
+}
+function requestHomeWeatherGeo() {
+  return new Promise(function (resolve) {
+    if (!navigator.geolocation) { resolve(null); return; }
+    navigator.geolocation.getCurrentPosition(
+      function (pos) {
+        var lat = pos && pos.coords && pos.coords.latitude;
+        var lon = pos && pos.coords && pos.coords.longitude;
+        if (Number.isFinite(lat) && Number.isFinite(lon)) {
+          setHomeWeatherGeoCache(lat, lon);
+          resolve({ lat: lat, lon: lon });
+        } else {
+          resolve(null);
+        }
+      },
+      function (err) {
+        console.warn('geolocation failed:', err && err.message);
+        resolve(null);
+      },
+      { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 }
+    );
+  });
+}
+var homeWeatherRadioState = { loading: false, loaded: false, city: localStorage.getItem(HOME_WEATHER_CITY_KEY) || '', geoMode: false, weather: null, radio: null, error: '', updatedAt: 0 };
 var homeWeatherToken = 0;
 var homeWeatherLoadTimer = null;
 var homeWeatherLoadPromise = null;
@@ -3170,6 +3285,116 @@ var djMode = {
   lastBeatAt: -10
 };
 
+var weatherMoodState = {
+  active: false,
+  restored: true,
+  current: { energy: 0.54, warmth: 0.55, focus: 0.55, melancholy: 0.35, key: '' },
+  target:  { energy: 0.54, warmth: 0.55, focus: 0.55, melancholy: 0.35, key: '' },
+  lerpRate: 0.045,
+  tintScratch: null
+};
+function setWeatherMoodTarget(moodObj) {
+  if (!moodObj || typeof moodObj !== 'object') return;
+  weatherMoodState.active = true;
+  weatherMoodState.restored = false;
+  weatherMoodState.target.energy = isFinite(moodObj.energy) ? moodObj.energy : 0.54;
+  weatherMoodState.target.warmth = isFinite(moodObj.warmth) ? moodObj.warmth : 0.55;
+  weatherMoodState.target.focus = isFinite(moodObj.focus) ? moodObj.focus : 0.55;
+  weatherMoodState.target.melancholy = isFinite(moodObj.melancholy) ? moodObj.melancholy : 0.35;
+  weatherMoodState.target.key = moodObj.key || '';
+}
+function exitWeatherMood() {
+  weatherMoodState.active = false;
+  weatherMoodState.target.energy = 0.54;
+  weatherMoodState.target.warmth = 0.55;
+  weatherMoodState.target.focus = 0.55;
+  weatherMoodState.target.melancholy = 0.35;
+  weatherMoodState.target.key = '';
+}
+var WEATHER_MOOD_WARM_COLOR = 0xe8a06b;
+var WEATHER_MOOD_COOL_COLOR = 0x7ea8c9;
+function applyWeatherMoodVisual(dt) {
+  var s = weatherMoodState;
+  if (s.active && !(activeRadioContext && activeRadioContext.type === 'weather-radio')) {
+    exitWeatherMood();
+  }
+  var settled = Math.abs(s.current.energy - 0.54) < 0.005 &&
+                Math.abs(s.current.warmth - 0.55) < 0.005 &&
+                Math.abs(s.current.focus - 0.55) < 0.005 &&
+                Math.abs(s.current.melancholy - 0.35) < 0.005;
+  if (!s.active && settled) {
+    if (!s.restored) {
+      s.restored = true;
+      if (typeof syncFxUniforms === 'function') syncFxUniforms();
+    }
+    return;
+  }
+  var k = s.lerpRate * (dt > 0 ? Math.min(2.5, dt * 60) : 1);
+  if (k > 1) k = 1;
+  s.current.energy += (s.target.energy - s.current.energy) * k;
+  s.current.warmth += (s.target.warmth - s.current.warmth) * k;
+  s.current.focus += (s.target.focus - s.current.focus) * k;
+  s.current.melancholy += (s.target.melancholy - s.current.melancholy) * k;
+  s.current.key = s.target.key;
+
+  var e = s.current.energy, w = s.current.warmth, f = s.current.focus, m = s.current.melancholy;
+
+  var pointDelta = (e - 0.5) * 0.80;
+  if (pointDelta < -0.40) pointDelta = -0.40; else if (pointDelta > 0.40) pointDelta = 0.40;
+  uniforms.uPointScale.value = fx.point + pointDelta;
+
+  var scatterDelta = (f - 0.55) * 0.12;
+  var scatterNew = fx.scatter + scatterDelta;
+  if (scatterNew < 0) scatterNew = 0; else if (scatterNew > 0.5) scatterNew = 0.5;
+  uniforms.uScatter.value = scatterNew;
+
+  var speedMul = 1 - (m - 0.35) * 0.50;
+  if (speedMul < 0.70) speedMul = 0.70; else if (speedMul > 1.15) speedMul = 1.15;
+  uniforms.uSpeed.value = fx.speed * speedMul;
+
+  var bgFadeNew = fx.bgFade + (m - 0.35) * 0.45;
+  if (bgFadeNew < 0) bgFadeNew = 0; else if (bgFadeNew > 0.7) bgFadeNew = 0.7;
+  uniforms.uBgFade.value = bgFadeNew;
+
+  var melMul = 1 - (m - 0.35) * 0.50;
+  if (melMul < 0.75) melMul = 0.75; else if (melMul > 1.15) melMul = 1.15;
+  var energyMul = 1 + (e - 0.5) * 1.0;
+  if (energyMul < 0.70) energyMul = 0.70; else if (energyMul > 1.30) energyMul = 1.30;
+  var colorBoost = fx.color * melMul * energyMul;
+
+  if (!s.tintScratch) s.tintScratch = new THREE.Color();
+  s.tintScratch.setHex(w > 0.5 ? WEATHER_MOOD_WARM_COLOR : WEATHER_MOOD_COOL_COLOR);
+  uniforms.uTintColor.value.copy(s.tintScratch);
+  var tintStr = 0.65 + Math.abs(w - 0.5) * 0.30;
+  if (tintStr < 0.65) tintStr = 0.65; else if (tintStr > 0.95) tintStr = 0.95;
+  uniforms.uTintStrength.value = tintStr;
+  var warmBoost = 1 + (w - 0.5) * 0.30;
+  uniforms.uColorBoost.value = colorBoost * warmBoost;
+}
+
+var WEATHER_MOOD_DEBUG_PRESETS = [
+  { key: 'clear',  label: '晴天',  energy: 0.62, warmth: 0.58, focus: 0.48, melancholy: 0.24 },
+  { key: 'rain',   label: '雨天',  energy: 0.38, warmth: 0.42, focus: 0.64, melancholy: 0.66 },
+  { key: 'storm',  label: '暴雨',  energy: 0.46, warmth: 0.34, focus: 0.66, melancholy: 0.62 },
+  { key: 'snow',   label: '雪天',  energy: 0.34, warmth: 0.28, focus: 0.72, melancholy: 0.54 },
+  { key: 'humid',  label: '湿热',  energy: 0.48, warmth: 0.76, focus: 0.46, melancholy: 0.30 },
+  { key: 'cloudy', label: '多云',  energy: 0.40, warmth: 0.46, focus: 0.58, melancholy: 0.52 },
+  { key: 'neutral', label: '中性',  energy: 0.54, warmth: 0.55, focus: 0.55, melancholy: 0.35 }
+];
+function debugSwitchWeatherMood(idx) {
+  var p = WEATHER_MOOD_DEBUG_PRESETS[idx];
+  if (!p) return;
+  if (p.key === 'neutral') {
+    exitWeatherMood();
+    showToast('天气氛围 → 已退出（中性）');
+    return;
+  }
+  setWeatherMoodTarget(p);
+  showToast('调试切换：' + p.label + ' mood');
+}
+window.setWeatherMoodTarget = setWeatherMoodTarget;
+window.exitWeatherMood = exitWeatherMood;
+window.debugSwitchWeatherMood = debugSwitchWeatherMood;
 function isPodcastSong(song) {
   return !!(song && song.type === 'podcast');
 }
@@ -3242,7 +3467,7 @@ var fxDefaults = {
   depth: 1.0,
   coverResolution: 1.55,
   point: 1.0, speed: 1.0, twist: 0.0, color: 1.10, scatter: 0.0, bgFade: 0.20,
-  bloomStrength: 0.62,
+  bloomStrength: 0.34,
   lyricGlowStrength: 0.28,
   lyricScale: 1.0,
   lyricOffsetX: 0,
@@ -3325,7 +3550,7 @@ var PACKAGED_DEFAULT_FX_SNAPSHOT = Object.freeze({
   color: 1.1,
   scatter: 0,
   bgFade: 0.2,
-  bloomStrength: 0.62,
+  bloomStrength: 0.34,
   lyricGlowStrength: 0.28,
   lyricScale: 1,
   lyricOffsetX: 0,
@@ -3415,7 +3640,7 @@ function readSavedPlaybackVisualPreset() {
   try {
     var raw = JSON.parse(localStorage.getItem(LYRIC_LAYOUT_STORE_KEY) || '{}') || {};
     if (!Object.prototype.hasOwnProperty.call(raw, 'preset')) return fxDefaults.preset;
-    var savedPreset = clampRange(Number(raw.preset) || 0, 0, 6);
+    var savedPreset = clampRange(Number(raw.preset) || 0, 0, 7);
     if (savedPreset === 3 && raw.visualPresetSchema !== VISUAL_PRESET_SCHEMA) savedPreset = 5;
     return savedPreset;
   } catch (e) {
@@ -3995,8 +4220,8 @@ function applyFreeCameraToCamera() {
     FREE_CAMERA_SHAKE_DIR.set(0, 0, -1).applyEuler(camera.rotation);
     camera.position.addScaledVector(FREE_CAMERA_SHAKE_DIR, beatCam.radiusKick * cameraShake * 0.52);
   }
-  var cameraPunch = Math.max(camPunch * 0.55, beatCam.punch * 0.54 + beatCam.radiusKick * 0.16) * cameraShake;
-  var targetFov = clampRange(freeCamera.fov || BASE_FOV, 26, 72) - cameraPunch * 1.75;
+  var cameraPunch = Math.max(camPunch * 0.55, beatCam.punch * 1.00 + beatCam.radiusKick * 0.16) * cameraShake;
+  var targetFov = clampRange(freeCamera.fov || BASE_FOV, 26, 72) - cameraPunch * 4.00;
   camera.fov += (targetFov - camera.fov) * (targetFov < camera.fov ? 0.24 : 0.12);
   camera.updateProjectionMatrix();
   camPunch *= 0.86;
@@ -4724,7 +4949,7 @@ function scheduleBeatCamera(beat, source) {
     else if (mode === 'body') amp = 0.12 + strength * 0.15 + bodyDrive * 0.18 + lowDrive * 0.06;
     else amp = 0.08 + strength * 0.11 + snapDrive * 0.13;
   } else {
-    amp = Math.max(0.18, Math.min(0.72, 0.15 + strength * 0.34 + confidence * 0.06 + mass * 0.13 + snapTone * 0.04));
+    amp = Math.max(0.18, Math.min(0.85, 0.15 + strength * 0.34 + confidence * 0.06 + mass * 0.13 + snapTone * 0.04));
   }
   if (isMapSource) amp *= 0.68 + visualImpact * 0.46;
   if (!isPrimary) amp *= 0.62;
@@ -4741,7 +4966,7 @@ function scheduleBeatCamera(beat, source) {
     : Math.max(0.014, Math.min(0.052, beatCam.hold * (0.62 + lowTone * 0.55 + bodyTone * 0.25)));
   var release = dj
     ? (mode === 'deep' ? 0.178 + mass * 0.040 : (mode === 'body' ? 0.140 : 0.104))
-    : Math.max(0.110, Math.min(0.255, beatCam.release * (0.76 + mass * 0.56 + bodyTone * 0.18 - sharpness * 0.18)));
+    : Math.max(0.080, Math.min(0.150, beatCam.release * (0.76 + mass * 0.56 + bodyTone * 0.18 - sharpness * 0.18)));
   var idx = typeof beat === 'number' ? Math.floor(time * 2.7) : (beat.index || Math.floor(time * 2.7));
   var combo = typeof beat === 'number' ? null : beat.combo;
   if (!combo) {
@@ -4921,12 +5146,15 @@ function scheduleBeatCamera(beat, source) {
     var gap = time - beatCam.lastTriggerAt;
     var minGap = beatCam.minInterval;
     if (isMapSource && isPrimary) minGap *= 0.82;
-    if (gap < minGap && strength < 0.88) return;
+    if (gap < minGap && strength < 0.72) return;
     beatCam.lastTriggerAt = time;
     beatCam.stats.map++;
   } else {
     beatCam.lastTriggerAt = Math.max(beatCam.lastTriggerAt, time);
     beatCam.stats.live++;
+  }
+  for (var ti = 0; ti < beatCam.events.length; ti++) {
+    if (!beatCam.events[ti]._truncated) beatCam.events[ti]._truncated = nowT;
   }
   beatCam.events.push({
     start: isLiveSource ? nowT - attack * 0.42 : nowT + (time - nowT) - attack,
@@ -4999,6 +5227,10 @@ function updateBeatCamera(dt) {
       beatCam.events.splice(i, 1);
       continue;
     }
+    if (ev._truncated) {
+      var sinceTrunc = t - ev._truncated;
+      if (sinceTrunc > 0) val *= Math.max(0, 1 - sinceTrunc / 0.040);
+    }
     var evPunch = val * ev.amp;
     punch = Math.max(punch, evPunch);
     if (evPunch > leadPunch) {
@@ -5043,7 +5275,7 @@ function updateBeatCamera(dt) {
     }
   }
   var djEase = djMode.active;
-  beatCam.punch += (punch - beatCam.punch) * (punch > beatCam.punch ? (djEase ? 0.82 : 0.72) : (djEase ? 0.44 : 0.38));
+  beatCam.punch += (punch - beatCam.punch) * (punch > beatCam.punch ? (djEase ? 0.88 : 0.82) : (djEase ? 0.44 : 0.38));
   beatCam.thetaKick += (thetaKick - beatCam.thetaKick) * (Math.abs(thetaKick) > Math.abs(beatCam.thetaKick) ? (djEase ? 0.80 : 0.70) : (djEase ? 0.42 : 0.36));
   beatCam.phiKick += (phiKick - beatCam.phiKick) * (Math.abs(phiKick) > Math.abs(beatCam.phiKick) ? (djEase ? 0.80 : 0.70) : (djEase ? 0.42 : 0.36));
   beatCam.radiusKick += (radiusKick - beatCam.radiusKick) * (radiusKick > beatCam.radiusKick ? (djEase ? 0.82 : 0.72) : (djEase ? 0.40 : 0.34));
@@ -5143,8 +5375,8 @@ function updateCamera() {
   var cameraShake = clampRange(Number(fx.cinemaShake) || 0, 0, 1.8);
   camera.rotation.z += beatCam.rollKick * cameraShake;
 
-  var cameraPunch = Math.max(camPunch * 0.55, beatCam.punch * 0.54 + beatCam.radiusKick * 0.16) * cameraShake;
-  var targetFOV = BASE_FOV - cameraPunch * (djMode.active ? 2.62 : 2.35);
+  var cameraPunch = Math.max(camPunch * 0.55, beatCam.punch * 1.00 + beatCam.radiusKick * 0.16) * cameraShake;
+  var targetFOV = BASE_FOV - cameraPunch * (djMode.active ? 5.40 : 5.00);
   var fovEase = targetFOV < camera.fov ? 0.24 : 0.12;
   camera.fov += (targetFOV - camera.fov) * fovEase;
   camera.updateProjectionMatrix();
@@ -5874,6 +6106,7 @@ var uniforms = {
   uMid:        { value: 0 },
   uTreble:     { value: 0 },
   uBeat:       { value: 0 },
+  uBeatBurst:  { value: 0 },
   uEnergy:     { value: 0 },
   uBurstAmt:   { value: 0 },          // 通用预设切换脉冲 0..1
   uVinylSpin:  { value: 0 },
@@ -5887,7 +6120,7 @@ var uniforms = {
   uScatter:    { value: 0 },
   uCoverRes:   { value: 1.0 },
   uBgFade:     { value: 0.20 },
-  uBloomStrength:{ value: 0.62 },
+  uBloomStrength:{ value: 0.34 },
   uBloomSize:  { value: 2.65 },
   uTintColor:  { value: new THREE.Color('#9db8cf') },
   uTintStrength:{ value: 0 },
@@ -5920,7 +6153,7 @@ applyRendererPowerMode();
 //   v7.1: 律动幅度 ×2.5, Tunnel 自旋, 虚空预设, 切歌颜色渐变
 var vs = `
 precision highp float;
-uniform float uTime, uBass, uMid, uTreble, uBeat, uEnergy, uBurstAmt;
+uniform float uTime, uBass, uMid, uTreble, uBeat, uBeatBurst, uEnergy, uBurstAmt;
 uniform float uPreset, uIntensity, uDepth, uPointScale, uSpeed, uTwist;
 uniform float uVinylSpin;
 uniform float uColorBoost, uScatter, uCoverRes, uBgFade;
@@ -6051,7 +6284,7 @@ void main(){
   //  Preset 0: SILK — 丝绸 (xy 平面, z 涟漪)
   //  v7.1: 全部位移 ×2.5
   // ====================================================
-  if (uPreset < 0.5) {
+  if (uPreset < 0.5 || uPreset > 6.5) {
     pos = position;
     rippleZ = rippleSumAt(pos.xy, maxRippleAmp);
 
@@ -6268,9 +6501,9 @@ void main(){
   }
 
   // ====================================================
-  //  鼠标交互 (仅 SILK)
+  //  鼠标交互 (仅 SILK 与 Preset-7)
   // ====================================================
-  if (uMouseActive > 0.5 && uPreset < 0.5) {
+  if (uMouseActive > 0.5 && (uPreset < 0.5 || uPreset > 6.5)) {
     float mdx = pos.x - uMouseXY.x;
     float mdy = pos.y - uMouseXY.y;
     float md = sqrt(mdx*mdx + mdy*mdy);
@@ -6310,34 +6543,35 @@ void main(){
     vec2 jdir = vec2(cos(aRand * 6.2831), sin(aRand * 6.2831));
     pos.xy += jdir * uScatter * (0.05 + uTreble * 0.10);
   }
-  if (uTwist > 0.001 && uPreset < 0.5) {
+  if (uTwist > 0.001 && (uPreset < 0.5 || uPreset > 6.5)) {
     float ta = uTwist * pos.z * 0.6;
     float cs = cos(ta), sn = sin(ta);
     pos.xy = mat2(cs, -sn, sn, cs) * pos.xy;
   }
 
   // 颜色
-  float vinylHiResGuard = smoothstep(1.08, 1.55, uCoverRes) * step(3.5, uPreset) * (1.0 - step(4.5, uPreset));
+  float vinylHiResGuard = smoothstep(1.08, 1.55, uCoverRes) * step(3.5, uPreset) * (1.0 - step(4.5, uPreset)) * (1.0 - step(6.5, uPreset));
   float edgeBoost = uEdgeEnabled * edgeVal * mix(1.0, 0.42, vinylHiResGuard);
   vSourceLum = dot(max(vColor, vec3(0.0)), vec3(0.299, 0.587, 0.114));
   float blackParticleGuard = 1.0 - smoothstep(0.025, 0.115, vSourceLum);
-  vEdgeBoost = edgeBoost * (uPreset > 3.5 ? 0.22 : 1.0) * (1.0 - blackParticleGuard);
+  vEdgeBoost = edgeBoost * (uPreset > 3.5 && uPreset < 6.5 ? 0.22 : 1.0) * (1.0 - blackParticleGuard);
   vColor = pow(max(vColor, vec3(0.0)), vec3(1.0 / max(0.35, uColorBoost)));
-  float edgeColorMix = edgeBoost * (uPreset > 3.5 ? 0.20 : 0.50) * (1.0 - blackParticleGuard);
+  float edgeColorMix = edgeBoost * (uPreset > 3.5 && uPreset < 6.5 ? 0.20 : 0.50) * (1.0 - blackParticleGuard);
   vColor = mix(vColor, vColor + vec3(0.20), edgeColorMix);
   float tintLum = max(max(vColor.r, vColor.g), vColor.b);
   vec3 tintedColor = uTintColor * max(0.24, tintLum * 1.12);
   vColor = mix(vColor, tintedColor, clamp(uTintStrength, 0.0, 1.0) * (1.0 - blackParticleGuard));
+  vColor = mix(vColor, vec3(1.0), uBeat * 0.25);
 
   vBright = 0.82 + maxRippleAmp * 0.55 + uBass * 0.10 + edgeBoost * 0.30 + uEnergy * 0.05 + uBurstAmt * 0.40;
-  if (uPreset > 4.5) {
+  if (uPreset > 4.5 && uPreset < 6.5) {
     vBright = 0.94 + maxRippleAmp * 0.34 + uBass * 0.020 + uEnergy * 0.026 + uBurstAmt * 0.025;
-  } else if (uPreset > 3.5) {
+  } else if (uPreset > 3.5 && uPreset < 6.5) {
     vBright = 0.94 + maxRippleAmp * 0.64 + uBass * 0.08 + edgeBoost * 0.12 + uEnergy * 0.05 + uBeat * 0.16 + uBurstAmt * 0.16;
   }
   vRipple = clamp(maxRippleAmp * 1.5, 0.0, 1.0);
 
-  if (uHasDepth > 0.5 && uPreset < 0.5) {
+  if (uHasDepth > 0.5 && (uPreset < 0.5 || uPreset > 6.5)) {
     float bgMul = mix(1.0, 0.55, uBgFade * (1.0 - fgMask));
     vBright *= bgMul;
   }
@@ -6373,14 +6607,21 @@ void main(){
     loadingMistSize = 1.26 + mistBreath * 0.24 + abs(mistRibbon) * 0.14 + glowPick * 0.78;
   }
 
+  if (uBeatBurst > 0.001 && uPreset < 3.5) {
+    float burstAngle = fract(aRand * 17.31) * 6.2832;
+    vec2 burstDir = vec2(cos(burstAngle), sin(burstAngle));
+    pos.xy += burstDir * uBeatBurst * (0.22 + aRand * 0.18);
+    pos.z += (hash11(aRand * 73.0) - 0.5) * uBeatBurst * 0.22;
+  }
+
   vec4 mvPos = modelViewMatrix * vec4(pos, 1.0);
   float depthSize = 36.0 / max(0.5, -mvPos.z);
   float audioBoost = 1.0 + maxRippleAmp * 0.7 + edgeBoost * 0.55 + uBeat * 0.30 + uBurstAmt * 0.5;
   float sz = clamp(depthSize * audioBoost, 1.05, 4.95);
-  if (uPreset > 4.5) {
+  if (uPreset > 4.5 && uPreset < 6.5) {
     float flowDrive = uBass * 0.070 + uMid * 0.046 + uTreble * 0.060 + uBurstAmt * 0.090 + uBeat * 0.055;
     sz = clamp(depthSize * (1.05 + flowDrive), 1.00, 5.45);
-  } else if (uPreset > 3.5) {
+  } else if (uPreset > 3.5 && uPreset < 6.5) {
     float ringDrive = uBass * 0.30 + uMid * 0.18 + uTreble * 0.22 + uBeat * 0.30;
     sz = clamp(depthSize * (0.90 + ringDrive * 0.62), 1.05, 3.90);
   }
@@ -6460,6 +6701,236 @@ particles.frustumCulled = false;
 particles.renderOrder = 1;
 scene.add(particles);
 console.log('v7 shell loaded, JS pending');
+
+// ============================================================
+//  Ribbon Layer (星河丝带层 — Emily/SILK 预设下叠加)
+// ============================================================
+var RIBBON_COUNT = 15000;
+var ribbonGroup = null;
+var ribbonOpacity = 0;
+var _ribbonActive = false;
+
+function createRibbonLayer() {
+  if (ribbonGroup) return ribbonGroup;
+  var rGeo = new THREE.BufferGeometry();
+  var rPositions = new Float32Array(RIBBON_COUNT * 3);
+  var rUvs = new Float32Array(RIBBON_COUNT * 2);
+  var rRands = new Float32Array(RIBBON_COUNT);
+  for (var i = 0; i < RIBBON_COUNT; i++) {
+    rPositions[i*3] = 0; rPositions[i*3+1] = 0; rPositions[i*3+2] = 0;
+    rUvs[i*2] = Math.random(); rUvs[i*2+1] = Math.random();
+    rRands[i] = Math.random();
+  }
+  rGeo.setAttribute('position', new THREE.BufferAttribute(rPositions, 3));
+  rGeo.setAttribute('aUv', new THREE.BufferAttribute(rUvs, 2));
+  rGeo.setAttribute('aRand', new THREE.BufferAttribute(rRands, 1));
+
+  var ribbonVs = [
+    'precision highp float;',
+    'uniform float uTime, uBass, uMid, uTreble, uBeat, uEnergy, uBurstAmt;',
+    'uniform float uPixel, uPointScale;',
+    'uniform sampler2D uCoverTex;',
+    'uniform float uHasCover;',
+    'attribute vec2 aUv;',
+    'attribute float aRand;',
+    'varying vec3 vColor;',
+    'varying float vBright, vAlpha;',
+    '',
+    'vec3 mod289(vec3 x){return x-floor(x*(1.0/289.0))*289.0;}',
+    'vec4 mod289v(vec4 x){return x-floor(x*(1.0/289.0))*289.0;}',
+    'vec4 perm(vec4 x){return mod289v(((x*34.0)+1.0)*x);}',
+    'float snoise(vec3 v){',
+    '  const vec2 C=vec2(1.0/6.0,1.0/3.0);',
+    '  const vec4 D=vec4(0.0,0.5,1.0,2.0);',
+    '  vec3 i=floor(v+dot(v,C.yyy));',
+    '  vec3 x0=v-i+dot(i,C.xxx);',
+    '  vec3 g=step(x0.yzx,x0.xyz); vec3 l=1.0-g;',
+    '  vec3 i1=min(g.xyz,l.zxy); vec3 i2=max(g.xyz,l.zxy);',
+    '  vec3 x1=x0-i1+C.xxx; vec3 x2=x0-i2+C.yyy; vec3 x3=x0-D.yyy;',
+    '  i=mod289(i);',
+    '  vec4 p=perm(perm(perm(i.z+vec4(0.0,i1.z,i2.z,1.0))+i.y+vec4(0.0,i1.y,i2.y,1.0))+i.x+vec4(0.0,i1.x,i2.x,1.0));',
+    '  float n_=0.142857142857;',
+    '  vec3 ns=n_*D.wyz-D.xzx;',
+    '  vec4 j=p-49.0*floor(p*ns.z*ns.z);',
+    '  vec4 x_=floor(j*ns.z); vec4 y_=floor(j-7.0*x_);',
+    '  vec4 x=x_*ns.x+ns.yyyy; vec4 y=y_*ns.x+ns.yyyy;',
+    '  vec4 h=1.0-abs(x)-abs(y);',
+    '  vec4 b0=vec4(x.xy,y.xy); vec4 b1=vec4(x.zw,y.zw);',
+    '  vec4 s0=floor(b0)*2.0+1.0; vec4 s1=floor(b1)*2.0+1.0;',
+    '  vec4 sh=-step(h,vec4(0.0));',
+    '  vec4 a0=b0.xzyw+s0.xzyw*sh.xxyy; vec4 a1=b1.xzyw+s1.xzyw*sh.zzww;',
+    '  vec3 p0=vec3(a0.xy,h.x); vec3 p1=vec3(a0.zw,h.y); vec3 p2=vec3(a1.xy,h.z); vec3 p3=vec3(a1.zw,h.w);',
+    '  vec4 norm=inversesqrt(vec4(dot(p0,p0),dot(p1,p1),dot(p2,p2),dot(p3,p3)));',
+    '  p0*=norm.x; p1*=norm.y; p2*=norm.z; p3*=norm.w;',
+    '  vec4 m=max(0.6-vec4(dot(x0,x0),dot(x1,x1),dot(x2,x2),dot(x3,x3)),0.0);',
+    '  m=m*m;',
+    '  return 42.0*dot(m*m,vec4(dot(p0,x0),dot(p1,x1),dot(p2,x2),dot(p3,x3)));',
+    '}',
+    'float hash11(float p){return fract(sin(p*127.1)*43758.5453123);}',
+    '',
+    '#define PI 3.14159265359',
+    '',
+    'void main() {',
+    '  float t = uTime;',
+    '  float bassGlow = smoothstep(0.07, 0.78, uBass) * 0.34 + uBeat * 0.014;',
+    '  float highGlow = smoothstep(0.04, 0.46, uTreble) * 0.46;',
+    '',
+    '  // ====== 行星环分布：4条同心环带 ======',
+    '  float ringSel = aUv.y;',
+    '  float ringIdx = floor(ringSel * 4.0);',
+    '  float ringLocal = fract(ringSel * 4.0);',
+    '  float seed = hash11(ringIdx * 19.17 + aRand * 31.0);',
+    '',
+    '  float ringRadius;',
+    '  if (ringIdx < 0.5) ringRadius = 4.2;',
+    '  else if (ringIdx < 1.5) ringRadius = 6.5;',
+    '  else if (ringIdx < 2.5) ringRadius = 8.8;',
+    '  else ringRadius = 11.2;',
+    '',
+    '  // 环带内径向散布 + 微噪声偏移',
+    '  float radialWidth = 0.55 + ringIdx * 0.08;',
+    '  float radialNoise = snoise(vec3(ringIdx * 3.0, ringLocal * 5.0, t * 0.02)) * 0.22;',
+    '  float radialOffset = (ringLocal - 0.5) * radialWidth * 2.0 + radialNoise;',
+    '  float radius = ringRadius + radialOffset + seed * 0.35;',
+    '',
+    '  // 轨道运动',
+    '  float baseAngle = aUv.x * 6.28318;',
+    '  float orbitSpeed = 0.14 - ringIdx * 0.018;',
+    '  float angle = baseAngle + t * orbitSpeed;',
+    '',
+    '  float cx = cos(angle) * radius;',
+    '  float cz = sin(angle) * radius;',
+    '',
+    '  // 极薄环面 + 微波动',
+    '  float yBase = (aRand - 0.5) * 0.45;',
+    '  float yWave = sin(angle * 3.0 + seed * 18.0 + t * 0.25) * 0.10;',
+    '  float y = yBase + yWave;',
+    '',
+    '  // 环带密度峰(ridge) — 环带中心最密',
+    '  float bandCenterDist = abs(radialOffset) / max(0.01, radialWidth);',
+    '  float ridge = exp(-pow(bandCenterDist * 2.2, 2.0));',
+    '  ridge = ridge * 0.6 + 0.4;',
+    '',
+    '  // 轨道相位脉冲',
+    '  float ribbonPhase = angle * (2.0 + ringIdx * 0.5) + t * 0.3 + seed * 8.0;',
+    '  float broadWave = sin(ribbonPhase) * 0.15;',
+    '  float pulseLine = 0.5 + 0.5 * sin(ribbonPhase * 2.5 + seed * 6.0);',
+    '',
+    '  vec3 pos = vec3(cx, y + broadWave, cz);',
+    '',
+    '  // E: 重拍扩散波',
+    '  float beatKick = smoothstep(0.50, 0.92, uBeat);',
+    '  float expansion = 1.0 + beatKick * 0.25;',
+    '  pos *= expansion;',
+    '',
+    '  // ====== 颜色 ======',
+    '  // 内环偏暖(金)，外环偏冷(蓝紫)',
+    '  float ringN = clamp(ringIdx / 3.0, 0.0, 1.0);',
+    '  vec3 aurora = mix(vec3(0.62, 0.80, 1.0), vec3(0.50, 0.55, 0.95), ringN);',
+    '  aurora = mix(aurora, vec3(0.96, 0.98, 0.92), bassGlow * 0.04);',
+    '',
+    '  vec3 goldEdge = vec3(1.0, 0.78, 0.22);',
+    '  float goldMix = smoothstep(0.30, 0.75, ridge) * (0.28 + beatKick * 0.38);',
+    '  aurora = mix(aurora, goldEdge, goldMix);',
+    '',
+    '  vec3 coverColor = mix(vec3(0.42), texture2D(uCoverTex, aUv).rgb, uHasCover);',
+    '  vColor = mix(coverColor, aurora, 0.58 + ridge * 0.26) * (0.72 + ridge * 0.82 + pulseLine * highGlow * 0.04 + bassGlow * 0.03);',
+    '',
+    '  vAlpha = (0.38 + ridge * 0.72 + pulseLine * highGlow * 0.030 + bassGlow * 0.022) * 0.88;',
+    '',
+    '  // I: 星光闪烁',
+    '  float flickerFreq = 3.5 + aRand * 9.0;',
+    '  float flicker = 0.70 + 0.30 * sin(t * flickerFreq + aRand * 77.0);',
+    '  vAlpha *= flicker;',
+    '  vAlpha += beatKick * 0.16;',
+    '',
+    '  vBright = 1.18 + ridge * 0.30 + uBass * 0.018 + uEnergy * 0.022 + uBurstAmt * 0.022;',
+    '  vBright += beatKick * 0.50;',
+    '',
+    '  vec4 mvPos = modelViewMatrix * vec4(pos, 1.0);',
+    '  float depthSize = 48.0 / max(0.5, -mvPos.z);',
+    '  float flowDrive = uBass * 0.070 + uMid * 0.046 + uTreble * 0.060 + uBurstAmt * 0.090 + uBeat * 0.055;',
+    '  float sz = clamp(depthSize * (1.20 + flowDrive), 1.50, 8.00);',
+    '  sz *= 1.0 + beatKick * 0.65;',
+    '  gl_PointSize = sz * uPixel * uPointScale;',
+    '  gl_Position = projectionMatrix * mvPos;',
+    '}'
+  ].join('\n');
+
+  var ribbonFs = [
+    'precision highp float;',
+    'uniform sampler2D uDotTex;',
+    'varying vec3 vColor;',
+    'varying float vBright, vAlpha;',
+    'void main() {',
+    '  vec4 tex = texture2D(uDotTex, gl_PointCoord);',
+    '  if (tex.a < 0.02) discard;',
+    '  vec3 col = vColor * vBright;',
+    '  col = clamp(col, vec3(0.0), vec3(2.0));',
+    '  gl_FragColor = vec4(col, tex.a * vAlpha * 0.85);',
+    '}'
+  ].join('\n');
+
+  var ribbonUniforms = {
+    uTime: { value: 0 },
+    uBass: { value: 0 }, uMid: { value: 0 }, uTreble: { value: 0 },
+    uBeat: { value: 0 }, uEnergy: { value: 0 }, uBurstAmt: { value: 0 },
+    uPixel: { value: renderer.getPixelRatio() },
+    uPointScale: { value: 1.0 },
+    uCoverTex: { value: coverTex },
+    uHasCover: { value: 0 },
+    uDotTex: { value: dotTexture },
+  };
+
+  var ribbonMat = new THREE.ShaderMaterial({
+    uniforms: ribbonUniforms,
+    vertexShader: ribbonVs,
+    fragmentShader: ribbonFs,
+    transparent: true,
+    depthWrite: false,
+    depthTest: false,
+    blending: THREE.AdditiveBlending,
+  });
+
+  ribbonGroup = new THREE.Points(rGeo, ribbonMat);
+  ribbonGroup.frustumCulled = false;
+  ribbonGroup.renderOrder = 2;
+  ribbonGroup.visible = false;
+  scene.add(ribbonGroup);
+  return ribbonGroup;
+}
+
+function updateRibbonLayer(dt) {
+  var isSILK = !!(fx && Number(fx.preset) === 7);
+  if (isSILK && !ribbonGroup) createRibbonLayer();
+  if (!ribbonGroup) return;
+
+  var target = isSILK ? 1.0 : 0.0;
+  ribbonOpacity += (target - ribbonOpacity) * Math.min(1, dt * (isSILK ? 2.0 : 3.0));
+
+  if (ribbonOpacity < 0.005 && !isSILK) {
+    ribbonGroup.visible = false;
+    _ribbonActive = false;
+    return;
+  }
+  ribbonGroup.visible = true;
+  _ribbonActive = true;
+
+  var ru = ribbonGroup.material.uniforms;
+  ru.uTime.value = uniforms.uTime.value;
+  ru.uBass.value = uniforms.uBass.value;
+  ru.uMid.value = uniforms.uMid.value;
+  ru.uTreble.value = uniforms.uTreble.value;
+  ru.uBeat.value = uniforms.uBeat.value;
+  ru.uEnergy.value = uniforms.uEnergy.value;
+  ru.uBurstAmt.value = uniforms.uBurstAmt.value;
+  ru.uPixel.value = renderer.getPixelRatio();
+  ru.uPointScale.value = uniforms.uPointScale.value;
+  ru.uHasCover.value = uniforms.uHasCover.value;
+  ru.uCoverTex.value = uniforms.uCoverTex.value;
+}
+
+
 
 // ============================================================
 //  浮空粒子层 (独立 Points)
@@ -6585,6 +7056,35 @@ function destroyFloatLayer() {
 //  安魂 — 3D 粒子建模层
 // ============================================================
 var SKULL_PRESET_INDEX = 6;
+// ── 通用模型粒子预设（支持多个，添加新预设只需加一行） ──
+var MODEL_PARTICLE_PRESETS = [
+  { index: 8, effectFile: 'cyber-model-effect.js',   binFile: 'cyber-model-particles.bin',   wireframeFile: 'cyber-model-wireframe.bin' },
+  { index: 9, effectFile: 'cyber-model-effect-2.js', binFile: 'cyber-model-particles-2.bin', wireframeFile: 'cyber-model-wireframe-2.bin', wireframeScale: 7.56 },
+];
+var modelParticleStates = {};  // { 8: {group, opacity, data, effectLoaded, dataRequested, effectConfig, vertexShader, fragmentShader}, ... }
+function isModelParticlePreset(p) {
+  for (var i = 0; i < MODEL_PARTICLE_PRESETS.length; i++) {
+    if (MODEL_PARTICLE_PRESETS[i].index === p) return true;
+  }
+  return false;
+}
+function getModelParticlePreset(presetIdx) {
+  for (var i = 0; i < MODEL_PARTICLE_PRESETS.length; i++) {
+    if (MODEL_PARTICLE_PRESETS[i].index === presetIdx) return MODEL_PARTICLE_PRESETS[i];
+  }
+  return null;
+}
+function getModelParticleState(presetIdx) {
+  if (!modelParticleStates[presetIdx]) {
+    modelParticleStates[presetIdx] = {
+      group: null, opacity: 0, data: null, effectLoaded: false,
+      dataRequested: false, baseRotationY: 0,
+      effectConfig: null, vertexShader: '', fragmentShader: '',
+      wireframeGroup: null, wireframeData: null, wireframeRequested: false
+    };
+  }
+  return modelParticleStates[presetIdx];
+}
 var SKULL_MODEL_BASE_ROTATION_X = -0.26;
 var SKULL_MODEL_BASE_ROTATION_Y = 0.00;
 var SKULL_MODEL_SCALE = 2.34;
@@ -7117,6 +7617,228 @@ function updateSkullParticleLayer(dt) {
   skullParticleGroup.rotation.y += (targetRotY - skullParticleGroup.rotation.y) * rotEase;
   skullParticleGroup.rotation.x += (targetRotX - skullParticleGroup.rotation.x) * rotEase;
   skullParticleGroup.rotation.z += (0 - skullParticleGroup.rotation.z) * Math.min(1, dt * 6.0);
+}
+
+// ============================================================
+//  通用模型粒子层 (支持多个预设)
+//   - 每个预设有独立的 .js (config + shader) + .bin (粒子数据)
+//   - 添加新预设只需在 MODEL_PARTICLE_PRESETS 数组加一行
+// ============================================================
+function preloadModelParticleData(presetIdx) {
+  var preset = getModelParticlePreset(presetIdx);
+  if (!preset) return;
+  var state = getModelParticleState(presetIdx);
+  if (state.dataRequested) return;
+  state.dataRequested = true;
+  var script = document.createElement('script');
+  script.src = preset.effectFile;
+  script.onload = function() {
+    // .js 加载后会设置全局变量 EFFECT_CONFIG / EFFECT_VERTEX_SHADER / EFFECT_FRAGMENT_SHADER
+    // 立即保存到 state（注意：var 声明的全局变量不可 delete，但因 dataRequested 标志不会重复加载）
+    state.effectConfig = window.EFFECT_CONFIG || null;
+    state.vertexShader = window.EFFECT_VERTEX_SHADER || '';
+    state.fragmentShader = window.EFFECT_FRAGMENT_SHADER || '';
+    state.effectLoaded = true;
+    // 如果当前是这个预设，更新相机基线并创建粒子层
+    if (fx && fx.preset === presetIdx) {
+      var cam = (state.effectConfig && state.effectConfig.camera) || null;
+      if (cam) {
+        orbit.userRadius = cam.radius; orbit.userPhi = cam.phi; orbit.userTheta = cam.theta;
+        orbit.baselineRadius = cam.radius; orbit.baselinePhi = cam.phi;
+      }
+      createModelParticleLayer(presetIdx);
+    }
+    loadModelParticleBinData(presetIdx);
+    loadModelWireframeData(presetIdx);
+  };
+  script.onerror = function() {
+    console.warn('模型粒子特效文件加载失败:', preset.effectFile);
+  };
+  document.head.appendChild(script);
+}
+function loadModelParticleBinData(presetIdx) {
+  var preset = getModelParticlePreset(presetIdx);
+  var state = getModelParticleState(presetIdx);
+  if (!preset || !state.effectConfig) return;
+  var dataFile = preset.binFile;
+  fetch(dataFile)
+    .then(function(r) { return r.arrayBuffer(); })
+    .then(function(buffer) {
+      var data = new Float32Array(buffer);
+      var off = 0;
+      var storedCount = Math.floor(data[off++]);
+      var positions = new Float32Array(storedCount * 3);
+      var uvs = new Float32Array(storedCount * 2);
+      var rands = new Float32Array(storedCount);
+      var colors = new Float32Array(storedCount * 3);
+      for (var i = 0; i < storedCount * 3; i++) positions[i] = data[off + i];
+      off += storedCount * 3;
+      for (var i = 0; i < storedCount * 2; i++) uvs[i] = data[off + i];
+      off += storedCount * 2;
+      for (var i = 0; i < storedCount; i++) rands[i] = data[off + i];
+      off += storedCount;
+      if (data.length >= 1 + storedCount * 9) {
+        for (var i = 0; i < storedCount * 3; i++) colors[i] = data[off + i];
+      } else {
+        for (var i = 0; i < storedCount * 3; i++) colors[i] = 1.0;
+      }
+      state.data = { positions: positions, uvs: uvs, rands: rands, colors: colors, count: storedCount };
+      if (fx && fx.preset === presetIdx) createModelParticleLayer(presetIdx);
+    })
+    .catch(function(e) { console.warn('模型粒子数据加载失败:', dataFile, e); });
+}
+function createModelParticleLayer(presetIdx) {
+  var state = getModelParticleState(presetIdx);
+  if (state.group) return state.group;
+  if (!state.effectLoaded || !state.data) { preloadModelParticleData(presetIdx); return null; }
+  var d = state.data;
+  var cfg = state.effectConfig || {};
+  var geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(d.positions, 3));
+  geo.setAttribute('aUv', new THREE.BufferAttribute(d.uvs, 2));
+  geo.setAttribute('aRand', new THREE.BufferAttribute(d.rands, 1));
+  geo.setAttribute('aColor', new THREE.BufferAttribute(d.colors || d.positions, 3));
+  var uniformsMP = {
+    uTime: { value: 0 },
+    uPixel: { value: window.devicePixelRatio || 1 },
+    uPointScale: { value: 1 },
+    uColorBoost: { value: 1 },
+    uBass: { value: 0 },
+    uMid: { value: 0 },
+    uTreble: { value: 0 },
+    uBeat: { value: 0 },
+    uBeatBurst: { value: 0 },
+    uEnergy: { value: 0 },
+    uIntensity: { value: 1 },
+    uOpacity: { value: 0 },
+    uLoading: { value: 0 }
+  };
+  var mat = new THREE.ShaderMaterial({
+    uniforms: uniformsMP,
+    vertexShader: state.vertexShader,
+    fragmentShader: state.fragmentShader,
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.NormalBlending
+  });
+  var group = new THREE.Points(geo, mat);
+  group.frustumCulled = false;
+  group.visible = false;
+  group.scale.setScalar(cfg.modelScale || 0.90);
+  group.position.set(0, 0, 0);
+  group.renderOrder = 33;
+  scene.add(group);
+  state.group = group;
+  return group;
+}
+function loadModelWireframeData(presetIdx) {
+  var preset = getModelParticlePreset(presetIdx);
+  var state = getModelParticleState(presetIdx);
+  if (!preset || !preset.wireframeFile || state.wireframeRequested) return;
+  state.wireframeRequested = true;
+  fetch(preset.wireframeFile)
+    .then(function(r) { if (!r.ok) throw new Error('404'); return r.arrayBuffer(); })
+    .then(function(buffer) {
+      var data = new Float32Array(buffer);
+      var off = 0;
+      var vertexCount = Math.floor(data[off++]);
+      var positions = new Float32Array(vertexCount * 3);
+      var colors = new Float32Array(vertexCount * 3);
+      for (var i = 0; i < vertexCount * 3; i++) positions[i] = data[off + i];
+      off += vertexCount * 3;
+      for (var i = 0; i < vertexCount * 3; i++) colors[i] = data[off + i];
+      state.wireframeData = { positions: positions, colors: colors, count: vertexCount };
+      if (fx && fx.preset === presetIdx) createModelWireframeLayer(presetIdx);
+    })
+    .catch(function() {});
+}
+function createModelWireframeLayer(presetIdx) {
+  var state = getModelParticleState(presetIdx);
+  if (state.wireframeGroup) return state.wireframeGroup;
+  if (!state.wireframeData) return null;
+  var d = state.wireframeData;
+  var cfg = state.effectConfig || {};
+  var geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(d.positions, 3));
+  geo.setAttribute('color', new THREE.BufferAttribute(d.colors, 3));
+  var mat = new THREE.LineBasicMaterial({
+    vertexColors: true,
+    transparent: true,
+    opacity: 0.30,
+    depthWrite: false,
+    blending: THREE.NormalBlending
+  });
+  var wireframe = new THREE.LineSegments(geo, mat);
+  wireframe.frustumCulled = false;
+  wireframe.visible = false;
+  wireframe.renderOrder = 32; // 粒子层 33 → 线框先画、粒子后画（粒子永远在前）
+  var presetCfg = getModelParticlePreset(presetIdx) || {};
+  wireframe.scale.setScalar(presetCfg.wireframeScale || cfg.modelScale || 0.90);
+  wireframe.position.set(0, 0, 0);
+  scene.add(wireframe);
+  state.wireframeGroup = wireframe;
+  return wireframe;
+}
+function clearModelParticlePresetResidue(presetIdx) {
+  var state = getModelParticleState(presetIdx);
+  state.opacity = 0;
+  if (!state.group) return;
+  state.group.visible = false;
+  if (state.group.material && state.group.material.uniforms) {
+    if (state.group.material.uniforms.uOpacity) state.group.material.uniforms.uOpacity.value = 0;
+  }
+  if (state.wireframeGroup) {
+    state.wireframeGroup.visible = false;
+    if (state.wireframeGroup.material) state.wireframeGroup.material.opacity = 0;
+  }
+}
+function updateModelParticleLayer(presetIdx, dt) {
+  var state = getModelParticleState(presetIdx);
+  var active = fx && fx.preset === presetIdx;
+  if (active) createModelParticleLayer(presetIdx);
+  if (active) createModelWireframeLayer(presetIdx);
+  if (!state.group) return;
+  var target = active ? 1 : 0;
+  state.opacity += (target - state.opacity) * Math.min(1, dt * (active ? 3.2 : 2.4));
+  if (state.opacity < 0.006 && !active) {
+    state.group.visible = false;
+    if (state.wireframeGroup) state.wireframeGroup.visible = false;
+    return;
+  }
+  state.group.visible = true;
+  var u = state.group.material.uniforms;
+  u.uTime.value = uniforms.uTime.value;
+  u.uPixel.value = uniforms.uPixel ? uniforms.uPixel.value : (window.devicePixelRatio || 1);
+  u.uPointScale.value = clampRange(fx.point || 1, 0.05, 2.4);
+  u.uColorBoost.value = clampRange(fx.color || 1, 0.5, 2.0);
+  u.uBass.value = bass || 0;
+  u.uMid.value = mid || 0;
+  u.uTreble.value = treble || 0;
+  u.uBeat.value = beatPulse || 0;
+  u.uBeatBurst.value = uniforms.uBeatBurst ? uniforms.uBeatBurst.value : 0;
+  u.uEnergy.value = audioEnergy || 0;
+  u.uIntensity.value = clampRange(fx.intensity || 1, 0.2, 1.6);
+  u.uOpacity.value = state.opacity;
+  u.uLoading.value = fx.loading || 0;
+  var targetRotY = (orbit.centerLocked ? 0 : gestureRotation.y) + state.baseRotationY;
+  state.group.rotation.y += (targetRotY - state.group.rotation.y) * Math.min(1, dt * 3.6);
+  state.group.rotation.x = (orbit.centerLocked ? 0 : gestureRotation.x * 0.5);
+  // 线框跟随粒子层旋转，透明度随音频能量动态降低
+  // scale 独立设置（preset 9 用 wireframeScale 补偿数据范围差异，preset 8 用 modelScale）
+  if (state.wireframeGroup) {
+    state.wireframeGroup.visible = state.group.visible;
+    state.wireframeGroup.rotation.copy(state.group.rotation);
+    if (state.wireframeGroup.material) {
+      var energy = ((bass || 0) + (mid || 0) + (treble || 0)) / 3;
+      var wireframeOpacity = state.opacity * 0.30 * (1 - clampRange(energy, 0, 1) * 0.7);
+      state.wireframeGroup.material.opacity = wireframeOpacity;
+    }
+  }
+}
+function updateAllModelParticleLayers(dt) {
+  for (var i = 0; i < MODEL_PARTICLE_PRESETS.length; i++) {
+    updateModelParticleLayer(MODEL_PARTICLE_PRESETS[i].index, dt);
+  }
 }
 
 // ============================================================
@@ -12911,7 +13633,7 @@ function canShowShelfHoverCueAt(e) {
   if (!shelfManager || !shelfManager.getMode || shelfManager.getMode() !== 'side') return false;
   if (shelfPinnedOpen) return false;
   if (shelfManager.hasOpenContent && shelfManager.hasOpenContent()) return false;
-  if (isPointerOverUi(e)) return false;
+  if (isPointerOverUi(e) || isFxPanelVisible()) return false;
   if (isShelfClickZone(e)) return true;
   return shelfPreviewIsVisible() && isShelfPreviewUseZone(e);
 }
@@ -14873,15 +15595,20 @@ function pointerCardHit(rc, e, screenPad) {
 }
 function isSideShelfFocusHit(e) {
   if (!e || !shelfManager || !shelfManager.getMode || shelfManager.getMode() !== 'side') return false;
+  if (isFxPanelVisible()) return false;
   if (shelfPinnedOpen) return true;
   if (shelfAlwaysVisible()) return !!pointerCardHit(raycasterFromPointerEvent(e), e, 18);
   if (!shelfAutoHiddenInputReady()) return false;
   if (shelfVisibility > 0.34 && (isShelfClickZone(e) || isShelfPreviewUseZone(e))) return true;
   return !!(shelfPreviewIsVisible() && pointerCardHit(raycasterFromPointerEvent(e), e, 24));
 }
+function isFxPanelVisible() {
+  var fp = document.getElementById('fx-panel');
+  return !!(fp && (fp.classList.contains('show') || fp.classList.contains('peek')));
+}
 function updateShelfCardHoverSelection(e) {
   if (!shelfManager || !shelfManager.clearSelected || !shelfManager.setSelected) return;
-  if (!e || document.body.classList.contains('splash-active') || isPointerOverUi(e)) {
+  if (!e || document.body.classList.contains('splash-active') || isPointerOverUi(e) || isFxPanelVisible()) {
     shelfManager.clearSelected();
     return;
   }
@@ -14926,7 +15653,7 @@ function isShelfPlaylistPlayHit(hit) {
 renderer.domElement.addEventListener('click', function(e){
   if (!shelfManager || shelfManager.getMode() === 'off') return;
   if (document.body.classList.contains('splash-active')) return;
-  if (isPointerOverUi(e)) return;
+  if (isPointerOverUi(e) || isFxPanelVisible()) return;
   if (mouseDownAt.hadDrag) { mouseDownAt.hadDrag = false; return; }
 
   var rc = raycasterFromPointerEvent(e);
@@ -15044,7 +15771,7 @@ function _shelfWheelFlush(){
 }
 renderer.domElement.addEventListener('wheel', function(e){
   if (!_shelfIsDarwin) _shelfIsDarwin = document.body.classList.contains('platform-darwin');
-  if (isPointerOverUi(e)) return;
+  if (isPointerOverUi(e) || isFxPanelVisible()) return;
   if (!shelfManager || shelfManager.getMode() === 'off') return;
   markRenderInteraction('shelf-wheel', 900);
   var rc = raycasterFromPointerEvent(e);
@@ -15577,12 +16304,13 @@ function homeToneForItem(item, index) {
 function renderHomeMosaic(items) {
   var cells = document.querySelectorAll('#home-mosaic .home-mosaic-cell');
   if (!cells.length) return;
-  var covers = [];
-  (items || []).forEach(function(item){
-    var cover = homeTileCover(item);
-    if (cover) covers.push(cover);
-  });
   for (var i = 0; i < cells.length; i++) {
+    if (cells[i].classList.contains('home-mosaic-radio') || cells[i].classList.contains('home-mosaic-shortcut')) continue;
+    var covers = [];
+    (items || []).forEach(function(item){
+      var cover = homeTileCover(item);
+      if (cover) covers.push(cover);
+    });
     var src = covers[i] || covers[(i + 1) % Math.max(1, covers.length)] || '';
     cells[i].style.backgroundImage = src ? 'url("' + cssImageUrl(src) + '")' : '';
     cells[i].classList.toggle('has-cover', !!src);
@@ -15604,6 +16332,10 @@ function renderHomeTiles() {
   if (summary.topArtist && tiles.length < 5) {
     tiles.push({ kind: 'profile', title: summary.topArtist.name, sub: '常听歌手 · ' + summary.topArtist.plays + ' 次', query: summary.topArtist.name });
   }
+  var weatherBudget = Math.min(3, 5 - tiles.length);
+  weatherSongs.slice(0, weatherBudget).forEach(function(song, i){
+    tiles.push({ kind: 'weatherSong', index: i, song: song, title: song.name || '天气电台歌曲', sub: song.artist || songSourceLabel(song), reason: song.matchReason || '' });
+  });
   if (!loggedOutHome) {
     homeDiscoverState.songs.slice(0, Math.max(0, 4 - tiles.length)).forEach(function(song, i){
       tiles.push({ kind: 'song', index: i, song: song, title: song.name || '今日歌曲', sub: song.artist || songSourceLabel(song) });
@@ -15617,9 +16349,9 @@ function renderHomeTiles() {
       });
     }
   }
-  if (tiles.length < 5) {
-    weatherSongs.slice(0, 5 - tiles.length).forEach(function(song, i){
-      tiles.push({ kind: 'weatherSong', index: i, song: song, title: song.name || '天气电台歌曲', sub: song.artist || songSourceLabel(song) });
+  if (tiles.length < 5 && weatherSongs.length > weatherBudget) {
+    weatherSongs.slice(weatherBudget, weatherBudget + (5 - tiles.length)).forEach(function(song, i){
+      tiles.push({ kind: 'weatherSong', index: weatherBudget + i, song: song, title: song.name || '天气电台歌曲', sub: song.artist || songSourceLabel(song), reason: song.matchReason || '' });
     });
   }
   if (!tiles.length) tiles = fallbackHomeTiles();
@@ -15668,7 +16400,9 @@ function renderHomeDiscover() {
       meta.push(weatherLocation);
       meta.push(homeWeatherRadioState.error ? '天气暂不可用' : '正在整理天气');
     }
-    weatherMeta.innerHTML = meta.map(function(text){ return '<span class="home-weather-pill">' + escHtml(text) + '</span>'; }).join('');
+    var pillsHtml = meta.map(function(text){ return '<span class="home-weather-pill">' + escHtml(text) + '</span>'; }).join('');
+    pillsHtml += '<button class="home-weather-pill home-weather-pill-btn" onclick="relocateWeatherRadio()" type="button">重新定位</button>';
+    weatherMeta.innerHTML = pillsHtml;
   }
   var daily = homeDiscoverState.songs[0] || null;
   var cardSongB = homeDiscoverState.songs[1] || null;
@@ -15760,7 +16494,8 @@ function homeWeatherRadioUrl(opts) {
     params.push('lon=' + encodeURIComponent(opts.lon));
     params.push('city=' + encodeURIComponent(opts.city || '当前位置'));
   } else {
-    params.push('city=' + encodeURIComponent(opts.city || homeWeatherRadioState.city || '上海'));
+    var city = opts.city || homeWeatherRadioState.city || '';
+    params.push('city=' + encodeURIComponent(city));
   }
   params.push('timezone=' + encodeURIComponent(opts.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone || 'auto'));
   params.push('t=' + Date.now());
@@ -15779,16 +16514,17 @@ async function loadHomeWeatherRadio(force, opts) {
   renderHomeDiscover();
   var loadPromise = (async function(){
     try {
+      if (opts.lat == null && opts.lon == null && !opts.city && (homeWeatherRadioState.geoMode || !homeWeatherRadioState.city)) {
+        var geo = getHomeWeatherGeoCache();
+        if (geo) opts = Object.assign({}, opts, { lat: geo.lat, lon: geo.lon });
+      }
       var data = await apiJson(homeWeatherRadioUrl(opts), { timeoutMs: 14000 });
       if (token !== homeWeatherToken) return homeWeatherRadioState;
       homeWeatherRadioState.weather = data && data.weather || null;
       homeWeatherRadioState.radio = data && data.radio || null;
       homeWeatherRadioState.loaded = true;
       homeWeatherRadioState.updatedAt = Date.now();
-      if (homeWeatherRadioState.weather && homeWeatherRadioState.weather.location && homeWeatherRadioState.weather.location.name) {
-        homeWeatherRadioState.city = homeWeatherRadioState.weather.location.name;
-        localStorage.setItem(HOME_WEATHER_CITY_KEY, homeWeatherRadioState.city);
-      } else if (opts.city) {
+      if (opts.city && opts.lat == null && opts.lon == null && opts.city !== '当前位置') {
         homeWeatherRadioState.city = opts.city;
         localStorage.setItem(HOME_WEATHER_CITY_KEY, homeWeatherRadioState.city);
       }
@@ -15828,7 +16564,7 @@ function weatherRadioContext() {
     location: weather.location && weather.location.name || homeWeatherRadioState.city || '',
     weather: weather.label || '',
     temperature: weather.temperature,
-    mood: weather.mood && weather.mood.key || '',
+    mood: (weather.mood && weather.mood.key) ? weather.mood : null,
   };
 }
 async function startWeatherRadio(opts) {
@@ -15848,6 +16584,7 @@ async function startWeatherRadio(opts) {
     return;
   }
   activeRadioContext = weatherRadioContext();
+  if (activeRadioContext && activeRadioContext.mood) setWeatherMoodTarget(activeRadioContext.mood);
   playQueue = radio.songs.map(function(song){
     var cloned = cloneSong(song);
     cloned.radioContext = activeRadioContext;
@@ -15875,12 +16612,34 @@ async function startWeatherRadio(opts) {
 var emptyHomeStartEl = document.getElementById('empty-home');
 if (emptyHomeStartEl) {
   emptyHomeStartEl.addEventListener('click', function(e){
+    if (document.body.classList.contains('splash-active')) {
+      document.body.classList.remove('splash-active');
+      document.body.classList.remove('splash-revealing');
+      var s = document.getElementById('splash');
+      if (s) { s.classList.add('hide'); s.style.display = 'none'; }
+    }
     var start = e.target && e.target.closest ? e.target.closest('[data-home-radio-start]') : null;
     if (!start || !emptyHomeStartEl.contains(start)) return;
     e.preventDefault();
-    e.stopPropagation();
     startWeatherRadio();
-  }, true);
+  });
+  emptyHomeStartEl.addEventListener('click', function(e){
+    if (document.body.classList.contains('splash-active')) {
+      document.body.classList.remove('splash-active');
+      document.body.classList.remove('splash-revealing');
+      var s = document.getElementById('splash');
+      if (s) { s.classList.add('hide'); s.style.display = 'none'; }
+    }
+    var shortcut = e.target && e.target.closest ? e.target.closest('[data-shortcut]') : null;
+    if (!shortcut || !emptyHomeStartEl.contains(shortcut)) return;
+    e.preventDefault();
+    var key = shortcut.getAttribute('data-shortcut');
+    if (key === 'wallpaper') { toggleFx('wallpaperMode'); updateMosaicShortcutStates(); }
+    else if (key === 'lyrics') { toggleFx('desktopLyrics'); updateMosaicShortcutStates(); }
+    else if (key === 'preset') { randomPreset(); }
+    else if (key === 'shelf') { toggleShelfMode(); updateMosaicShortcutStates(); }
+  });
+  updateMosaicShortcutStates();
 }
 function locateWeatherRadio() {
   var previousWeatherCity = homeWeatherRadioState.city || '上海';
@@ -15892,47 +16651,30 @@ function locateWeatherRadio() {
   homeWeatherRadioState.radio = null;
   homeWeatherRadioState.city = '定位中';
   renderHomeDiscover();
-  var locationSettled = false;
-  var ipFallbackStarted = false;
-  function useIpFallback() {
-    if (locationSettled || ipFallbackStarted) return;
-    ipFallbackStarted = true;
-    apiJson('/api/weather/ip-location?t=' + Date.now()).then(function(data){
-      var loc = data && data.location;
-      if (!loc || !isFinite(Number(loc.latitude)) || !isFinite(Number(loc.longitude))) throw new Error(data && data.error || 'IP_LOCATION_FAILED');
-      if (locationSettled) return;
-      locationSettled = true;
-      homeWeatherRadioState.city = loc.city || '当前位置';
-      localStorage.setItem(HOME_WEATHER_CITY_KEY, homeWeatherRadioState.city);
-      renderHomeDiscover();
-      showToast('已用网络位置定位到 ' + (loc.city || '当前位置'));
-      loadHomeWeatherRadio(true, {
-        lat: loc.latitude,
-        lon: loc.longitude,
-        city: loc.city || '当前位置',
-        timezone: loc.timezone || '',
-      });
-    }).catch(function(e){
-      console.warn('weather ip location failed:', e);
-      if (locationSettled) return;
-      homeWeatherRadioState.loading = false;
-      homeWeatherRadioState.error = 'LOCATION_FAILED';
-      homeWeatherRadioState.city = previousWeatherCity;
-      renderHomeDiscover();
-      showToast('定位不可用，可以手动换城市');
-    });
-  }
-  // Desktop users need a stable city label; browser coordinates can be stale or cityless.
-  useIpFallback();
+  apiJson('/api/weather/ip-location?t=' + Date.now()).then(function(data){
+    var loc = data && data.location;
+    if (!loc || !isFinite(Number(loc.latitude)) || !isFinite(Number(loc.longitude))) throw new Error(data && data.error || 'IP_LOCATION_FAILED');
+    homeWeatherRadioState.city = loc.city || '当前位置';
+    homeWeatherRadioState.geoMode = false;
+    localStorage.setItem(HOME_WEATHER_CITY_KEY, homeWeatherRadioState.city);
+    renderHomeDiscover();
+    showToast('网络定位到 ' + homeWeatherRadioState.city);
+    loadHomeWeatherRadio(true, { lat: loc.latitude, lon: loc.longitude, city: homeWeatherRadioState.city });
+  }).catch(function(e){
+    console.warn('weather ip location failed:', e);
+    homeWeatherRadioState.loading = false;
+    homeWeatherRadioState.error = 'LOCATION_FAILED';
+    homeWeatherRadioState.city = previousWeatherCity;
+    renderHomeDiscover();
+    showToast('定位不可用，请稍后重试');
+  });
 }
-function changeWeatherCity() {
-  var city = window.prompt('输入城市名', homeWeatherRadioState.city || '上海');
-  city = String(city || '').trim();
-  if (!city) return;
-  homeWeatherRadioState.city = city;
-  localStorage.setItem(HOME_WEATHER_CITY_KEY, city);
-  homeWeatherRadioState.loaded = false;
-  loadHomeWeatherRadio(true, { city: city });
+function relocateWeatherRadio() {
+  try { localStorage.removeItem(HOME_WEATHER_GEO_KEY); } catch (e) {}
+  try { localStorage.removeItem(HOME_WEATHER_CITY_KEY); } catch (e) {}
+  homeWeatherRadioState.city = '';
+  homeWeatherRadioState.geoMode = false;
+  locateWeatherRadio();
 }
 function shouldShowEmptyHomeCore(ignoreSplash) {
   if (!ignoreSplash && document.body.classList.contains('splash-active')) return false;
@@ -16267,7 +17009,8 @@ function isPointNearHomeContent(x, y) {
   var selectors = [
     '.home-card',
     '.home-tile',
-    '.home-chip'
+    '.home-chip',
+    '.home-mosaic-shortcut'
   ];
   for (var i = 0; i < selectors.length; i++) {
     var nodes = document.querySelectorAll(selectors[i]);
@@ -18488,6 +19231,7 @@ async function playQueueAt(idx, opts) {
   if (!opts.preserveHomeState) homeSuppressed = false;
   currentIdx = idx;
   trackSwitchToken++;
+  try { pickRandomEdgeColor(); edgeColorLastChange = performance.now(); } catch(e) {}
   markPlayPhase('cancel-previous-track');
   cancelBeatAnalysisTimer();
   cancelBeatPrefetchTimer();
@@ -18816,6 +19560,7 @@ function shuffleQueue() {
 }
 function clearQueue() {
   playQueue = []; currentIdx = -1;
+  activeRadioContext = null;
   safeRenderQueuePanel('clear-queue');
   safeShelfRebuild('clear-queue');
   updateCustomCoverButton();
@@ -20196,6 +20941,9 @@ var presetMeta = [
   { name: '唱片', desc: '唱片 · 圆形封面' },
   { name: '星河', desc: '壁纸粒子 · 音乐律动' },
   { name: '安魂', desc: '骷髅·YUI7W', descHtml: '骷髅·<span class="pc-yui7w">YUI7W</span>' },
+  { name: 'Emily粒子专辑+行星环', desc: '双倍粒子·双倍快乐' },
+  { name: '赛博模型', desc: '青白科技感·音频驱动剥离' },
+  { name: '模型特效2', desc: '3D模型粒子·自定义特效' },
 ];
 var presetIcons = [
   '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 14c3-2 5-2 8 0s5 2 8 0M3 10c3-2 5-2 8 0s5 2 8 0M3 18c3-2 5-2 8 0s5 2 8 0"/></svg>',
@@ -20205,8 +20953,11 @@ var presetIcons = [
   '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.4"/><path d="M16.5 5.2c2.1.9 3.4 2.4 4 4.5"/><path d="M18.8 3.2l1.5 4.8"/></svg>',
   '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 15c2.2-4.4 4.4-4.4 6.6 0s4.4 4.4 6.6 0S20.6 10.6 23 15"/><path d="M3 9c2.2 2.2 4.4 2.2 6.6 0s4.4-2.2 6.6 0S20.6 11.2 23 9"/><circle cx="12" cy="12" r="1.7" fill="currentColor"/></svg>',
   '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3.2h4v6.2h4.2v3.8H14v7.6h-4v-7.6H5.8V9.4H10z"/></svg>',
+  '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5v17M3.5 12h17" opacity=".45"/><circle cx="12" cy="8" r="1.8" fill="currentColor"/><circle cx="15.5" cy="11" r="1.2" fill="currentColor"/><circle cx="9" cy="14" r="1.4" fill="currentColor"/><circle cx="14" cy="16" r="1" fill="currentColor"/></svg>',
+  '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2L4 6v6c0 5 3.5 8.5 8 10 4.5-1.5 8-5 8-10V6z"/><circle cx="12" cy="11" r="2.5" fill="currentColor" opacity=".7"/><path d="M12 8.5v5M9.5 11h5" stroke-width="1.2"/></svg>',
+  '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2L4 6v6c0 5 3.5 8.5 8 10 4.5-1.5 8-5 8-10V6z"/><circle cx="12" cy="11" r="3" fill="currentColor" opacity=".5"/><path d="M8 8l8 8M16 8l-8 8" stroke-width="1.2" opacity=".6"/></svg>',
 ];
-var presetDisplayOrder = [0, 6, 5, 4, 2, 1, 3];
+var presetDisplayOrder = [0, 7, 6, 5, 4, 2, 1, 3, 8, 9];
 var lyricColorPresets = [
   { name:'雾蓝', color:'#a9b8c8' },
   { name:'银蓝', color:'#9db8cf' },
@@ -20329,7 +21080,20 @@ function normalizeFxArchiveSnapshot(raw) {
     shelfOpacity: archiveNumber(raw, 'shelfOpacity', fxDefaults.shelfOpacity, 0.25, 1),
     shelfBgOpacity: archiveNumber(raw, 'shelfBgOpacity', fxDefaults.shelfBgOpacity, 0.25, 0.98),
     shelfAccentColor: normalizeHexColor(raw.shelfAccentColor || fxDefaults.shelfAccentColor, fxDefaults.shelfAccentColor),
-    cam: archiveMode(raw, 'cam', /^(off|gesture)$/, fxDefaults.cam)
+    cam: archiveMode(raw, 'cam', /^(off|gesture)$/, fxDefaults.cam),
+    freeCamera: raw.freeCamera ? {
+      position: {
+        x: clampRange(Number(raw.freeCamera.position && raw.freeCamera.position.x) || 0, -80, 80),
+        y: clampRange(Number(raw.freeCamera.position && raw.freeCamera.position.y) || 0, -80, 80),
+        z: clampRange(Number(raw.freeCamera.position && raw.freeCamera.position.z) || 6.6, -80, 80)
+      },
+      yaw: clampRange(Number(raw.freeCamera.yaw) || 0, -Math.PI * 8, Math.PI * 8),
+      pitch: clampRange(Number(raw.freeCamera.pitch) || 0, -Math.PI * 0.49, Math.PI * 0.49),
+      roll: clampRange(Number(raw.freeCamera.roll) || 0, -Math.PI, Math.PI),
+      fov: clampRange(Number(raw.freeCamera.fov) || BASE_FOV, 26, 72),
+      active: !!raw.freeCamera.active,
+      locked: !!raw.freeCamera.locked
+    } : null
   };
 }
 function readUserFxArchives() {
@@ -20386,7 +21150,19 @@ function formatUserArchiveTime(ts) {
   return pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
 }
 function captureFxArchiveSnapshot() {
-  return normalizeFxArchiveSnapshot(Object.assign({ visualPresetSchema: VISUAL_PRESET_SCHEMA }, fx));
+  var snap = Object.assign({ visualPresetSchema: VISUAL_PRESET_SCHEMA }, fx);
+  if (freeCamera) {
+    snap.freeCamera = {
+      position: { x: freeCamera.position.x, y: freeCamera.position.y, z: freeCamera.position.z },
+      yaw: freeCamera.yaw,
+      pitch: freeCamera.pitch,
+      roll: freeCamera.roll,
+      fov: freeCamera.fov,
+      active: freeCamera.active,
+      locked: freeCamera.locked
+    };
+  }
+  return normalizeFxArchiveSnapshot(snap);
 }
 function applySavedLyricPaletteState() {
   if (!stageLyrics) return;
@@ -20401,8 +21177,9 @@ function applyFxArchiveSnapshot(snapshot) {
   var data = normalizeFxArchiveSnapshot(snapshot);
   if (!data) return false;
   var targetPreset = data.preset;
+  var freeCameraData = data.freeCamera;
   Object.keys(data).forEach(function(key){
-    if (key === 'visualPresetSchema' || key === 'preset') return;
+    if (key === 'visualPresetSchema' || key === 'preset' || key === 'freeCamera') return;
     fx[key] = data[key];
   });
   normalizeDevelopmentLockedFxState();
@@ -20419,6 +21196,24 @@ function applyFxArchiveSnapshot(snapshot) {
   if (shelfManager && shelfManager.rebuild) shelfManager.rebuild(true);
   if (shelfManager && shelfManager.refreshTheme) shelfManager.refreshTheme();
   setCamMode(fx.cam);
+  if (freeCameraData) {
+    if (!freeCamera) freeCamera = defaultFreeCameraState();
+    freeCamera.position.set(
+      clampRange(freeCameraData.position.x, -80, 80),
+      clampRange(freeCameraData.position.y, -80, 80),
+      clampRange(freeCameraData.position.z, -80, 80)
+    );
+    freeCamera.yaw = freeCameraData.yaw;
+    freeCamera.pitch = freeCameraData.pitch;
+    freeCamera.roll = freeCameraData.roll;
+    freeCamera.fov = freeCameraData.fov;
+    freeCamera.active = freeCameraData.active;
+    freeCamera.locked = freeCameraData.locked;
+    saveFreeCameraState();
+    if (freeCamera.active || freeCamera.locked) {
+      applyFreeCameraToCamera();
+    }
+  }
   updateFxInputs();
   applySavedLyricPaletteState();
   refreshCurrentLyricStyle();
@@ -21332,14 +22127,15 @@ function refreshPresetGrid() {
 function triggerPresetParticleTransition(fromPreset, toPreset) {
   presetTransition.active = true;
   presetTransition.start = uniforms.uTime.value;
-  presetTransition.duration = toPreset === 5 ? 0.30 : 0.24;
+  presetTransition.duration = toPreset === 5 ? 0.30 : (isModelParticlePreset(toPreset) ? 0.42 : 0.24);
   presetTransition.from = fromPreset;
   presetTransition.to = toPreset;
   var newVisual = toPreset >= 4;
   var wallpaperFlow = toPreset === 5;
+  var modelParticleFlow = isModelParticlePreset(toPreset);
   uniforms.uScatter.value = Math.max(uniforms.uScatter.value, fx.scatter + (newVisual ? (wallpaperFlow ? 0.008 : 0.024) : 0.12));
-  uniforms.uBurstAmt.value = Math.max(uniforms.uBurstAmt.value, wallpaperFlow ? 0.05 : 0.15);
-  camPunch = Math.max(camPunch, wallpaperFlow ? 0.04 : 0.12);
+  uniforms.uBurstAmt.value = Math.max(uniforms.uBurstAmt.value, wallpaperFlow ? 0.05 : (modelParticleFlow ? 0.20 : 0.15));
+  camPunch = Math.max(camPunch, wallpaperFlow ? 0.04 : (modelParticleFlow ? 0.18 : 0.12));
   for (var i = 0; i < 3; i++) {
     triggerRipple((Math.random() - 0.5) * 3.4, (Math.random() - 0.5) * 3.4, 0.58 + Math.random() * 0.32);
   }
@@ -21358,9 +22154,10 @@ function tickPresetTransition() {
   var wave = Math.sin(t * Math.PI);
   var newVisual = presetTransition.to >= 4;
   var wallpaperFlow = presetTransition.to === 5;
+  var modelParticleFlow = isModelParticlePreset(presetTransition.to);
   uniforms.uScatter.value = Math.max(uniforms.uScatter.value, fx.scatter + wave * (newVisual ? (wallpaperFlow ? 0.008 : 0.026) : 0.16));
-  uniforms.uBurstAmt.value = Math.max(uniforms.uBurstAmt.value, wave * (wallpaperFlow ? 0.045 : (newVisual ? 0.12 : 0.15)));
-  uniforms.uPointScale.value = fx.point * (1 + wave * (wallpaperFlow ? 0.016 : 0.048));
+  uniforms.uBurstAmt.value = Math.max(uniforms.uBurstAmt.value, wave * (wallpaperFlow ? 0.045 : (modelParticleFlow ? 0.16 : (newVisual ? 0.12 : 0.15))));
+  uniforms.uPointScale.value = fx.point * (1 + wave * (wallpaperFlow ? 0.016 : (modelParticleFlow ? 0.06 : 0.048)));
   if (raw >= 1) {
     presetTransition.active = false;
     syncFxUniforms();
@@ -21373,9 +22170,19 @@ function setPreset(p, opts) {
   var changed = prev !== p;
   fx.preset = p;
   if (changed && prev === SKULL_PRESET_INDEX && p !== SKULL_PRESET_INDEX) clearSkullPresetResidue();
+  if (changed) {
+    for (var mi = 0; mi < MODEL_PARTICLE_PRESETS.length; mi++) {
+      var mpIdx = MODEL_PARTICLE_PRESETS[mi].index;
+      if (prev === mpIdx && p !== mpIdx) clearModelParticlePresetResidue(mpIdx);
+      if (p === mpIdx) { preloadModelParticleData(mpIdx); createModelParticleLayer(mpIdx); }
+    }
+  }
   if (p === SKULL_PRESET_INDEX) loadSkullParticleAsset();
   uniforms.uPreset.value = p;
   refreshPresetGrid();
+  // 氛围光开关按钮：仅 preset 8/9 显示
+  var egt = document.getElementById('edge-glow-toggle');
+  if (egt) egt.style.display = (p >= 8) ? 'flex' : 'none';
   if (changed && !opts.skipTransition) triggerPresetParticleTransition(prev, p);
   // 每个预设对应的相机基线 (改 userOrbit)
   if (changed && !opts.preserveCamera) {
@@ -21385,8 +22192,15 @@ function setPreset(p, opts) {
     else if (p === 4) { orbit.userRadius = 6.5; orbit.userPhi = 0.04; orbit.userTheta = 0.0; orbit.baselineRadius = 6.5; orbit.baselinePhi = 0.04; }
     else if (p === 5) { orbit.userRadius = 9.4; orbit.userPhi = 0.34; orbit.userTheta = -0.52; orbit.baselineRadius = 9.4; orbit.baselinePhi = 0.34; }
     else if (p === 6) { orbit.userRadius = 7.4; orbit.userPhi = 0.10; orbit.userTheta = 0.18; orbit.baselineRadius = 7.4; orbit.baselinePhi = 0.10; }
+    else if (p === 7) { orbit.userRadius = 8.5; orbit.userPhi = 0.25; orbit.userTheta = -0.20; orbit.baselineRadius = 8.5; orbit.baselinePhi = 0.25; }
+    else if (isModelParticlePreset(p)) {
+      var mpState = getModelParticleState(p);
+      var mpCam = (mpState.effectConfig && mpState.effectConfig.camera) || { radius: 5.5, phi: 0.50, theta: 0.0 };
+      orbit.userRadius = mpCam.radius; orbit.userPhi = mpCam.phi; orbit.userTheta = mpCam.theta;
+      orbit.baselineRadius = mpCam.radius; orbit.baselinePhi = mpCam.phi;
+    }
     else              { orbit.userRadius = 6.6; orbit.userPhi = 0.08; orbit.userTheta = 0.0; orbit.baselineRadius = 6.6; orbit.baselinePhi = 0.08; }
-    orbit.baselineTheta = p === 5 ? -0.52 : (p === 6 ? 0.18 : 0.0);
+    orbit.baselineTheta = p === 5 ? -0.52 : (p === 6 ? 0.18 : (p === 7 ? -0.20 : 0.0));
   }
   if (changed && !opts.silent) showToast('视觉预设: ' + presetMeta[p].name);
   var shouldCommitPlaybackPreset = !!opts.commitPlaybackPreset || !opts.noSave;
@@ -21399,6 +22213,33 @@ function setPreset(p, opts) {
   }
 }
 
+function updateMosaicShortcutStates() {
+  var shortcuts = document.querySelectorAll('.home-mosaic-shortcut');
+  shortcuts.forEach(function(cell) {
+    var key = cell.getAttribute('data-shortcut');
+    var active = false;
+    if (key === 'wallpaper') active = !!fx.wallpaperMode;
+    else if (key === 'lyrics') active = !!fx.desktopLyrics;
+    else if (key === 'preset') active = !!(fx && presetMeta && presetMeta[fx.preset]);
+    else if (key === 'shelf') active = shelfManager && shelfManager.getMode && shelfManager.getMode() !== 'off';
+    cell.classList.toggle('active', active);
+  });
+}
+
+function randomPreset() {
+  var count = presetMeta ? presetMeta.length : 5;
+  var next = Math.floor(Math.random() * count);
+  setPreset(next, { silent: false });
+  updateMosaicShortcutStates();
+}
+function toggleShelfMode() {
+  if (!shelfManager || !shelfManager.getMode) return;
+  var current = shelfManager.getMode();
+  var next = current === 'off' ? 'side' : 'off';
+  setShelfMode(next);
+  showToast(next === 'off' ? '3D 歌单架已关闭' : '3D 歌单架已开启');
+  updateMosaicShortcutStates();
+}
 function syncFxUniforms() {
   uniforms.uPreset.value = fx.preset;
   uniforms.uIntensity.value = fx.intensity;
@@ -22071,7 +22912,7 @@ function ensureHotkeyModal() {
   modal.innerHTML =
     '<div class="hotkey-dialog" role="dialog" aria-modal="true" aria-label="热键设置">' +
       '<div class="hotkey-head">' +
-        '<div><div class="hotkey-title">热键设置</div><div class="hotkey-sub">局内热键只在 Mineradio 窗口内生效；全局热键会向系统注册，并检测是否被占用。</div></div>' +
+        '<div><div class="hotkey-title">热键设置</div><div class="hotkey-sub">局内热键只在 Mineradio 窗口内生效；全局热键会向系统注册，并检测是否被占用。<br>固定局内热键：P 视觉控制台 · I 沉浸模式 · R 自由镜头 · K 镜头回正 · WASD 镜头移动 · L 歌词面板</div></div>' +
         '<button class="hotkey-close" type="button" data-hotkey-close aria-label="关闭">×</button>' +
       '</div>' +
       '<div class="hotkey-toolbar">' +
@@ -22518,11 +23359,11 @@ function toggleFx(key) {
   if (key === 'lyricGlow') showToast(fx.lyricGlow ? '歌词溢光已开启' : '歌词溢光已关闭');
   if (key === 'lyricGlowBeat') showToast(fx.lyricGlowBeat ? '歌词溢光跟随鼓点' : '歌词溢光已脱离鼓点');
   if (key === 'lyricGlowParticles') showToast(fx.lyricGlowParticles ? '歌词光粒已开启' : '歌词光粒已关闭');
-  if (key === 'desktopLyrics') showToast(fx.desktopLyrics ? '桌面歌词已开启' : '桌面歌词已关闭');
+  if (key === 'desktopLyrics') { showToast(fx.desktopLyrics ? '桌面歌词已开启' : '桌面歌词已关闭'); updateMosaicShortcutStates(); }
   if (key === 'desktopLyricsClickThrough') showToast(fx.desktopLyricsClickThrough !== false ? '桌面歌词已锁定' : '桌面歌词可移动');
   if (key === 'desktopLyricsCinema') showToast(fx.desktopLyricsCinema !== false ? '桌面歌词电影震动已开启' : '桌面歌词电影震动已关闭，基础漂浮保留');
   if (key === 'desktopLyricsHighlight') showToast(fx.desktopLyricsHighlight === true ? '桌面歌词高亮跟随已开启' : '桌面歌词高亮跟随已关闭');
-  if (key === 'wallpaperMode') showToast(fx.wallpaperMode ? '壁纸模式已开启' : '壁纸模式已关闭');
+  if (key === 'wallpaperMode') { showToast(fx.wallpaperMode ? '壁纸模式已开启' : '壁纸模式已关闭'); updateMosaicShortcutStates(); }
   if (key === 'shelfShowPodcasts') showToast(fx.shelfShowPodcasts !== false ? '3D歌单架已显示播客歌单' : '3D歌单架已隐藏播客歌单');
   if (key === 'shelfMergeCollections') showToast(fx.shelfMergeCollections === true ? '我的歌单与收藏歌单已合并滚动' : '收藏歌单恢复滚到底切页');
   if (key === 'liveBackgroundKeep') showToast(fx.liveBackgroundKeep ? '直播后台保持已开启' : '直播后台保持已关闭');
@@ -22592,6 +23433,7 @@ function setShelfMode(m) {
   fx.shelf = m;
   document.querySelectorAll('#shelf-seg button').forEach(function(b){ b.classList.toggle('active', b.dataset.shelf === m); });
   if (shelfManager) shelfManager.setMode(m);
+  updateMosaicShortcutStates();
   // 舞台模式: 顶部搜索、底部控件让位
   var searchArea = document.getElementById('search-area');
   var bottomBar = document.getElementById('bottom-bar');
@@ -25291,6 +26133,14 @@ window.addEventListener('resize', function(){
 });
 document.addEventListener('keydown', function(e){
   if (isTypingTarget(e.target)) return;
+  if (e.shiftKey && e.altKey) {
+    var moodMap = { Digit1: 0, Digit2: 1, Digit3: 2, Digit4: 3, Digit5: 4, Digit6: 5, Digit7: 6 };
+    if (Object.prototype.hasOwnProperty.call(moodMap, e.code)) {
+      e.preventDefault();
+      if (typeof debugSwitchWeatherMood === 'function') debugSwitchWeatherMood(moodMap[e.code]);
+      return;
+    }
+  }
   if (handleConfiguredLocalHotkey(e)) return;
   if (shouldSuppressDefaultConfiguredHotkey(e)) return;
   if (e.code === 'Space') {
@@ -25514,7 +26364,7 @@ function isPlaylistEdgeTrigger(ex, ey, H) {
     return false;
   }
   if (!isSecondaryLeftDisplaySeamGuardActive()) {
-    return ex >= 14 && ex < 78;
+    return ex < 8;
   }
   var inSafeBand = isSecondaryPlaylistSafeBandPoint(ex, ey, H);
   if (!inSafeBand) {
@@ -25575,7 +26425,7 @@ window.addEventListener('mousemove', function(e){
     if (queueFocusImm) newFocusImm = 'queue';
     else if (shelfManager && shelfManager.hasOpenContent && shelfManager.hasOpenContent()) newFocusImm = 'shelf-detail';
     else if (shelfHoverFocusImm) newFocusImm = 'shelf-side';
-    else if (shelfCanFocusImm && shelfManager.getMode() === 'stage' && ey > H * 0.55) newFocusImm = 'shelf-stage';
+    else if (shelfCanFocusImm && !isFxPanelVisible() && shelfManager.getMode() === 'stage' && ey > H * 0.55) newFocusImm = 'shelf-stage';
     setFocusZone(newFocusImm, newFocusImm === 'queue');
     return;
   }
@@ -25627,7 +26477,7 @@ window.addEventListener('mousemove', function(e){
     newFocus = 'shelf-detail';
   } else if (shelfHoverFocus) {
     newFocus = 'shelf-side';
-  } else if (shelfCanFocus && shelfManager.getMode() === 'stage' && ey > H * 0.55) {
+  } else if (shelfCanFocus && !isFxPanelVisible() && shelfManager.getMode() === 'stage' && ey > H * 0.55) {
     newFocus = 'shelf-stage';
   }
   setFocusZone(newFocus, newFocus === 'queue');
@@ -26236,6 +27086,8 @@ document.addEventListener('DOMContentLoaded', function(){
   markAppPerf('dom-content-loaded');
   armSplashSoundFallback();
   prewarmHomeWallpaperPreview();
+  // 每次打开应用自动重新定位
+  setTimeout(function(){ relocateWeatherRadio(); }, 600);
   function requestSplashEnter() {
     playMineradioIntroSound();
     if (splashReadyToEnter) dismissSplash();
@@ -26384,6 +27236,10 @@ function notifyDesktopLyricsBeatMapReady() {
   try {
     if (fx && fx.desktopLyrics) pushDesktopLyricsState(true);
   } catch (e) {}
+  // 节拍图谱就绪后通知壁纸 (cameraBeats 在 wallpaperPayload 里按 key 变化发送)
+  try {
+    if (fx && fx.wallpaperMode) { _lastWallpaperBeatMapKey = ''; pushWallpaperState(true); }
+  } catch (e) {}
 }
 function desktopLyricsPushInterval() {
   var fps = normalizeDesktopLyricsFps(fx && fx.desktopLyricsFps);
@@ -26426,7 +27282,9 @@ function desktopLyricsPayload(forceBeatMap) {
 }
 function wallpaperPayload() {
   var meta = currentDesktopSongMeta();
-  return {
+  // 仅在切歌时随 payload 发送 cameraBeats (一次性, 避免每帧 6KB IPC 开销)
+  var beatMapKey = (meta.title || '') + '|' + (meta.artist || '') + '|' + (meta.cover || '');
+  var payload = {
     enabled: !!fx.wallpaperMode && !isDevelopmentLockedFx('wallpaperMode'),
     // 始终请求桌面级；桌面级桥接失败时由 main 进程自动降级为 always-on-top（floating）
     mode: 'desktop-level',
@@ -26436,9 +27294,16 @@ function wallpaperPayload() {
     playing: !!playing,
     preset: fx.preset,
     opacity: clampRange(fx.wallpaperOpacity == null ? fxDefaults.wallpaperOpacity : Number(fx.wallpaperOpacity), 0.35, 1),
-    colors: desktopOverlayColors()
+    colors: desktopOverlayColors(),
+    cinemaShake: clampRange(Number(fx.cinemaShake) || 0, 0, 1.8)
   };
+  if (beatMapKey !== _lastWallpaperBeatMapKey) {
+    _lastWallpaperBeatMapKey = beatMapKey;
+    payload.cameraBeats = currentBeatMap ? (currentBeatMap.cameraBeats || currentBeatMap.beats || currentBeatMap.kicks || []) : [];
+  }
+  return payload;
 }
+var _lastWallpaperBeatMapKey = '';
 function pushDesktopLyricsState(force) {
   var api = getDesktopWindowApi();
   if (!api || typeof api.updateDesktopLyrics !== 'function') return;
@@ -26742,12 +27607,90 @@ function sampleRenderPerf(now, dt) {
   }
   maybeTrimRuntimeCaches(now);
 }
+var EDGE_COLOR_POOL = [
+  [0, 245, 212],    // 青色
+  [0, 212, 255],    // 霓虹蓝
+  [122, 245, 232],  // 天青
+  [168, 230, 255],  // 冰蓝
+  [0, 153, 255],    // 深海蓝
+  [75, 0, 200],     // 靛紫
+  [147, 112, 219],  // 紫罗兰
+  [106, 90, 205],   // 蓝紫
+  [128, 0, 255],    // 深紫
+  [0, 255, 159],    // 极光绿
+  [0, 139, 200],    // 深青
+  [0, 71, 171],     // 钴蓝
+  [65, 105, 225],   // 宝蓝
+  [100, 200, 255],  // 天蓝
+  [59, 89, 200],    // 蔚蓝
+  [60, 40, 150],    // 暗夜紫
+  [30, 50, 120],    // 深空蓝
+  [93, 173, 226],   // 珊瑚蓝
+  [150, 180, 230],  // 雾蓝
+  [180, 100, 255],  // 霓虹紫
+  [0, 120, 130],    // 深蓝绿
+  [100, 130, 200],  // 银蓝
+  [40, 60, 180],    // 深靛
+  [100, 149, 237],  // 矢车菊蓝
+  [90, 80, 200],    // 深岩蓝
+];
+var edgeColorCurrent = [0, 245, 212];
+var edgeColorTarget = [0, 245, 212];
+var edgeColorCurrent2 = [0, 212, 255];
+var edgeColorTarget2 = [0, 212, 255];
+var edgeColorLastChange = 0;
+var EDGE_COLOR_INTERVAL = 8000;
+var edgeGlowEnabled = true;
+try { var _eg = localStorage.getItem('edgeGlowEnabled'); if (_eg !== null) edgeGlowEnabled = _eg === '1'; } catch(e) {}
+function toggleEdgeGlow() {
+  edgeGlowEnabled = !edgeGlowEnabled;
+  var btn = document.getElementById('edge-glow-toggle');
+  if (btn) btn.classList.toggle('on', edgeGlowEnabled);
+  try { localStorage.setItem('edgeGlowEnabled', edgeGlowEnabled ? '1' : '0'); } catch(e) {}
+  if (!edgeGlowEnabled && edgeWaveCanvas && edgeWaveCtx) {
+    edgeWaveCtx.clearRect(0, 0, edgeWaveCanvas.width, edgeWaveCanvas.height);
+  }
+  if (typeof showToast === 'function') showToast(edgeGlowEnabled ? '氛围光已开启' : '氛围光已关闭');
+}
+(function(){
+  var btn = document.getElementById('edge-glow-toggle');
+  if (btn) btn.classList.toggle('on', edgeGlowEnabled);
+})();
+function pickRandomEdgeColor() {
+  var idx;
+  do { idx = Math.floor(Math.random() * EDGE_COLOR_POOL.length); }
+  while (EDGE_COLOR_POOL[idx][0] === edgeColorTarget[0] && EDGE_COLOR_POOL[idx][1] === edgeColorTarget[1]);
+  edgeColorTarget = EDGE_COLOR_POOL[idx];
+  var idx2;
+  do { idx2 = Math.floor(Math.random() * EDGE_COLOR_POOL.length); }
+  while (idx2 === idx || (EDGE_COLOR_POOL[idx2][0] === edgeColorTarget2[0] && EDGE_COLOR_POOL[idx2][1] === edgeColorTarget2[1]));
+  edgeColorTarget2 = EDGE_COLOR_POOL[idx2];
+}
+var edgeWaveCanvas = document.getElementById('edge-glow');
+var edgeWaveCtx = edgeWaveCanvas ? edgeWaveCanvas.getContext('2d') : null;
+var edgeWaveDpr = window.devicePixelRatio || 1;
+function resizeEdgeWaveCanvas() {
+  if (!edgeWaveCanvas) return;
+  edgeWaveDpr = window.devicePixelRatio || 1;
+  edgeWaveCanvas.width = Math.floor(window.innerWidth * edgeWaveDpr);
+  edgeWaveCanvas.height = Math.floor(window.innerHeight * edgeWaveDpr);
+  edgeWaveCanvas.style.width = window.innerWidth + 'px';
+  edgeWaveCanvas.style.height = window.innerHeight + 'px';
+}
+if (edgeWaveCanvas) {
+  resizeEdgeWaveCanvas();
+  window.addEventListener('resize', resizeEdgeWaveCanvas);
+}
 function animate() {
   requestAnimationFrame(animate);
   var now = performance.now();
   var dt = Math.min((now - prevTime) / 1000, 0.05);
   prevTime = now;
   uniforms.uTime.value += dt;
+
+  // 丝带层更新（星河丝带 — 仅在 SILK/Emily 预设下激活）
+  try { updateRibbonLayer(dt); } catch(e) {}
+
   // 壁纸模式：发送音频帧数据给壁纸窗口（节流 ~30fps）
   // 放在 skip 检查之前，确保窗口隐藏时壁纸仍能收到带时间推进的数据
   if (fx && fx.wallpaperMode && window.desktopWindow && typeof window.desktopWindow.sendWallpaperAudioFrame === 'function') {
@@ -26757,6 +27700,8 @@ function animate() {
         window.desktopWindow.sendWallpaperAudioFrame({
           bass: bass, mid: mid, treble: treble, beat: beatPulse, energy: audioEnergy,
           time: uniforms.uTime.value,
+          audioTime: audio ? audio.currentTime : 0,
+          playing: !!playing,
           vinylSpin: uniforms.uVinylSpin.value,
           burstAmt: uniforms.uBurstAmt.value,
           alpha: uniforms.uAlpha.value,
@@ -26977,6 +27922,10 @@ function animate() {
   uniforms.uMid.value    = mid;
   uniforms.uTreble.value = treble;
   uniforms.uBeat.value   = beatPulse;
+  uniforms.uBeatBurst.value += (beatCam.punch * 0.64 - uniforms.uBeatBurst.value) * 0.58;
+  var baseBloom = fx.bloom ? fx.bloomStrength : 0;
+  var beatBloomTarget = baseBloom + beatPulse * 0.6;
+  uniforms.uBloomStrength.value += (beatBloomTarget - uniforms.uBloomStrength.value) * 0.35;
   uniforms.uEnergy.value = audioEnergy;
   uniforms.uMouseXY.value.set(mouseWorld.x, mouseWorld.y);
   uniforms.uMouseActive.value = mouseActive ? 1 : 0;
@@ -26988,6 +27937,7 @@ function animate() {
   // 通用转场脉冲: 只作为切换预设时的短促提亮。
   uniforms.uBurstAmt.value *= 0.90;
   tickPresetTransition();
+  applyWeatherMoodVisual(dt);
 
   updateRipples(dt);
   updateFloatLayer(dt);
@@ -27004,10 +27954,13 @@ function animate() {
   // v7.2 旋转 = 头部+眼球追踪 + 鼠标/手势拖动 + 惯性
   tickGestureRotation(dt);
   var skullPresetActive = fx && fx.preset === SKULL_PRESET_INDEX;
-  particles.visible = !skullPresetActive;
-  if (bloomParticles) bloomParticles.visible = !skullPresetActive && fx.bloom && fx.bloomStrength > 0.01;
-  if (floatGroup) floatGroup.visible = !skullPresetActive;
-  if (backCoverGroup) backCoverGroup.visible = !skullPresetActive;
+  var modelParticlePresetActive = fx && isModelParticlePreset(fx.preset);
+  var shouldHideMainParticles = skullPresetActive || modelParticlePresetActive;
+  particles.visible = !shouldHideMainParticles;
+  if (bloomParticles) bloomParticles.visible = !shouldHideMainParticles && fx.bloom && fx.bloomStrength > 0.01;
+  if (floatGroup) floatGroup.visible = !skullPresetActive && !modelParticlePresetActive;
+  if (backCoverGroup) backCoverGroup.visible = !skullPresetActive && !modelParticlePresetActive;
+
   var targetRotY = orbit.centerLocked ? 0 : (headParallax.active ? headParallax.x * 0.5 : 0) + gestureRotation.y;
   var targetRotX = orbit.centerLocked ? 0 : (headParallax.active ? -headParallax.y * 0.35 : 0) + gestureRotation.x;
   particles.rotation.y += (targetRotY - particles.rotation.y) * 0.055;
@@ -27023,6 +27976,7 @@ function animate() {
     backCoverGroup.rotation.copy(particles.rotation);
   }
   updateSkullParticleLayer(dt);
+  updateAllModelParticleLayers(dt);
   updateStageLyrics3D(dt);
   syncDesktopOverlayState();
 
@@ -27031,6 +27985,124 @@ function animate() {
     var s = 1 + bass * 0.08;
     var thumbCoverEl = document.getElementById('thumb-cover');
     if (thumbCoverEl) thumbCoverEl.style.transform = 'scale(' + s + ')';
+  }
+
+  // 边缘波浪发光：仅 preset 8/9 + 开关开启时显示
+  if (edgeWaveCtx && edgeWaveCanvas && fx && fx.preset >= 8 && edgeGlowEnabled) {
+    if (now - edgeColorLastChange > EDGE_COLOR_INTERVAL) {
+      edgeColorLastChange = now;
+      pickRandomEdgeColor();
+    }
+    edgeColorCurrent[0] += (edgeColorTarget[0] - edgeColorCurrent[0]) * 0.015;
+    edgeColorCurrent[1] += (edgeColorTarget[1] - edgeColorCurrent[1]) * 0.015;
+    edgeColorCurrent[2] += (edgeColorTarget[2] - edgeColorCurrent[2]) * 0.015;
+    edgeColorCurrent2[0] += (edgeColorTarget2[0] - edgeColorCurrent2[0]) * 0.015;
+    edgeColorCurrent2[1] += (edgeColorTarget2[1] - edgeColorCurrent2[1]) * 0.015;
+    edgeColorCurrent2[2] += (edgeColorTarget2[2] - edgeColorCurrent2[2]) * 0.015;
+    var edgeEnergy = (bass || 0) * 0.5 + (audioEnergy || 0) * 0.5;
+    var edgeBeat = (beatPulse || 0) * 0.6;
+    var edgeIntensity = Math.min(1, edgeEnergy * 0.5 + edgeBeat);
+    var cw = edgeWaveCanvas.width;
+    var ch = edgeWaveCanvas.height;
+    edgeWaveCtx.clearRect(0, 0, cw, ch);
+    var t = now * 0.001;
+    var amp = (12 + edgeIntensity * 28) * edgeWaveDpr;
+    var freq = 0.004 / edgeWaveDpr;
+    var speed = t * 0.8;
+    var r = Math.round(edgeColorCurrent[0]);
+    var g = Math.round(edgeColorCurrent[1]);
+    var b = Math.round(edgeColorCurrent[2]);
+    var r2 = Math.round(edgeColorCurrent2[0]);
+    var g2 = Math.round(edgeColorCurrent2[1]);
+    var b2 = Math.round(edgeColorCurrent2[2]);
+    var alphaBase = 0.12 + edgeIntensity * 0.45;
+    var blurBase = (12 + edgeIntensity * 35) * edgeWaveDpr;
+    edgeWaveCtx.lineCap = 'round';
+    edgeWaveCtx.lineJoin = 'round';
+    // 辅助：绘制一条边的波浪（cr/cg/cb 为颜色参数）
+    function drawEdgeWave(points, cr, cg, cb) {
+      var colorStr = 'rgb(' + cr + ',' + cg + ',' + cb + ')';
+      // 外发光层
+      edgeWaveCtx.lineWidth = 6 * edgeWaveDpr;
+      edgeWaveCtx.strokeStyle = 'rgba(' + cr + ',' + cg + ',' + cb + ',' + (alphaBase * 0.3).toFixed(3) + ')';
+      edgeWaveCtx.shadowColor = colorStr;
+      edgeWaveCtx.shadowBlur = blurBase * 1.5;
+      edgeWaveCtx.beginPath();
+      for (var i = 0; i < points.length; i++) {
+        if (i === 0) edgeWaveCtx.moveTo(points[i][0], points[i][1]);
+        else edgeWaveCtx.lineTo(points[i][0], points[i][1]);
+      }
+      edgeWaveCtx.stroke();
+      // 核心亮线
+      edgeWaveCtx.lineWidth = 2 * edgeWaveDpr;
+      edgeWaveCtx.strokeStyle = 'rgba(' + cr + ',' + cg + ',' + cb + ',' + alphaBase.toFixed(3) + ')';
+      edgeWaveCtx.shadowBlur = blurBase;
+      edgeWaveCtx.beginPath();
+      for (var i = 0; i < points.length; i++) {
+        if (i === 0) edgeWaveCtx.moveTo(points[i][0], points[i][1]);
+        else edgeWaveCtx.lineTo(points[i][0], points[i][1]);
+      }
+      edgeWaveCtx.stroke();
+    }
+    var step = 6 * edgeWaveDpr;
+    var pts;
+    // 上边：2 条波浪，不同振幅/频率/相位/偏移/颜色
+    pts = [];
+    for (var x = 0; x <= cw; x += step) {
+      var y = amp * Math.sin(x * freq + speed) + amp;
+      pts.push([x, y]);
+    }
+    drawEdgeWave(pts, r, g, b);
+    pts = [];
+    for (var x = 0; x <= cw; x += step) {
+      var y = amp * 0.7 * Math.sin(x * freq * 1.4 + speed * 1.3 + 2.1) + amp * 1.8;
+      pts.push([x, y]);
+    }
+    drawEdgeWave(pts, r2, g2, b2);
+    // 下边：2 条波浪
+    pts = [];
+    for (var x = 0; x <= cw; x += step) {
+      var y = ch - amp * Math.sin(x * freq + speed + Math.PI) - amp;
+      pts.push([x, y]);
+    }
+    drawEdgeWave(pts, r, g, b);
+    pts = [];
+    for (var x = 0; x <= cw; x += step) {
+      var y = ch - amp * 0.7 * Math.sin(x * freq * 1.4 + speed * 1.3 + 2.1 + Math.PI) - amp * 1.8;
+      pts.push([x, y]);
+    }
+    drawEdgeWave(pts, r2, g2, b2);
+    // 左边：2 条波浪
+    pts = [];
+    for (var y = 0; y <= ch; y += step) {
+      var x = amp * Math.sin(y * freq + speed + Math.PI / 2) + amp;
+      pts.push([x, y]);
+    }
+    drawEdgeWave(pts, r, g, b);
+    pts = [];
+    for (var y = 0; y <= ch; y += step) {
+      var x = amp * 0.7 * Math.sin(y * freq * 1.4 + speed * 1.3 + 2.1 + Math.PI / 2) + amp * 1.8;
+      pts.push([x, y]);
+    }
+    drawEdgeWave(pts, r2, g2, b2);
+    // 右边：2 条波浪
+    pts = [];
+    for (var y = 0; y <= ch; y += step) {
+      var x = cw - amp * Math.sin(y * freq + speed + Math.PI * 1.5) - amp;
+      pts.push([x, y]);
+    }
+    drawEdgeWave(pts, r, g, b);
+    pts = [];
+    for (var y = 0; y <= ch; y += step) {
+      var x = cw - amp * 0.7 * Math.sin(y * freq * 1.4 + speed * 1.3 + 2.1 + Math.PI * 1.5) - amp * 1.8;
+      pts.push([x, y]);
+    }
+    drawEdgeWave(pts, r2, g2, b2);
+  } else if (edgeWaveCanvas) {
+    // preset 1-7：清空 canvas
+    var cw2 = edgeWaveCanvas.width;
+    var ch2 = edgeWaveCanvas.height;
+    if (cw2 > 0 && ch2 > 0) edgeWaveCtx.clearRect(0, 0, cw2, ch2);
   }
 
   renderer.render(scene, camera);
