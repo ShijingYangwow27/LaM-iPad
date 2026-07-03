@@ -7080,7 +7080,8 @@ function getModelParticleState(presetIdx) {
       group: null, opacity: 0, data: null, effectLoaded: false,
       dataRequested: false, baseRotationY: 0,
       effectConfig: null, vertexShader: '', fragmentShader: '',
-      wireframeGroup: null, wireframeData: null, wireframeRequested: false
+      wireframeGroup: null, wireframeData: null, wireframeRequested: false,
+      baselineUninitialized: true
     };
   }
   return modelParticleStates[presetIdx];
@@ -7643,8 +7644,15 @@ function preloadModelParticleData(presetIdx) {
     if (fx && fx.preset === presetIdx) {
       var cam = (state.effectConfig && state.effectConfig.camera) || null;
       if (cam) {
-        orbit.userRadius = cam.radius; orbit.userPhi = cam.phi; orbit.userTheta = cam.theta;
-        orbit.baselineRadius = cam.radius; orbit.baselinePhi = cam.phi;
+        // 只更新基线（baseline），不覆盖用户当前镜头（userRadius/Phi/Theta），
+        // 避免异步加载完成后把用户已调整的轨道相机二次拉回正前方。
+        orbit.baselineRadius = cam.radius;
+        orbit.baselinePhi = cam.phi;
+        orbit.baselineTheta = cam.theta;
+        if (state.baselineUninitialized) {
+          orbit.userRadius = cam.radius; orbit.userPhi = cam.phi; orbit.userTheta = cam.theta;
+          state.baselineUninitialized = false;
+        }
       }
       createModelParticleLayer(presetIdx);
     }
@@ -21178,24 +21186,8 @@ function applyFxArchiveSnapshot(snapshot) {
   if (!data) return false;
   var targetPreset = data.preset;
   var freeCameraData = data.freeCamera;
-  Object.keys(data).forEach(function(key){
-    if (key === 'visualPresetSchema' || key === 'preset' || key === 'freeCamera') return;
-    fx[key] = data[key];
-  });
-  normalizeDevelopmentLockedFxState();
-  setPreset(targetPreset, { silent: true, preserveCamera: false, skipTransition: false, noSave: true, commitPlaybackPreset: true });
-  applyCoverParticleResolution(fx.coverResolution, { reload: true });
-  if (fx.floatLayer) createFloatLayer(); else destroyFloatLayer();
-  setParticleLyricsSilently(fx.particleLyrics);
-  if (fx.backCover) createBackCoverLayer(); else destroyBackCoverLayer();
-  if (fx.aiDepth) {
-    aiDepthFailUntil = 0;
-    queueAIDepthForCurrentCover(true);
-  }
-  setShelfMode(fx.shelf);
-  if (shelfManager && shelfManager.rebuild) shelfManager.rebuild(true);
-  if (shelfManager && shelfManager.refreshTheme) shelfManager.refreshTheme();
-  setCamMode(fx.cam);
+  // 先恢复 freeCamera 状态，再用 preserveCamera: true 切预设，
+  // 避免 setPreset 把存档里的 userOrbit（普通轨道相机）覆盖掉。
   if (freeCameraData) {
     if (!freeCamera) freeCamera = defaultFreeCameraState();
     freeCamera.position.set(
@@ -21210,9 +21202,27 @@ function applyFxArchiveSnapshot(snapshot) {
     freeCamera.active = freeCameraData.active;
     freeCamera.locked = freeCameraData.locked;
     saveFreeCameraState();
-    if (freeCamera.active || freeCamera.locked) {
-      applyFreeCameraToCamera();
-    }
+  }
+  Object.keys(data).forEach(function(key){
+    if (key === 'visualPresetSchema' || key === 'preset' || key === 'freeCamera') return;
+    fx[key] = data[key];
+  });
+  normalizeDevelopmentLockedFxState();
+  setPreset(targetPreset, { silent: true, preserveCamera: true, skipTransition: false, noSave: true, commitPlaybackPreset: true });
+  applyCoverParticleResolution(fx.coverResolution, { reload: true });
+  if (fx.floatLayer) createFloatLayer(); else destroyFloatLayer();
+  setParticleLyricsSilently(fx.particleLyrics);
+  if (fx.backCover) createBackCoverLayer(); else destroyBackCoverLayer();
+  if (fx.aiDepth) {
+    aiDepthFailUntil = 0;
+    queueAIDepthForCurrentCover(true);
+  }
+  setShelfMode(fx.shelf);
+  if (shelfManager && shelfManager.rebuild) shelfManager.rebuild(true);
+  if (shelfManager && shelfManager.refreshTheme) shelfManager.refreshTheme();
+  setCamMode(fx.cam);
+  if (freeCameraData && (freeCamera.active || freeCamera.locked)) {
+    applyFreeCameraToCamera();
   }
   updateFxInputs();
   applySavedLyricPaletteState();
@@ -22195,9 +22205,11 @@ function setPreset(p, opts) {
     else if (p === 7) { orbit.userRadius = 8.5; orbit.userPhi = 0.25; orbit.userTheta = -0.20; orbit.baselineRadius = 8.5; orbit.baselinePhi = 0.25; }
     else if (isModelParticlePreset(p)) {
       var mpState = getModelParticleState(p);
-      var mpCam = (mpState.effectConfig && mpState.effectConfig.camera) || { radius: 5.5, phi: 0.50, theta: 0.0 };
-      orbit.userRadius = mpCam.radius; orbit.userPhi = mpCam.phi; orbit.userTheta = mpCam.theta;
-      orbit.baselineRadius = mpCam.radius; orbit.baselinePhi = mpCam.phi;
+      if (mpState.effectLoaded && mpState.effectConfig && mpState.effectConfig.camera) {
+        var mpCam = mpState.effectConfig.camera;
+        orbit.userRadius = mpCam.radius; orbit.userPhi = mpCam.phi; orbit.userTheta = mpCam.theta;
+        orbit.baselineRadius = mpCam.radius; orbit.baselinePhi = mpCam.phi;
+      }
     }
     else              { orbit.userRadius = 6.6; orbit.userPhi = 0.08; orbit.userTheta = 0.0; orbit.baselineRadius = 6.6; orbit.baselinePhi = 0.08; }
     orbit.baselineTheta = p === 5 ? -0.52 : (p === 6 ? 0.18 : (p === 7 ? -0.20 : 0.0));
