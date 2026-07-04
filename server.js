@@ -43,6 +43,7 @@ const {
   sati_resource_sub_list,
   lyric,
   lyric_new,
+  user_level,
 } = require('NeteaseCloudMusicApi');
 const http = require('http');
 const https = require('https');
@@ -2178,7 +2179,16 @@ function weatherRadioSeedQueries(mood) {
   return ['孙燕姿 天黑黑', '周杰伦 晴天', '五月天 温柔', '陈奕迅 稳稳的幸福', '王菲'];
 }
 
-function buildWeatherSeedQueries(mood) {
+function shuffleArray(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function buildWeatherSeedQueries(mood, seed) {
   const out = [];
   const seen = new Set();
   function push(kw) {
@@ -2198,7 +2208,7 @@ function buildWeatherSeedQueries(mood) {
   if (out.length < 4) {
     weatherRadioSeedQueries(mood).forEach(push);
   }
-  return out.slice(0, 8);
+  return shuffleArray(out).slice(0, 8);
 }
 
 function fallbackWeatherForRadio(params, err) {
@@ -2281,15 +2291,16 @@ async function fetchWeatherPlaylistSongs(playlist, limit) {
   return rawTracks.map(mapSongRecord).filter(song => song.id && song.name).slice(0, limit || 36);
 }
 
-async function searchWeatherPlaylists(mood, limit) {
+async function searchWeatherPlaylists(mood, limit, seed) {
   const out = [];
   if (!mood || typeof mood !== 'object') return out;
-  const queries = (mood.keywords || []).slice(0, 2);
+  const queries = shuffleArray((mood.keywords || []).slice(0, 4)).slice(0, 2);
   if (!queries.length) return out;
   const target = limit || 12;
+  const offset = seed ? (seed % 5) : 0;
   try {
     const settled = await Promise.allSettled(queries.map(q => cloudsearch({
-      keywords: q, type: 1000, limit: 2, cookie: userCookie, timestamp: Date.now()
+      keywords: q, type: 1000, limit: 4, cookie: userCookie, timestamp: Date.now()
     })));
     const seen = new Set();
     const playlists = [];
@@ -2305,7 +2316,9 @@ async function searchWeatherPlaylists(mood, limit) {
         }
       });
     });
-    for (const pl of playlists.slice(0, 2)) {
+    const shuffled = shuffleArray(playlists);
+    const selected = shuffled.slice(offset, offset + 2).length >= 2 ? shuffled.slice(offset, offset + 2) : shuffled.slice(0, 2);
+    for (const pl of selected) {
       if (out.length >= target) break;
       const songs = await fetchWeatherPlaylistSongs(pl, Math.min(10, target - out.length));
       out.push(...tagWeatherPoolSongs(songs, 'playlist'));
@@ -2456,7 +2469,7 @@ function diversifyWeatherSongs(sorted, artistLimit) {
 function orderWeatherSongs(songs, mood) {
   const sorted = uniqueSongsByKey(songs)
     .filter(song => song && song.name && song.id && !isLowSignalWeatherSong(song))
-    .sort((a, b) => scoreWeatherSong(b, mood) - scoreWeatherSong(a, mood));
+    .sort((a, b) => (scoreWeatherSong(b, mood) + Math.random() * 3) - (scoreWeatherSong(a, mood) + Math.random() * 3));
   return diversifyWeatherSongs(uniqueWeatherTitles(sorted), 2);
 }
 
@@ -2468,11 +2481,12 @@ async function buildWeatherRadio(params) {
     console.warn('[WeatherRadio] weather provider failed, using fallback radio:', e.message);
     weather = fallbackWeatherForRadio(params, e);
   }
-  const queries = buildWeatherSeedQueries(weather.mood);
+  const seed = params.seed || Date.now();
+  const queries = buildWeatherSeedQueries(weather.mood, seed);
   const [settled, poolSongs] = await Promise.all([
     Promise.allSettled(queries.slice(0, 4).map(q => handleSearch(q, 6))),
     Promise.race([
-      searchWeatherPlaylists(weather.mood, 12).catch(function (e) {
+      searchWeatherPlaylists(weather.mood, 12, seed).catch(function (e) {
         console.warn('[WeatherRadio] playlist pool failed:', e && e.message);
         return [];
       }),
@@ -2548,6 +2562,8 @@ function normalizeQQProfile(body, cookieObj) {
     const vipFlag = data.isVip || data.is_vip || data.vipFlag || data.vipflag || creator.isVip || creator.is_vip || vipInfo.isVip || vipInfo.is_vip || vipInfo.vipFlag;
     if (vipFlag === true || Number(vipFlag) > 0 || String(vipFlag || '').toLowerCase() === 'true') vipType = 1;
   }
+  const nums = creator.nums || data.nums || {};
+  const totalListenSong = Number(creator.totalListenSong || data.totalListenSong || nums.listen || (creator.listenSee && creator.listenSee.totalListenSong) || 0) || 0;
   return {
     provider: 'qq',
     loggedIn: !!(uin && qqCookieMusicKey(cookieObj)),
@@ -2559,6 +2575,7 @@ function normalizeQQProfile(body, cookieObj) {
     hasCookie: !!qqCookie,
     playbackKeyReady: !!qqCookiePlaybackKey(cookieObj),
     profileSource: profileNick || profileAvatar ? 'qq-profile' : (cookieNick || avatar ? 'cookie' : 'fallback'),
+    totalListenSong,
   };
 }
 
@@ -3693,6 +3710,18 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  if (pn === '/api/artist/search') {
+    try {
+      const kw = url.searchParams.get('keywords') || '';
+      const limit = parseInt(url.searchParams.get('limit') || '3');
+      const result = await cloudsearch({ keywords: kw, limit, type: 100, cookie: userCookie });
+      const artists = (result.body && result.body.result && result.body.result.artists) || [];
+      const mapped = artists.map(a => ({ id: a.id, name: a.name, avatar: a.picUrl || a.img1v1Url || '', alias: a.alias || [] }));
+      sendJSON(res, { artists: mapped });
+    } catch (err) { console.error('[ArtistSearch]', err); sendJSON(res, { error: err.message, artists: [] }, 500); }
+    return;
+  }
+
   if (pn === '/api/qq/search') {
     try {
       const kw = url.searchParams.get('keywords') || '';
@@ -4124,6 +4153,30 @@ const server = http.createServer(async (req, res) => {
     } catch (err) {
       console.error('[UserPlaylists]', err);
       sendJSON(res, { error: err.message, loggedIn: false, playlists: [] }, 500);
+    }
+    return;
+  }
+
+  // ---------- 用户等级 ----------
+  if (pn === '/api/user/level') {
+    try {
+      const info = await getLoginInfo();
+      if (!info.loggedIn || !info.userId) { sendJSON(res, { loggedIn: false }); return; }
+      const r = await user_level({ cookie: userCookie, timestamp: Date.now() });
+      const body = (r.body || {});
+      const data = body.data || body || {};
+      sendJSON(res, {
+        loggedIn: true,
+        level: data.level || 0,
+        listenSongs: data.nowPlayCount || data.listenSongs || 0,
+        loginCount: data.nowLoginCount || data.loginCount || 0,
+        nextPlayCount: data.nextPlayCount || 0,
+        nextLoginCount: data.nextLoginCount || 0,
+        progress: data.progress || 0,
+      });
+    } catch (err) {
+      console.error('[UserLevel]', err);
+      sendJSON(res, { loggedIn: false, error: err.message }, 500);
     }
     return;
   }

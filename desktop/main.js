@@ -1658,7 +1658,7 @@ async function createWindow() {
     sendWindowState(mainWindow);
   });
 
-  await mainWindow.loadURL(`http://127.0.0.1:${port}`);
+  await mainWindow.loadURL(`http://127.0.0.1:${port}/index.apple-test.html`);
 }
 
 app.setName(APP_NAME);
