@@ -44,7 +44,7 @@ SingletonSocket
 tools/
 
 # Historical local experiment files
-public/index.*.html
+!public/index.*.html
 !public/index.html
 
 # Screenshots and transient verification artifacts
