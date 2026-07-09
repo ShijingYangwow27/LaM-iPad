@@ -4348,12 +4348,28 @@ const server = http.createServer(async (req, res) => {
   if (pn === '/api/song/comments') {
     try {
       const id = url.searchParams.get('id');
-      const limit = Math.max(6, Math.min(50, parseInt(url.searchParams.get('limit') || '20', 10) || 20));
+      const limit = Math.max(6, Math.min(100, parseInt(url.searchParams.get('limit') || '20', 10) || 20));
       const offset = Math.max(0, parseInt(url.searchParams.get('offset') || '0', 10) || 0);
       if (!id) { sendJSON(res, { error: 'Missing song id', comments: [] }, 400); return; }
       const r = await comment_music({ id, limit, offset, cookie: userCookie, timestamp: Date.now() });
       const body = r.body || r || {};
-      const raw = body.hotComments && offset === 0 ? body.hotComments : (body.comments || []);
+      /* 第 1 页：合并 hotComments + 正常评论（按 commentId 去重，截到 limit），
+         让客户端拿到的不只是精选热门，避免独立池过小 */
+      let raw;
+      if (offset === 0 && body.hotComments && body.hotComments.length) {
+        const seen = new Set();
+        const merged = [];
+        for (const c of (body.hotComments || []).concat(body.comments || [])) {
+          const cid = c && c.commentId;
+          if (cid && seen.has(cid)) continue;
+          if (cid) seen.add(cid);
+          merged.push(c);
+          if (merged.length >= limit) break;
+        }
+        raw = merged;
+      } else {
+        raw = body.comments || [];
+      }
       const comments = (raw || []).map(c => ({
         id: c.commentId,
         content: c.content || '',
@@ -4361,7 +4377,8 @@ const server = http.createServer(async (req, res) => {
         time: c.time || 0,
         user: c.user ? { id: c.user.userId, nickname: c.user.nickname || '', avatar: c.user.avatarUrl || '' } : null,
       })).filter(c => c.content);
-      sendJSON(res, { id, total: body.total || 0, comments, hot: !!(body.hotComments && offset === 0), body });
+      const hasMore = offset + comments.length < (body.total || 0);
+      sendJSON(res, { id, total: body.total || 0, comments, hot: !!(body.hotComments && offset === 0), hasMore, body });
     } catch (err) {
       console.error('[SongComments]', err);
       sendJSON(res, { error: err.message, comments: [] }, 500);

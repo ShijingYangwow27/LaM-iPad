@@ -442,8 +442,6 @@ body.empty-home-active .home-visual{animation:home-visual-drift 8.8s ease-in-out
 @media (max-height:700px){#empty-home{top:126px;bottom:34px}.home-hero{padding:20px}.home-title{font-size:clamp(28px,3.55vw,42px)}.home-sub{font-size:12px;line-height:1.42}.home-mosaic{height:170px;min-height:150px}.home-card{min-height:112px;padding:12px}.home-card-title{font-size:15.5px}.home-card-sub{font-size:10.5px;line-height:1.28;-webkit-line-clamp:2}.home-card-art{width:70px;height:70px;border-radius:16px}.home-card::after{right:78px;height:48px}.home-tile{min-height:112px;padding:9px}.home-tile-cover{height:54px;margin-bottom:8px}.home-section-head{min-height:30px}}
 @media (max-width:840px){.empty-home-shell{grid-template-columns:minmax(250px,.86fr) minmax(360px,1.14fr)}.home-hero-inner{grid-template-columns:1fr}.home-hero-visual{display:none}.home-mosaic{height:240px;min-height:210px}.home-card{min-height:108px}.home-card-title{font-size:15px;max-width:68%}.home-card-sub{font-size:10.3px;max-width:62%}.home-card-art{width:66px;height:66px;border-radius:15px}.home-card::after{right:72px;width:24px;height:44px}.home-tile-title{font-size:11.5px}}
 @media (max-width:760px){#empty-home{top:150px;bottom:56px;width:calc(100vw - 40px)}.empty-home-shell{grid-template-columns:1fr;grid-template-rows:auto auto;overflow:auto;padding-bottom:4px}.home-hero{grid-row:auto}.home-right-col{grid-column:auto;grid-row:auto;display:block;min-height:auto;height:auto}.home-mosaic{height:172px;min-height:150px}.home-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.home-tile-row{grid-template-columns:repeat(3,minmax(0,1fr))}}
-body.empty-home-active.controls-visible #empty-home{bottom:128px}
-@media (max-height:760px){body.empty-home-active.controls-visible #empty-home{bottom:112px}}
 @media (max-width:620px){#empty-home{top:146px;bottom:44px;width:calc(100vw - 24px)}.home-hero{padding:20px;border-radius:22px}.home-hero-inner{display:flex;flex-direction:column}.home-hero-visual{display:none}.home-mosaic{display:none}.home-grid{grid-template-columns:1fr}.home-tile-row{grid-template-columns:repeat(2,minmax(0,1fr))}.home-tile-cover{height:auto;aspect-ratio:1}.home-tile-sub{display:block}.home-card-art{width:88px;height:88px}.home-card-title,.home-card-sub{max-width:68%}}
 .home-visual.generated{height:clamp(140px,18vh,220px)!important;max-width:clamp(180px,22vw,300px)!important;align-self:center!important;border-radius:18px;overflow:hidden}
 @media (max-height:760px){.home-visual.generated{height:clamp(100px,14vh,160px)!important;max-width:clamp(140px,18vw,220px)!important}}
@@ -568,8 +566,6 @@ body.desktop-shell.desktop-fullscreen .home-mosaic-cell.has-cover,html:fullscree
   body.desktop-shell .home-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   body.desktop-shell .home-tile-row{grid-template-columns:repeat(3,minmax(0,1fr))}
 }
-body.desktop-shell.empty-home-active.controls-visible #empty-home{bottom:126px}
-@media (max-height:760px){body.desktop-shell.empty-home-active.controls-visible #empty-home{bottom:106px}}
 #user-btn.logged-out{justify-content:center;padding:0 17px;min-width:60px;color:rgba(255,255,255,.78);font-size:13px;font-weight:650;letter-spacing:.08em;border-color:rgba(244,210,138,.28);background:rgba(255,255,255,.045);box-shadow:0 12px 34px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.08)}
 #user-btn.logged-out:hover{color:#fff2bd;border-color:rgba(244,210,138,.56);background:rgba(244,210,138,.11);box-shadow:0 16px 42px rgba(244,210,138,.10),inset 0 1px 0 rgba(255,255,255,.10)}
 #user-btn .login-word{display:block;line-height:1;transform:translateY(.5px)}
@@ -29084,7 +29080,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (isQQ) {
       commentUrl = '/api/qq/song/comments?id=' + encodeURIComponent(song.qqId || song.id || '') + '&mid=' + encodeURIComponent(song.mid || song.songmid || song.id || '') + '&limit=300&offset=0';
     } else {
-      commentUrl = '/api/song/comments?id=' + encodeURIComponent(song.id || '') + '&limit=300&offset=0';
+      commentUrl = '/api/song/comments?id=' + encodeURIComponent(song.id || '') + '&limit=100&offset=0';
     }
 
     var fetcher = (typeof apiJson === 'function')
@@ -29108,9 +29104,10 @@ document.addEventListener('DOMContentLoaded', function() {
       console.log('[弹幕] 评论数据: hot=' + hot.length + ' normal=' + normal.length + ' merged=' + merged.length + ' total=' + total);
       _dm_fetching = false;
       removeBtnLoading();
-      /* 如果评论不够，尝试第二页 */
-      if (merged.length < 30 && total > merged.length && !isQQ) {
-        var page2Url = '/api/song/comments?id=' + encodeURIComponent(song.id || '') + '&limit=300&offset=300';
+      /* 第 1 页满 100 时也要拉第 2 页，凑齐 200 独立池；
+         只有 total ≤ 100（短评论歌）才跳过第 2 页 */
+      if (total > 100 && !isQQ) {
+        var page2Url = '/api/song/comments?id=' + encodeURIComponent(song.id || '') + '&limit=100&offset=100';
         var fetcher2 = (typeof apiJson === 'function') ? apiJson(page2Url, { timeoutMs: 6000 }) : fetch(page2Url).then(function(r){ return r.json(); });
         fetcher2.then(function(cdata2) {
           var more = (cdata2 && cdata2.comments) || [];
@@ -29485,13 +29482,15 @@ document.addEventListener('DOMContentLoaded', function() {
     var text = c.content || '';
     if (!text) return;
 
-    /* 弹幕速度：固定速度，speed 1→80px/s, 5→200px/s */
+    /* 弹幕速度：固定速度，speed 1→80px/s, 5→200px/s
+       抖动随速度档位递增：低速档几乎不抖，保证速度 1 真正"慢"且稳定 */
     var speed = 80 + (fx.danmakuSpeed - 1) * 30; /* px/s */
-    speed += (Math.random() * 20 - 10);
-    speed = Math.max(60, Math.min(220, speed));
+    var jitter = (fx.danmakuSpeed - 1) * 2;       /* speed 1→0, 5→±8 */
+    speed += (Math.random() * 2 - 1) * jitter;
+    speed = Math.max(80, Math.min(220, speed));
     /* 时长 = (屏幕宽度 + 2×弹幕宽度) / 速度，弹幕宽度约300估算 */
     var baseDur = (window.innerWidth + 600) / speed;
-    baseDur = Math.max(4, Math.min(25, baseDur));
+    baseDur = Math.max(4, Math.min(60, baseDur));
 
     /* 轨道分配 */
     var track = pickTrack();
@@ -29549,10 +29548,11 @@ document.addEventListener('DOMContentLoaded', function() {
     item.style.animationDuration = baseDur + 's';
 
     container.appendChild(item);
-    /* 根据实际宽度重新计算时长，保证所有弹幕速度一致 */
+    /* 根据实际宽度重新计算时长，保证所有弹幕速度一致；
+       上限从 25s 提到 60s，避免长评论被强行压缩导致"速度 1 也快" */
     var actualWidth = item.offsetWidth || 300;
     var realDur = (window.innerWidth + actualWidth * 2) / speed;
-    realDur = Math.max(4, Math.min(25, realDur));
+    realDur = Math.max(4, Math.min(60, realDur));
     item.style.animationDuration = realDur + 's';
     /* 定时释放轨道：动画结束后释放 */
     var releaseMs = Math.ceil(realDur * 1000) + 500;
