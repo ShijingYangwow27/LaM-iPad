@@ -16624,7 +16624,8 @@ function topListenArtist() {
   return list[0] || null;
 }
 function homeListenSummary() {
-  var recent = (listenStatsState.history || [])[0] || null;
+  var history = listenStatsState.history || [];
+  var recent = history.length ? history[history.length - 1] : null;
   var topSong = mostPlayedSong();
   var topArtist = topListenArtist();
   var totalPlays = Object.keys(listenStatsState.songs || {}).reduce(function(sum, key){ return sum + ((listenStatsState.songs[key] && listenStatsState.songs[key].plays) || 0); }, 0);
