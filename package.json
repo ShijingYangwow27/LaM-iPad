@@ -1,7 +1,7 @@
 {
   "name": "mineradio",
   "productName": "Mineradio",
-  "version": "1.1.2",
+  "version": "1.1.3",
   "description": "沉浸式音乐播放器，融合天气电台、歌词舞台、粒子视觉和 3D 歌单架。",
   "author": "Mineradio",
   "main": "desktop/main.js",
@@ -9,10 +9,12 @@
   "scripts": {
     "start": "electron .",
     "build:mac": "electron-builder --mac --publish never",
-    "release:mac": "electron-builder --mac --publish always"
+    "release:mac": "electron-builder --mac --publish always",
+    "build:win": "electron-builder --win --publish never",
+    "release:win": "electron-builder --win --publish always"
   },
   "releaseInfo": {
-    "releaseNotes": "## Mineradio v1.1.2\n\n### 新功能\n- **弹幕评论系统**：支持弹幕滚动和卡片轮播两种模式\n- **卡片模式**：展示评论者头像、昵称、评论内容、时间、属地、点赞数\n- **滚动模式**：评论从右向左匀速滚动，支持字体大小、速度、密度调节\n- **玻璃效果**：弹幕和卡片采用毛玻璃背景，与播放器控制台风格统一\n\n### 优化改进\n- 评论数据上限提升至300条，洗牌算法确保不重复\n- 弹幕消失逻辑优化，所有弹幕从右到左全程滚动\n- 暂停/恢复后卡片状态正确恢复\n\n### Bug修复\n- 修复首次播放弹幕卡片不触发问题\n- 修复头像不显示问题\n- 修复滚动弹幕轨道槽位重叠问题\n\n### 其他\n- 新增联系作者按钮\n- 预设效果名称自动从配置文件读取"
+    "releaseNotes": "## Mineradio v1.1.3\n\n### 新功能\n- **弹幕评论系统**：支持弹幕滚动和卡片轮播两种模式\n- **卡片模式**：展示评论者头像、昵称、评论内容、时间、属地、点赞数\n- **滚动模式**：评论从右向左匀速滚动，支持字体大小、速度、密度调节\n- **玻璃效果**：弹幕和卡片采用毛玻璃背景，与播放器控制台风格统一\n\n### 优化改进\n- 评论数据上限提升至300条，洗牌算法确保不重复\n- 弹幕消失逻辑优化，所有弹幕从右到左全程滚动\n- 暂停/恢复后卡片状态正确恢复\n\n### Bug修复\n- 修复首次播放弹幕卡片不触发问题\n- 修复头像不显示问题\n- 修复滚动弹幕轨道槽位重叠问题\n\n### 其他\n- 新增联系作者按钮\n- 预设效果名称自动从配置文件读取"
   },
   "build": {
     "appId": "com.mineradio.desktop",
@@ -47,11 +49,38 @@
         }
       ]
     },
+    "win": {
+      "icon": "build/icon.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ]
+    },
+    "nsis": {
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "installerHeaderIcon": "build/icon.ico",
+      "installerSidebar": "build/installerSidebar.bmp",
+      "uninstallerSidebar": "build/installerSidebar.bmp",
+      "include": "build/installer.nsh",
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "deleteAppDataOnUninstall": false
+    },
     "publish": [
       {
         "provider": "github",
         "owner": "ShijingYangwow27",
-        "repo": "Mineradio--macOS"
+        "repo": "Mineradio--macOS",
+        "filter": ["dmg", "zip"]
+      },
+      {
+        "provider": "github",
+        "owner": "ShijingYangwow27",
+        "repo": "mushroom-go",
+        "filter": ["nsis", "portable", "blockmap", "yml"]
       }
     ]
   },
