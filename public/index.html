@@ -274,7 +274,7 @@ body.home-wallpaper-preview #canvas-container{filter:none}
 .home-hero{position:relative;grid-row:1 / span 2;padding:28px;border-radius:28px;border:1px solid color-mix(in srgb,var(--home-accent) 22%,rgba(255,255,255,.085));background:linear-gradient(145deg,rgba(33,29,34,.64),rgba(9,10,14,.76) 48%,rgba(17,20,25,.70));box-shadow:0 28px 90px rgba(0,0,0,.34),0 0 0 1px color-mix(in srgb,var(--home-accent) 7%,transparent),inset 0 1px 0 rgba(255,255,255,.065);backdrop-filter:blur(30px) saturate(1.16);-webkit-backdrop-filter:blur(30px) saturate(1.16);overflow:visible}
 .home-hero::before{content:'';position:absolute;inset:0;background:linear-gradient(118deg,rgba(255,255,255,.060),transparent 24%,rgba(255,83,103,.070) 54%,rgba(122,215,194,.055) 82%,transparent 100%),linear-gradient(90deg,rgba(255,255,255,.032) 0 1px,transparent 1px 48px),linear-gradient(0deg,rgba(255,255,255,.024) 0 1px,transparent 1px 44px);opacity:.72;pointer-events:none}
 .home-hero::after{content:'';position:absolute;left:28px;right:28px;bottom:22px;height:1px;background:linear-gradient(90deg,color-mix(in srgb,var(--home-accent) 0%,transparent),color-mix(in srgb,var(--home-accent) 52%,transparent),rgba(36,66,255,.24),rgba(248,244,238,.18),color-mix(in srgb,var(--home-accent) 0%,transparent));opacity:.82;pointer-events:none}
-.home-hero-inner{position:relative;z-index:2;height:100%;display:grid;grid-template-columns:.68fr 1fr;grid-template-rows:auto auto 1fr;gap:12px}
+.home-hero-inner{position:relative;z-index:2;height:100%;display:grid;grid-template-columns:.68fr 1fr;grid-template-rows:auto auto auto 1fr;gap:12px}
 .home-hero-inner.home-construction-inner{display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:18px;padding:4px 2px;min-height:100%}
 .home-kicker,.home-title,.home-sub{display:none}
 .home-weather-meta{grid-column:1;grid-row:2;display:flex;flex-wrap:wrap;gap:6px;align-self:start;padding:12px 14px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);backdrop-filter:blur(16px) saturate(1.04);-webkit-backdrop-filter:blur(16px) saturate(1.04)}
@@ -300,12 +300,12 @@ body.home-wallpaper-preview #canvas-container{filter:none}
 .home-now-play::before{content:'';display:block;width:0;height:0;border-style:solid;border-width:6px 0 6px 10px;border-color:transparent transparent transparent rgba(255,255,255,.85);margin-left:2px}
 .home-now-play.playing::before{border-width:0;width:11px;height:14px;border-style:solid;border-color:rgba(255,255,255,.85);border-width:0 3.5px 0 3.5px;margin-left:0}
 @media (max-height:700px){.home-now-title{font-size:13px}.home-now-artist{font-size:10px}.home-now-cover{width:clamp(64px,10vw,90px);height:clamp(64px,10vw,90px)}.home-now-btn{width:26px;height:26px}.home-now-play{width:30px;height:30px}}
-.home-hero-visual{grid-column:2;grid-row:2 / span 2;position:relative;align-self:stretch;justify-self:end;width:100%;border-radius:18px;overflow:hidden;cursor:pointer;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.03);transition:border-color .2s,box-shadow .2s}
+.home-hero-visual{grid-column:2;grid-row:2 / span 2;position:relative;align-self:stretch;justify-self:end;width:100%;min-height:0;border-radius:18px;overflow:hidden;cursor:pointer;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.03);transition:border-color .2s,box-shadow .2s}
 .home-hero-visual:hover{border-color:rgba(255,255,255,.12);box-shadow:0 8px 24px rgba(0,0,0,.18)}
 .home-hero-visual-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;height:100%;color:rgba(255,255,255,.22)}
 .home-hero-visual-placeholder svg{opacity:.6}
 .home-hero-visual-placeholder span{font-size:11px;font-weight:600;letter-spacing:.3px}
-.home-hero-visual-img{width:100%;height:100%;object-fit:cover}
+.home-hero-visual-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 /* ── Hero Crop Modal ── */
 .crop-modal-mask{position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
 .crop-modal{width:auto;display:inline-flex;flex-direction:column;max-width:90vw;background:rgba(18,18,22,.95);border:1px solid rgba(255,255,255,.1);border-radius:14px;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.6)}
@@ -350,7 +350,7 @@ body.home-wallpaper-preview #canvas-container{filter:none}
 .home-wave-track span{flex:1;min-width:3px;border-radius:999px;background:linear-gradient(180deg,#fff,var(--home-accent));box-shadow:0 0 12px color-mix(in srgb,var(--home-accent) 55%,transparent);height:5px;transform-origin:bottom;transition:height .08s linear,opacity .08s linear}
 @keyframes home-disc-turn{to{transform:rotate(360deg)}}
 @keyframes home-eq-rise{0%,100%{transform:scaleY(.68);opacity:.66}45%{transform:scaleY(1);opacity:1}}
-.home-mosaic{grid-column:1 / -1;grid-row:6;align-self:end;display:grid;grid-template-columns:1.18fr 1fr 1fr;grid-template-rows:1fr 1fr;gap:12px;height:min(260px,32vh);min-height:190px;margin-top:18px}
+.home-mosaic{grid-column:1 / -1;grid-row:4;align-self:end;display:grid;grid-template-columns:1.18fr 1fr 1fr;grid-template-rows:1fr 1fr;gap:12px;height:min(260px,32vh);min-height:190px;margin-top:18px}
 .home-portrait{grid-column:1 / -1;grid-row:1;display:flex;align-items:center;gap:clamp(20px,2.5vw,32px);padding:clamp(12px,1.4vw,16px) clamp(20px,2.4vw,30px);border-radius:18px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);backdrop-filter:blur(20px) saturate(1.06);-webkit-backdrop-filter:blur(20px) saturate(1.06);margin-bottom:10px}
 .home-portrait-left{display:flex;align-items:center;gap:clamp(12px,1.4vw,18px);flex-shrink:0;margin-left:-20px}
 .home-portrait-avatar{width:clamp(44px,4vw,52px);height:clamp(44px,4vw,52px);border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.08);box-shadow:0 2px 12px rgba(0,0,0,.25);background:rgba(255,255,255,.04);flex-shrink:0}
@@ -2074,7 +2074,7 @@ html.control-glass-svg-ok .comment-card .cc-inner{background:rgba(0,0,0,.10);bac
 html.control-glass-svg-ok .danmaku-item{backdrop-filter:url(#mineradio-control-glass-filter) saturate(1);-webkit-backdrop-filter:url(#mineradio-control-glass-filter) saturate(1)}
 .danmaku-item .dm-gradient{position:absolute;inset:0;border-radius:20px;opacity:.25;pointer-events:none;z-index:-1}
 .danmaku-item.hot{box-shadow:inset 0 0 2px 1px rgba(255,255,255,.30),inset 0 0 10px 4px rgba(255,255,255,.10),0 2px 10px rgba(17,17,26,.06),inset 0 0 0 1px var(--home-accent,#00f5d4)}
-@keyframes dm-fly{from{transform:translateX(0)}to{transform:translateX(calc(-100vw - 200%))}}
+@keyframes dm-fly{from{transform:translateX(100%)}to{transform:translateX(calc(-100vw - 100%))}}
 body.immersive-mode #danmaku-container,body.immersive-mode #comment-card-container{opacity:0!important}
 </style>
 </head>
@@ -29031,10 +29031,16 @@ document.addEventListener('DOMContentLoaded', function() {
   var _dm_launchTimer = null;
   var _dm_clearTimer = null;
   var _dm_tracks = [];
+  var _dm_trackLastEl = [];
   var _dm_active = false;
   var _dm_shuffled = null;
   var _dm_shuffleIdx = 0;
   var _dm_shuffleSrc = null;
+  /* 近期防重窗口：记录最近 N 条已发射弹幕的 id，pick 时跳过这些
+     解决"500 条池 vs 7+ 分钟歌 + 高密度"必然重复的问题。
+     即使最终仍需从同一池里复用，最小重复间隔 = _dm_recentMax / density 次发射 */
+  var _dm_recentFired = [];
+  var _dm_recentMax = 60;
 
   /* ── 工具函数 ── */
   function getSongKey() {
@@ -29090,21 +29096,32 @@ document.addEventListener('DOMContentLoaded', function() {
       console.log('[弹幕] 评论数据: hot=' + hot.length + ' normal=' + normal.length + ' merged=' + merged.length + ' total=' + total);
       _dm_fetching = false;
       removeBtnLoading();
-      /* 第 1 页满 100 时也要拉第 2 页，凑齐 200 独立池；
-         只有 total ≤ 100（短评论歌）才跳过第 2 页 */
+      /* 第 1 页满 100 时拉第 2-5 页凑齐 ~500 独立池；
+         长歌曲（≥5 min）+ 高密度（4-5）时 300 条池仍会重复，500 条可大幅缓解。
+         只有 total ≤ 100（短评论歌）才跳过 */
       if (total > 100 && !isQQ) {
-        var page2Url = '/api/song/comments?id=' + encodeURIComponent(song.id || '') + '&limit=100&offset=100';
-        var fetcher2 = (typeof apiJson === 'function') ? apiJson(page2Url, { timeoutMs: 6000 }) : fetch(page2Url).then(function(r){ return r.json(); });
-        fetcher2.then(function(cdata2) {
-          var more = (cdata2 && cdata2.comments) || [];
-          more.forEach(function(c) {
-            var cid = c.commentId || c.content;
-            if (!seen[cid]) { seen[cid] = true; merged.push(c); }
-          });
-          merged.sort(function(a, b) { return (b.likedCount || 0) - (a.likedCount || 0); });
-          commentCache[key] = merged;
-          console.log('[弹幕] 第二页合并后: ' + merged.length + ' 条');
-        }).catch(function() {});
+        var pageOffset = 100;
+        var pageNum = 2;
+        function fetchNextPage() {
+          if (pageNum > 5) return; /* 最多拉到第 5 页（共 500 条） */
+          var url = '/api/song/comments?id=' + encodeURIComponent(song.id || '') + '&limit=100&offset=' + pageOffset;
+          var fetcherN = (typeof apiJson === 'function') ? apiJson(url, { timeoutMs: 6000 }) : fetch(url).then(function(r){ return r.json(); });
+          fetcherN.then(function(cdataN) {
+            var more = (cdataN && cdataN.comments) || [];
+            var beforeLen = merged.length;
+            more.forEach(function(c) {
+              var cid = c.commentId || c.content;
+              if (!seen[cid]) { seen[cid] = true; merged.push(c); }
+            });
+            merged.sort(function(a, b) { return (b.likedCount || 0) - (a.likedCount || 0); });
+            commentCache[key] = merged;
+            console.log('[弹幕] 第' + pageNum + '页合并后: ' + merged.length + ' 条 (+' + (merged.length - beforeLen) + ')');
+            pageOffset += 100;
+            pageNum++;
+            fetchNextPage();
+          }).catch(function() {});
+        }
+        fetchNextPage();
       }
       if (fx.danmakuMode === 'card') restartCardCarousel();
       if (fx.danmakuMode === 'danmaku') restartDanmakuLoop();
@@ -29412,7 +29429,7 @@ document.addEventListener('DOMContentLoaded', function() {
   /* ══════════════════════════════════════
      弹幕滚动模式
      ══════════════════════════════════════ */
-  var DM_TRACK_COUNT = 8;
+  var DM_TRACK_COUNT = 10;
 
   function restartDanmakuLoop() {
     stopDanmakuLoop();
@@ -29421,6 +29438,11 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!comments.length) return;
     _dm_active = true;
     _dm_tracks = new Array(DM_TRACK_COUNT).fill(0);
+    /* 切歌时清空近期防重窗口：上一首歌的 id 跟当前歌没关系，留着会浪费窗口位 */
+    _dm_recentFired = [];
+    _dm_shuffled = null;
+    _dm_shuffleIdx = 0;
+    _dm_shuffleSrc = null;
     launchDanmaku();
   }
 
@@ -29453,7 +29475,8 @@ document.addEventListener('DOMContentLoaded', function() {
     var container = document.getElementById('danmaku-container');
     if (!container) return;
 
-    /* 洗牌队列，避免重复；用完后重新洗牌 */
+    /* 洗牌队列：若池子用尽或换歌则重新洗牌。
+       配合 _dm_recentFired 窗口，保证同一池被多次循环时也有最小重复间隔。 */
     if (!_dm_shuffled || _dm_shuffleIdx >= _dm_shuffled.length || _dm_shuffleSrc !== comments) {
       _dm_shuffled = comments.slice();
       for (var i = _dm_shuffled.length - 1; i > 0; i--) {
@@ -29463,10 +29486,53 @@ document.addEventListener('DOMContentLoaded', function() {
       _dm_shuffleIdx = 0;
       _dm_shuffleSrc = comments;
     }
-    var c = _dm_shuffled[_dm_shuffleIdx++];
+
+    /* 挑一条"最近没发射过"的弹幕：在洗牌数组里线性扫到第一个非近期项；
+       若整列都在近期窗口里（极端情况：池子 ≤ _dm_recentMax），允许重复。
+       commentCache 里元素可能来自 hot (raw, commentId) 或 normal (mapped, id)，
+       字段不统一，用 fallback chain 取唯一 id。 */
+    var c = null;
+    var scans = 0;
+    while (_dm_shuffleIdx < _dm_shuffled.length && scans < _dm_shuffled.length) {
+      var candidate = _dm_shuffled[_dm_shuffleIdx];
+      _dm_shuffleIdx++;
+      scans++;
+      if (!candidate) continue;
+      var cid = candidate.id != null ? candidate.id : candidate.commentId;
+      if (cid && _dm_recentFired.indexOf(cid) !== -1) continue;
+      c = candidate;
+      break;
+    }
+    /* 洗牌池被近期窗口耗尽：重洗一次（保留近期窗口，新洗牌依然会跳过这些） */
+    if (!c) {
+      _dm_shuffled = comments.slice();
+      for (var i = _dm_shuffled.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var tmp = _dm_shuffled[i]; _dm_shuffled[i] = _dm_shuffled[j]; _dm_shuffled[j] = tmp;
+      }
+      _dm_shuffleIdx = 0;
+      for (var k = 0; k < _dm_shuffled.length; k++) {
+        var cand = _dm_shuffled[k];
+        if (!cand) continue;
+        var kid = cand.id != null ? cand.id : cand.commentId;
+        if (kid && _dm_recentFired.indexOf(kid) !== -1) continue;
+        c = cand;
+        _dm_shuffleIdx = k + 1;
+        break;
+      }
+      /* 极端兜底：池子全部在近期里（池子太小）— 拿第一个 */
+      if (!c) { c = _dm_shuffled[0]; _dm_shuffleIdx = 1; }
+    }
     if (!c) return;
     var text = c.content || '';
     if (!text) return;
+
+    /* 记录到近期窗口 */
+    var fireId = c.id != null ? c.id : c.commentId;
+    if (fireId) {
+      _dm_recentFired.push(fireId);
+      if (_dm_recentFired.length > _dm_recentMax) _dm_recentFired.shift();
+    }
 
     /* 弹幕速度：固定速度，speed 1→80px/s, 5→200px/s
        抖动随速度档位递增：低速档几乎不抖，保证速度 1 真正"慢"且稳定 */
@@ -29474,14 +29540,6 @@ document.addEventListener('DOMContentLoaded', function() {
     var jitter = (fx.danmakuSpeed - 1) * 2;       /* speed 1→0, 5→±8 */
     speed += (Math.random() * 2 - 1) * jitter;
     speed = Math.max(80, Math.min(220, speed));
-    /* 时长 = (屏幕宽度 + 2×弹幕宽度) / 速度，弹幕宽度约300估算 */
-    var baseDur = (window.innerWidth + 600) / speed;
-    baseDur = Math.max(4, Math.min(60, baseDur));
-
-    /* 轨道分配 */
-    var track = pickTrack();
-    var trackH = 34;
-    var topPx = track * trackH + 8;
 
     /* 字号：基于 fontSize 1→19px, 2→21px, 3→23px，随机微调 */
     var baseFont = 17 + fx.danmakuFontSize * 2 + (Math.random() * 2 - 1);
@@ -29493,8 +29551,34 @@ document.addEventListener('DOMContentLoaded', function() {
     var isHot = comments.indexOf(c) < 10;
     if (isHot) opacity = Math.min(1, opacity + 0.15);
 
-    var item = document.createElement('div');
-    item.className = 'danmaku-item' + (isHot ? ' hot' : '');
+    /* 测宽：先创建隐藏 mirror 元素，测出真实宽度后再创建正式元素；
+       这样 duration 可以一次性设置正确值，避免 appendChild 后改 duration
+       触发浏览器重启动画（"突然出现 + 滚动很快"的根因之一） */
+    var mirror = document.createElement('div');
+    mirror.className = 'danmaku-item';
+    mirror.style.cssText = 'position:absolute; visibility:hidden; pointer-events:none; top:0; right:0; left:auto;';
+    mirror.style.fontSize = baseFont + 'px';
+    var mirrorText = document.createElement('span');
+    mirrorText.textContent = text;
+    mirrorText.style.position = 'relative';
+    mirrorText.style.zIndex = '1';
+    mirror.appendChild(mirrorText);
+    container.appendChild(mirror);
+    var actualWidth = mirror.offsetWidth || 300;
+    container.removeChild(mirror);
+
+    /* 时长 = (屏幕宽度 + 2×弹幕宽度) / 速度
+       与 keyframe 位移 (translateX(100%) → translateX(-100vw - 100%)) 严格对应：
+       实际位移 = 100vw + 200% = innerWidth + 2×actualWidth，保证所有弹幕的
+       实际飞行速度 = speed px/s，不会被钳住变快。 */
+    var realDur = (window.innerWidth + actualWidth * 2) / speed;
+    realDur = Math.max(4, Math.min(60, realDur));
+
+    /* 轨道分配（严格模式：必须上一条完全滚出屏幕才允许新弹幕进入同轨道） */
+    var track = pickTrack();
+    var trackH = 30;
+    var topPx = track * trackH + 8;
+
     /* 随机渐变色背景 */
     var dmGradients = [
       'linear-gradient(135deg,#667eea,#764ba2)','linear-gradient(135deg,#f093fb,#f5576c)',
@@ -29528,21 +29612,20 @@ document.addEventListener('DOMContentLoaded', function() {
     textSpan.style.zIndex = '1';
     item.appendChild(textSpan);
     item.style.top = topPx + 'px';
-    item.style.right = '-100%';
+    item.style.right = '0';  /* 配合 keyframe：起点 translateX(100%) 把元素推到屏外右侧 */
     item.style.fontSize = baseFont + 'px';
     item.style.opacity = opacity;
-    item.style.animationDuration = baseDur + 's';
+    item.style.animationDuration = realDur + 's';
 
     container.appendChild(item);
-    /* 根据实际宽度重新计算时长，保证所有弹幕速度一致 */
-    var actualWidth = item.offsetWidth || 300;
-    var realDur = (window.innerWidth + actualWidth * 2) / speed;
-    realDur = Math.max(4, Math.min(60, realDur));
-    item.style.animationDuration = realDur + 's';
+    _dm_trackLastEl[track] = item;
     /* 定时释放轨道：动画结束后释放 */
     var releaseMs = Math.ceil(realDur * 1000) + 500;
     var trackIdx = track;
-    setTimeout(function() { _dm_tracks[trackIdx] = Math.max(0, _dm_tracks[trackIdx] - 1); }, releaseMs);
+    setTimeout(function() {
+      _dm_tracks[trackIdx] = Math.max(0, _dm_tracks[trackIdx] - 1);
+      if (_dm_trackLastEl[trackIdx] === item) _dm_trackLastEl[trackIdx] = null;
+    }, releaseMs);
     /* 清除完成的弹幕 */
     item.addEventListener('animationend', function() {
       if (item.parentNode) item.parentNode.removeChild(item);
@@ -29550,7 +29633,25 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   function pickTrack() {
-    /* 选最空闲的轨道，只返回索引，不释放 */
+    /* 位置检查：必须"上一条弹幕已完全滚出屏幕"才允许新弹幕进入同轨道，
+       否则新弹幕从屏幕右侧出发后会追上同一轨道的旧弹幕造成视觉重叠。
+       10 轨道密度上限 = 10 / 单条时长（≈10s）= 1 条/s，覆盖密度 1-3 完全无重叠；
+       密度 4-5 时若全部轨道都被占，则 fallback 到"最不忙"轨道（仍可能重叠，
+       但这是用户主动选择的高密度）。 */
+    for (var i = 0; i < DM_TRACK_COUNT; i++) {
+      var lastEl = _dm_trackLastEl[i];
+      if (!lastEl || !lastEl.parentNode) {
+        _dm_tracks[i]++;
+        return i;
+      }
+      var lastRect = lastEl.getBoundingClientRect();
+      if (lastRect.right < 0) {
+        _dm_tracks[i]++;
+        _dm_trackLastEl[i] = null;
+        return i;
+      }
+    }
+    /* 全部轨道都还有弹幕在屏幕中：选最不忙的（允许重叠，仅在 density 4-5 触发） */
     var minVal = Infinity, minIdx = 0;
     for (var i = 0; i < DM_TRACK_COUNT; i++) {
       if (_dm_tracks[i] < minVal) { minVal = _dm_tracks[i]; minIdx = i; }
