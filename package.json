@@ -73,14 +73,12 @@
       {
         "provider": "github",
         "owner": "ShijingYangwow27",
-        "repo": "Mineradio--macOS",
-        "filter": ["dmg", "zip"]
+        "repo": "Mineradio--macOS"
       },
       {
         "provider": "github",
         "owner": "ShijingYangwow27",
-        "repo": "mushroom-go",
-        "filter": ["nsis", "portable", "blockmap", "yml"]
+        "repo": "mushroom-go"
       }
     ]
   },
