@@ -69,18 +69,11 @@
       "allowToChangeInstallationDirectory": true,
       "deleteAppDataOnUninstall": false
     },
-    "publish": [
-      {
-        "provider": "github",
-        "owner": "ShijingYangwow27",
-        "repo": "Mineradio--macOS"
-      },
-      {
-        "provider": "github",
-        "owner": "ShijingYangwow27",
-        "repo": "mushroom-go"
-      }
-    ]
+    "publish": {
+      "provider": "github",
+      "owner": "ShijingYangwow27",
+      "repo": "mushroom-go"
+    }
   },
   "mineradio": {
     "update": {
