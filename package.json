@@ -68,11 +68,6 @@
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "deleteAppDataOnUninstall": false
-    },
-    "publish": {
-      "provider": "github",
-      "owner": "ShijingYangwow27",
-      "repo": "mushroom-go"
     }
   },
   "mineradio": {
