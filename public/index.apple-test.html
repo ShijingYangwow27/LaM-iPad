@@ -8248,6 +8248,7 @@ var stageLyrics = {
   outgoing: [],
   currentIdx: -1,
   currentText: '',
+  currentTr: '',
   highBloom: 0,
   beatGlow: 0,
   glowFollowX: 0,
@@ -9366,6 +9367,16 @@ function applyLyricPaletteToMesh(mesh) {
     if (u.uOpacity && !isFinite(u.uOpacity.value)) u.uOpacity.value = 0;
     data.textMat.needsUpdate = true;
   }
+  if (data.trMat && data.trMat.uniforms) {
+    var tu = data.trMat.uniforms;
+    if (tu.uBaseColor) tu.uBaseColor.value.copy(lyricThreeColor(pal.primary, '#d6f8ff', 0.38));
+    if (tu.uHiColor) tu.uHiColor.value.copy(lyricThreeColor(pal.highlight || pal.primary, '#fff0b8', 0.48));
+    if (tu.uGlowColor) tu.uGlowColor.value.copy(lyricThreeColor(pal.glowColor || pal.secondary || pal.primary, '#9cffdf', 0.36));
+    if (tu.uSolarColor) tu.uSolarColor.value.copy(lyricThreeColor(pal.highlight || pal.secondary || pal.primary, '#fff0b8', 0.50));
+    if (tu.uSolar && !isFinite(tu.uSolar.value)) tu.uSolar.value = 0;
+    if (tu.uOpacity && !isFinite(tu.uOpacity.value)) tu.uOpacity.value = 0;
+    data.trMat.needsUpdate = true;
+  }
   if (data.glowMat) data.glowMat.color.copy(lyricThreeColor(pal.glowColor || pal.secondary || pal.primary, '#9cffdf', 0.36));
   if (data.sparkMat) setLyricSparkColor(data, lyricThreeColor(pal.highlight || pal.secondary || pal.primary, '#fff0b8', 0.46));
   if (data.sunMat) data.sunMat.color.copy(lyricThreeColor(pal.highlight || pal.secondary || pal.primary, '#fff0b8', 0.50));
@@ -9521,14 +9532,14 @@ function lyricThreeColor(css, fallback, minLum) {
 
 var STAGE_LYRIC_MAX_LINES = 1;
 
-function makeLyricMask(text) {
+function makeLyricMask(text, maxFontSize) {
   var canvas = document.createElement('canvas');
   var W = 2048, H = 384;
   canvas.width = W; canvas.height = H;
   var ctx = canvas.getContext('2d');
   var maxWidth = W - 190;
   var maxLines = STAGE_LYRIC_MAX_LINES;
-  var fontSize = 128;
+  var fontSize = maxFontSize || 128;
   text = String(text || '').replace(/\s+/g, ' ').trim();
   var lines = [text];
   var widest = 1;
@@ -9861,8 +9872,9 @@ function makeLyricShaderMaterial(mask, pal) {
   });
 }
 
-function buildLyricMesh(text) {
+function buildLyricMesh(text, trText) {
   text = String(text || '').replace(/\s+/g, ' ').trim();
+  trText = trText ? String(trText).replace(/\s+/g, ' ').trim() : '';
   var mask = makeLyricMask(text);
   var pal = stageLyrics.palette;
   var worldW = 6.10;
@@ -9980,11 +9992,29 @@ function buildLyricMesh(text) {
   sparks.visible = !!fx.lyricGlowParticles;
   group.add(sparks);
 
+  var trMesh = null, trMat = null;
+  if (trText) {
+    var trMask = makeLyricMask(trText, 82);
+    var trWorldH = worldW * (trMask.height / trMask.width);
+    var trTextWorldH = worldW * ((trMask.textHeight || trMask.fontSize) / trMask.width);
+    var trGeo = new THREE.PlaneGeometry(worldW, trWorldH, 1, 1);
+    trMat = makeLyricShaderMaterial(trMask, pal);
+    trMat.uniforms.uProgress.value = 1;
+    trMat.uniforms.uSolar.value = 0;
+    trMesh = new THREE.Mesh(trGeo, trMat);
+    trMesh.renderOrder = 43.5;
+    var trGap = 0.05;
+    trMesh.position.y = -(textWorldH / 2 + trGap + trTextWorldH / 2);
+    trMesh.position.z = -0.035;
+    group.add(trMesh);
+  }
+
   group.userData.lyric = {
     mask:mask, textMesh:textMesh, readability:readability, glow:glow, sparks:sparks, sun:sun,
     textMat:textMat, readabilityMat:readabilityMat, glowMat:glowMat, sparkMat:pmat, sunMat:sunMat,
     basePositions:ppos.slice ? ppos.slice(0) : new Float32Array(ppos),
-    textWorldW:textWorldW, textWorldH:textWorldH, worldW:worldW, worldH:worldH
+    textWorldW:textWorldW, textWorldH:textWorldH, worldW:worldW, worldH:worldH,
+    trMesh:trMesh, trMat:trMat
   };
   updateLyricMeshProgress(group, 0);
   return group;
@@ -9998,7 +10028,7 @@ function updateLyricMeshProgress(mesh, progress) {
   mesh.userData.lastLyricProgress = progress;
 }
 
-function showStageLine(text, redrawOnly) {
+function showStageLine(text, redrawOnly, trText) {
   createLyricsParticles();
   if (!stageLyrics.group) return;
   if (!text) { clearStageLyrics(); return; }
@@ -10011,7 +10041,8 @@ function showStageLine(text, redrawOnly) {
     stageLyrics.outgoing.push(stageLyrics.current);
   }
   stageLyrics.currentText = text;
-  var mesh = buildLyricMesh(text);
+  stageLyrics.currentTr = trText || '';
+  var mesh = buildLyricMesh(text, trText);
   stageLyrics.group.add(mesh);
   stageLyrics.current = mesh;
 }
@@ -10019,7 +10050,7 @@ function showStageLine(text, redrawOnly) {
 function refreshCurrentLyricStyle() {
   if (!stageLyrics || !stageLyrics.currentText || !stageLyrics.current) return;
   var progress = stageLyrics.current.userData ? (stageLyrics.current.userData.lastLyricProgress || 0) : 0;
-  showStageLine(stageLyrics.currentText, true);
+  showStageLine(stageLyrics.currentText, true, stageLyrics.currentTr);
   updateLyricMeshProgress(stageLyrics.current, progress);
   if (stageLyrics.current && stageLyrics.current.userData) stageLyrics.current.userData.age = 0.48;
 }
@@ -10029,6 +10060,7 @@ function clearStageLyrics() {
   stageLyrics.current = null;
   stageLyrics.currentIdx = -1;
   stageLyrics.currentText = '';
+  stageLyrics.currentTr = '';
   while (stageLyrics.outgoing.length) disposeLyricMesh(stageLyrics.outgoing.pop());
 }
 
@@ -10218,6 +10250,7 @@ function updateStageLyrics3D(dt) {
       var opacityEase = shelfDetailOpen && currentOpacity > lyricOpacityTarget ? shelfDetailLyricProfile.easeDown : 0.16;
       opacity = clampRange(currentOpacity + (lyricOpacityTarget - currentOpacity) * opacityEase, 0, 1);
       if (data.textMat) data.textMat.uniforms.uOpacity.value = opacity;
+      if (data.trMat) data.trMat.uniforms.uOpacity.value = opacity * 0.62;
       if (data.readabilityMat) {
         var readabilityTarget = opacity * shelfDetailLyricProfile.readability;
         var readabilityEase = shelfDetailOpen && data.readabilityMat.opacity > readabilityTarget ? 0.28 : 0.16;
@@ -10300,6 +10333,7 @@ function updateStageLyrics3D(dt) {
     }
     opacity = (1 - a) * 0.72 * shelfDetailLyricProfile.outgoing;
     if (data.textMat) data.textMat.uniforms.uOpacity.value = opacity;
+    if (data.trMat) data.trMat.uniforms.uOpacity.value = opacity * 0.5;
     if (data.readabilityMat) data.readabilityMat.opacity = opacity * (shelfDetailOpen ? shelfDetailLyricProfile.readability : 0.58);
     if (data.textMat && data.textMat.uniforms.uSolar) data.textMat.uniforms.uSolar.value *= shelfDetailOpen ? 0.72 : 0.86;
     if (data.glowMat) data.glowMat.opacity = lyricGlowStrength > 0 ? (shelfDetailOpen ? Math.min(shelfDetailLyricProfile.glowCap * 0.40, opacity * 0.05 * lyricGlowStrength) : opacity * 0.08 * lyricGlowStrength) : 0;
@@ -10388,7 +10422,7 @@ function tickLyricsParticles() {
   }
   if (newIdx !== stageLyrics.currentIdx) {
     stageLyrics.currentIdx = newIdx;
-    showStageLine(lyricsLines[newIdx].text || '');
+    showStageLine(lyricsLines[newIdx].text || '', false, lyricsLines[newIdx].tr || '');
   }
   if (stageLyrics.current) {
     var curLine = lyricsLines[newIdx] || { t:t };
@@ -20370,6 +20404,18 @@ async function fetchLyric(songOrId, token) {
     var timingSource = hasNativeKaraoke ? 'yrc-word' : (nativeLines.length ? 'yrc-line' : (lrcLines.length ? 'lrc-line' : 'fallback'));
     var lines = withLyricFallback(nativeLines.length ? nativeLines : lrcLines);
     if (lines.length && lines[0].fallback) timingSource = 'fallback';
+    var transLines = parseLyricText(r.tlyric || '');
+    if (transLines.length) {
+      lines.forEach(function(line){
+        if (line.fallback) return;
+        var best = null, bestDiff = Infinity;
+        for (var ti = 0; ti < transLines.length; ti++) {
+          var diff = Math.abs(transLines[ti].t - line.t);
+          if (diff < bestDiff && diff < 1.0) { bestDiff = diff; best = transLines[ti]; }
+        }
+        if (best && best.text && !isNoLyricText(best.text)) line.tr = best.text;
+      });
+    }
     setOriginalLyricsState(lines, hasNativeKaraoke, timingSource);
     applyPreferredLyricsForCurrent(true);
   } catch (e) {
