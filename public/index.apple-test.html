@@ -2446,6 +2446,14 @@ body.immersive-mode #danmaku-container,body.immersive-mode #comment-card-contain
         <div class="lyric-color-value" id="lyric-glow-value">跟随高亮</div>
         <button class="fx-mini-btn ghost active" id="lyric-glow-link-btn" type="button" onclick="toggleLyricGlowLink(event)">链接</button>
       </div>
+      <div class="fx-section-label">歌词翻译</div>
+      <div class="lyric-source-row">
+        <div class="fx-seg lyric-source-seg" id="lyric-translation-seg">
+          <button id="lyric-translation-off" type="button" onclick="setLyricTranslationMode('off')">关</button>
+          <button id="lyric-translation-auto" type="button" class="active" onclick="setLyricTranslationMode('auto')">自动</button>
+          <button id="lyric-translation-on" type="button" onclick="setLyricTranslationMode('on')">开</button>
+        </div>
+      </div>
       <div class="fx-section-label">歌词源</div>
       <div class="lyric-source-row">
         <div class="fx-seg lyric-source-seg" id="lyric-source-seg">
@@ -3721,6 +3729,7 @@ var fxDefaults = {
   lyricLetterSpacing: 0,
   lyricLineHeight: 1.0,
   lyricWeight: 900,
+  lyricTranslationMode: 'auto',
   visualTintMode: 'auto',
   visualTintColor: '#9db8cf',
   uiAccentColor: '#ffffff',
@@ -8719,6 +8728,7 @@ function saveLyricLayout() {
       lyricWeight: clampRange(Number(fx.lyricWeight) || 900, 500, 900),
       lyricGlow: !!fx.lyricGlow,
       lyricGlowBeat: !!fx.lyricGlowBeat,
+      lyricTranslationMode: (fx.lyricTranslationMode === 'off' || fx.lyricTranslationMode === 'on') ? fx.lyricTranslationMode : 'auto',
       lyricGlowParticles: !!fx.lyricGlowParticles,
       cinema: !!fx.cinema,
       bloom: !!fx.bloom,
@@ -10422,7 +10432,10 @@ function tickLyricsParticles() {
   }
   if (newIdx !== stageLyrics.currentIdx) {
     stageLyrics.currentIdx = newIdx;
-    showStageLine(lyricsLines[newIdx].text || '', false, lyricsLines[newIdx].tr || '');
+    var trMode = fx.lyricTranslationMode;
+    var trLine = lyricsLines[newIdx].tr || '';
+    var trText = trMode === 'off' ? '' : trLine;
+    showStageLine(lyricsLines[newIdx].text || '', false, trText);
   }
   if (stageLyrics.current) {
     var curLine = lyricsLines[newIdx] || { t:t };
@@ -21582,6 +21595,7 @@ function normalizeFxArchiveSnapshot(raw) {
     lyricLetterSpacing: archiveNumber(raw, 'lyricLetterSpacing', fxDefaults.lyricLetterSpacing, -0.04, 0.18),
     lyricLineHeight: archiveNumber(raw, 'lyricLineHeight', fxDefaults.lyricLineHeight, 0.86, 1.35),
     lyricWeight: archiveNumber(raw, 'lyricWeight', fxDefaults.lyricWeight, 500, 900),
+    lyricTranslationMode: raw.lyricTranslationMode === 'off' || raw.lyricTranslationMode === 'on' ? raw.lyricTranslationMode : 'auto',
     visualTintMode: raw.visualTintMode === 'custom' ? 'custom' : 'auto',
     visualTintColor: normalizeHexColor(raw.visualTintColor || fxDefaults.visualTintColor),
     uiAccentColor: normalizeHexColor(raw.uiAccentColor || fxDefaults.uiAccentColor, fxDefaults.uiAccentColor),
@@ -21721,6 +21735,7 @@ function applySavedLyricPaletteState() {
   updateLyricColorControls();
   updateLyricHighlightControls();
   updateLyricGlowControls();
+  updateLyricTranslationControls();
 }
 function applyFxArchiveSnapshot(snapshot) {
   var data = normalizeFxArchiveSnapshot(snapshot);
@@ -22646,6 +22661,36 @@ function setLyricHighlightCustom(color, silent) {
   saveLyricLayout();
   pushDesktopLyricsState(true);
   if (!silent) showToast('高亮颜色: ' + fx.lyricHighlightColor.toUpperCase());
+}
+function setLyricTranslationMode(mode, silent) {
+  mode = mode === 'off' || mode === 'on' ? mode : 'auto';
+  fx.lyricTranslationMode = mode;
+  updateLyricTranslationControls();
+  if (stageLyrics && stageLyrics.currentText) {
+    if (stageLyrics.current) {
+      stageLyrics.current.userData.state = 'out';
+      stageLyrics.current.userData.age = 0;
+      stageLyrics.outgoing.push(stageLyrics.current);
+      stageLyrics.current = null;
+    }
+    var curIdx = stageLyrics.currentIdx;
+    if (curIdx >= 0 && lyricsLines && lyricsLines[curIdx]) {
+      var trText = mode === 'off' ? '' : (lyricsLines[curIdx].tr || '');
+      showStageLine(lyricsLines[curIdx].text || '', false, trText);
+    }
+  }
+  saveLyricLayout();
+  pushDesktopLyricsState(true);
+  if (!silent) showToast('歌词翻译: ' + (mode === 'off' ? '关闭' : (mode === 'on' ? '始终开启' : '自动')));
+}
+function updateLyricTranslationControls() {
+  var mode = fx.lyricTranslationMode;
+  var offBtn = document.getElementById('lyric-translation-off');
+  var autoBtn = document.getElementById('lyric-translation-auto');
+  var onBtn = document.getElementById('lyric-translation-on');
+  if (offBtn) offBtn.classList.toggle('active', mode === 'off');
+  if (autoBtn) autoBtn.classList.toggle('active', mode === 'auto' || mode !== 'off' && mode !== 'on');
+  if (onBtn) onBtn.classList.toggle('active', mode === 'on');
 }
 
 function buildPresetGrid() {
