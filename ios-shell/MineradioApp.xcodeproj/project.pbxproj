@@ -1,0 +1,199 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 50;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		38966E5D90505765BD38D346E825CA33 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A458CF91FA17F8D2BD35D45547723C3F /* ContentView.swift */; };
+		92127943ED588A19BFC1199803E338BE /* MineradioApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0F51A6857401EDF2C557BBBF6BB83B7 /* MineradioApp.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		0C75FE0C9D12CE7500F79D2B62AAEF66 /* MineradioApp.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = MineradioApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A458CF91FA17F8D2BD35D45547723C3F /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		B0F51A6857401EDF2C557BBBF6BB83B7 /* MineradioApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MineradioApp.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		A074846138262EE1D0DEEE2F360C4C6E = {
+			isa = PBXGroup;
+			children = (
+				A458CF91FA17F8D2BD35D45547723C3F /* ContentView.swift */,
+				B0F51A6857401EDF2C557BBBF6BB83B7 /* MineradioApp.swift */,
+				F7171FDDD7CBC50C89838E077F5FA4E0 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		F7171FDDD7CBC50C89838E077F5FA4E0 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				0C75FE0C9D12CE7500F79D2B62AAEF66 /* MineradioApp.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		01876189068479D0C4E0BC0BA9C90B1C /* MineradioApp */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 364E35D71F8253A408243512C92353FD /* Build configuration list for PBXNativeTarget "MineradioApp" */;
+			buildPhases = (
+				4419BD84511F12BD0CF57D76FE046EAA /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = MineradioApp;
+			productName = MineradioApp;
+			productReference = 0C75FE0C9D12CE7500F79D2B62AAEF66 /* MineradioApp.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		64A6FA4F60668F85B4923A1AEA0573F1 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 1000;
+				TargetAttributes = {
+					01876189068479D0C4E0BC0BA9C90B1C = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = F720E243D2CDEF23F2F26EA39E8CD5D0 /* Build configuration list for PBXProject "MineradioApp" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = A074846138262EE1D0DEEE2F360C4C6E;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				01876189068479D0C4E0BC0BA9C90B1C /* MineradioApp */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		4419BD84511F12BD0CF57D76FE046EAA /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				38966E5D90505765BD38D346E825CA33 /* ContentView.swift in Sources */,
+				92127943ED588A19BFC1199803E338BE /* MineradioApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		3F22A11D1E45ED37BD0EC1ADCB40BE40 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_REQUIRED = NO;
+				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_BITCODE = NO;
+				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				SDKROOT = iphoneos;
+				SWIFT_TREAT_WARNINGS_AS_ERRORS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		70B89AC718B893BC2F1AC7E747E5F877 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_REQUIRED = NO;
+				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_BITCODE = NO;
+				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				SDKROOT = iphoneos;
+				SWIFT_TREAT_WARNINGS_AS_ERRORS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		8A1E7303FAAEF1ED03FCB87E7E94133B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "";
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = "";
+				ENABLE_PREVIEWS = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Mineradio;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.music";
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UIRequiresFullScreen = YES;
+				INFOPLIST_KEY_UIStatusBarHidden = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				PRODUCT_BUNDLE_IDENTIFIER = com.mineradio.app;
+				PRODUCT_NAME = Mineradio;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+			};
+			name = Debug;
+		};
+		B9AF8BAF89C8D27754817ECFE98CF595 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "";
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = "";
+				ENABLE_PREVIEWS = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Mineradio;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.music";
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UIRequiresFullScreen = YES;
+				INFOPLIST_KEY_UIStatusBarHidden = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				PRODUCT_BUNDLE_IDENTIFIER = com.mineradio.app;
+				PRODUCT_NAME = Mineradio;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		364E35D71F8253A408243512C92353FD /* Build configuration list for PBXNativeTarget "MineradioApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8A1E7303FAAEF1ED03FCB87E7E94133B /* Debug */,
+				B9AF8BAF89C8D27754817ECFE98CF595 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = "";
+		};
+		F720E243D2CDEF23F2F26EA39E8CD5D0 /* Build configuration list for PBXProject "MineradioApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3F22A11D1E45ED37BD0EC1ADCB40BE40 /* Debug */,
+				70B89AC718B893BC2F1AC7E747E5F877 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 64A6FA4F60668F85B4923A1AEA0573F1 /* Project object */;
+}

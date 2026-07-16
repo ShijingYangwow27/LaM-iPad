@@ -2,10 +2,20 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Mineradio</title>
 <meta name="referrer" content="no-referrer">
-<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Inter:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700;900&family=UnifrakturCook:wght@700&display=swap" rel="stylesheet">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/build/icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mineradio">
+<meta name="theme-color" content="#08090B">
+<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet"></noscript>
 <script src="vendor/three.r128.min.js"></script>
 <script src="vendor/music-tempo.min.js"></script>
 <script src="vendor/gsap.min.js"></script>
@@ -40,6 +50,22 @@ try {
 } catch (e) {
   document.documentElement.classList.add('simple-mode-preload');
 }
+try {
+  var isStandalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || (window.navigator && window.navigator.standalone === true);
+  if (isStandalone) {
+    document.documentElement.classList.add('standalone-pwa');
+    document.body && document.body.classList.add('standalone-pwa');
+  }
+} catch (e) {}
+try {
+  // 触屏 / iPad 快速通道：跳过大资源预热
+  var isTouchCoarse = window.matchMedia && window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+  var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  if (isTouchCoarse || isIOS) {
+    document.documentElement.classList.add('touch-coarse');
+    window.__mineradioFastBoot = true;
+  }
+} catch (e) {}
 </script>
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
@@ -2082,6 +2108,468 @@ html.control-glass-svg-ok .danmaku-item{backdrop-filter:url(#mineradio-control-g
 .danmaku-item.hot{box-shadow:inset 0 0 2px 1px rgba(255,255,255,.30),inset 0 0 10px 4px rgba(255,255,255,.10),0 2px 10px rgba(17,17,26,.06),inset 0 0 0 1px var(--home-accent,#00f5d4)}
 @keyframes dm-fly{from{transform:translateX(100%)}to{transform:translateX(calc(-100vw - 100%))}}
 body.immersive-mode #danmaku-container,body.immersive-mode #comment-card-container{opacity:0!important}
+
+/* ==================== iPad / 触屏适配 ==================== */
+/* 三段式架构：
+   1) @media (hover:none) and (pointer:coarse) and (max-width:1023px)
+      → 小/中屏 iPad（mini 8.3" 横屏 / 10.5" / 11" 横屏 / 9.7"）
+      → 紧凑 iPad 布局 + clamp() 变量自适应
+   2) @media (hover:none) and (pointer:coarse) and (max-width:820px)
+      → 极小屏（mini 竖屏 744 / iPad 9.7" 竖屏 768 / 7.9" 1024）
+      → 2 列 grid、隐藏部分装饰
+   3) @media (hover:none) and (pointer:coarse) and (min-width:1024px)
+      → 大屏 iPad（12.9" / 13" 横屏）
+      → 桌面布局 + 触屏补丁（最小触控目标、关闭 :hover）
+*/
+*{-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none}
+html,body{height:100vh;height:100dvh;height:-webkit-fill-available;overscroll-behavior:none;touch-action:manipulation}
+input,textarea,[contenteditable]{-webkit-touch-callout:default;-webkit-user-select:text;user-select:text;touch-action:auto}
+
+/* ---------- 段 1：小/中屏 iPad（≤1023px）---------- */
+@media (hover:none) and (pointer:coarse) and (max-width:1023px){
+  :root{
+    --ipad-grid-cols:3;
+    --ipad-tile-cols:2;
+    --ipad-fab-size:clamp(54px,6vw,64px);
+    --ipad-fab-bottom:clamp(108px,12vh,132px);
+    --ipad-tile-cover-h:clamp(56px,7vw,80px);
+    --ipad-card-min-h:clamp(96px,11vw,124px);
+    --ipad-rail-max-h:clamp(220px,25vh,280px);
+    --ipad-mosaic-h:clamp(180px,22vh,230px);
+    --ipad-gap:clamp(8px,1vw,12px);
+  }
+  /* 触屏设备抑制 hover 视觉残留 */
+  .glass-saved-button:hover,.desktop-window-btn:hover,.desktop-mode-btn:hover,
+  body.desktop-shell #desktop-titlebar #visual-guide-btn:hover,
+  body.desktop-shell #desktop-titlebar #update-entry:hover,
+  .search-mode-tabs button:hover,.search-history-clear:hover,
+  .search-history-chip:hover,.search-result:hover,
+  .search-result.qq-source:hover,.search-result.netease-source:hover,
+  .search-artist-link:hover{background:inherit;border-color:inherit;color:inherit;text-decoration:inherit;box-shadow:inherit;transform:none}
+  .search-history-chip:active,.search-result:active,.glass-saved-button:active,
+  .desktop-mode-btn:active,.desktop-window-btn:active,
+  .search-mode-tabs button:active{transform:scale(.97);transition:transform .08s ease}
+  /* 3D 歌单架与粒子舞台需要自定义手势，禁用浏览器默认 touch 行为 */
+  canvas,#stage-canvas,.stage-container,[data-stage],.song-rack-canvas{touch-action:none}
+  /* 桌面专属 UI 在触屏上隐藏 */
+  body.standalone-pwa .desktop-only{display:none!important}
+  /* splash 屏幕跳过 */
+  html.touch-coarse #splash,html.touch-coarse body.splash-active #splash{display:none!important}
+  html.touch-coarse body.splash-active{background:#08090B!important}
+  /* 性能降级：仅保留 3 层玻璃，其它元素透明化 */
+  .search-history-chip,.search-result,.home-card,.home-tile,.fx-mini-btn,
+  .hotkey-btn,#top-right,.control-cluster,#album-bg{
+    backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.06)!important
+  }
+  .ctrl-btn,.glass-saved-button,.danmaku-item{
+    backdrop-filter:blur(14px) saturate(1.6)!important;
+    -webkit-backdrop-filter:blur(14px) saturate(1.6)!important
+  }
+  #bottom-bar{backdrop-filter:blur(18px) saturate(1.4)!important;-webkit-backdrop-filter:blur(18px) saturate(1.4)!important}
+  #album-bg{filter:blur(40px) brightness(.25) saturate(1.2)!important;transform:scale(1.15)!important}
+  html.control-glass-svg-ok .ctrl-btn,html.control-glass-svg-ok .glass-saved-button,
+  html.control-glass-svg-ok .danmaku-item{backdrop-filter:blur(10px)!important;-webkit-backdrop-filter:blur(10px)!important}
+  .splash-bg-noise,.splash-signal-line{animation:none!important}
+  /* 主页布局 */
+  #empty-home{top:max(64px,calc(env(safe-area-inset-top,0px) + 48px));bottom:calc(var(--ipad-fab-bottom) + 12px + env(safe-area-inset-bottom,0px));width:min(1240px,calc(100vw - 24px))}
+  .empty-home-shell{grid-template-columns:minmax(280px,.94fr) minmax(320px,1.06fr);gap:var(--ipad-gap);min-height:auto;height:100%;align-items:start}
+  .home-hero{padding:14px clamp(14px,1.6vw,18px) 14px clamp(14px,1.6vw,18px);border-radius:22px}
+  .home-hero-inner{grid-template-rows:auto auto auto 1fr;gap:8px;height:100%}
+  .home-hero-visual{min-height:0;max-height:none}
+  /* iPad 5-cell 布局：私人电台 (1.18fr × 2 rows) | 4 个小卡 (1fr × 1fr 2x2)
+     桌面歌词/壁纸模式已在 HTML 替换为睡眠定时 + PiP 浮窗 */
+  .home-mosaic{height:clamp(170px,21vh,210px);min-height:160px;margin-top:8px;gap:8px;grid-template-columns:1.18fr 1fr 1fr;grid-template-rows:1fr 1fr;align-content:stretch}
+  .home-mosaic-cell{border-radius:16px}
+  .home-mosaic-radio{justify-content:center;padding:12px 12px 36px}
+  .home-mosaic-radio-head{justify-content:center}
+  .home-mosaic-radio-desc{font-size:11px;line-height:1.3;flex:0 0 auto;max-height:2.6em;overflow:hidden}
+  .home-mosaic-radio-btn{padding:5px 10px;font-size:11px}
+  .home-mosaic-shortcut-label{font-size:11.5px}
+  .home-mosaic-shortcut-hint{font-size:9.5px}
+  .home-weather-meta{padding:10px 12px;gap:5px}
+  .home-now-card{padding:14px;gap:12px}
+  .home-now-cover{width:clamp(64px,8vw,100px);height:clamp(64px,8vw,100px)}
+  .home-now-btn{width:34px;height:34px}
+  .home-now-play{width:38px;height:38px}
+  .home-grid{align-content:start;gap:var(--ipad-gap);flex:0 0 auto;grid-template-columns:repeat(var(--ipad-grid-cols),minmax(0,1fr));grid-auto-rows:1fr}
+  .home-card{min-height:var(--ipad-card-min-h);padding:14px;display:flex;flex-direction:column;justify-content:flex-start}
+  .home-card-title{font-size:14px;line-height:1.18;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+  .home-card-sub{font-size:11px;margin-top:5px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .home-card-art{width:clamp(56px,7vw,76px);height:clamp(56px,7vw,76px);right:10px;bottom:10px;border-radius:18px}
+  .home-right-col{justify-content:flex-start;align-items:stretch;gap:12px}
+  .home-rail{align-self:stretch;width:auto;flex:0 0 auto}
+  .home-tile-row{grid-template-columns:repeat(var(--ipad-tile-cols),minmax(0,1fr));gap:8px;max-height:var(--ipad-rail-max-h);overflow:hidden}
+  .home-tile{min-height:auto;padding:6px;border-radius:14px}
+  .home-tile-cover{height:var(--ipad-tile-cover-h);aspect-ratio:auto;margin-bottom:4px;border-radius:10px}
+  .home-tile-cover:not(.has-cover)::before{width:36px;height:36px;left:8px;bottom:8px}
+  .home-tile-cover:not(.has-cover)::after{width:30px;height:32px;right:8px;top:8px}
+  .home-tile::before{height:var(--ipad-tile-cover-h);border-radius:10px}
+  .home-tile-title{font-size:11.5px;line-height:1.2}
+  .home-tile-sub{display:block;font-size:10px;margin-top:3px}
+  .home-section-head{padding-bottom:4px}
+  /* fx-fab / bottom-bar / edge-glow-toggle */
+  #fx-fab{width:var(--ipad-fab-size);height:var(--ipad-fab-size);right:18px;bottom:calc(var(--ipad-fab-bottom) + env(safe-area-inset-bottom,0px));z-index:30;transition:bottom .28s cubic-bezier(.16,1,.3,1)}
+  #fx-fab-hide-btn{right:calc(60px + var(--ipad-fab-size));bottom:calc(var(--ipad-fab-bottom) + 10px + env(safe-area-inset-bottom,0px))}
+  body.diy-mode #fx-fab,body.diy-mode #fx-fab-hide-btn{display:none}
+  #bottom-bar{width:min(720px,calc(100vw - 24px));bottom:calc(10px + env(safe-area-inset-bottom,0px))}
+  #edge-glow-toggle{bottom:calc(var(--ipad-fab-bottom) + env(safe-area-inset-bottom,0px))}
+  /* 触控反馈 */
+  .home-card:active,.home-tile:active{transform:scale(.98)}
+  .ctrl-btn{min-width:44px;min-height:44px}
+  .fx-mini-btn{min-height:32px}
+  .icon-btn{min-width:44px;min-height:44px}
+}
+
+/* ---------- 段 2：极小屏 iPad（≤820px，mini 竖屏 / 9.7"）---------- */
+@media (hover:none) and (pointer:coarse) and (max-width:820px){
+  :root{
+    --ipad-grid-cols:2;
+    --ipad-tile-cols:1;
+    --ipad-tile-cover-h:clamp(60px,12vw,90px);
+  }
+  .empty-home-shell{grid-template-columns:minmax(220px,1fr);grid-template-rows:auto auto}
+  .home-hero{grid-column:1;grid-row:1}
+  .home-right-col{grid-column:1;grid-row:2;gap:8px}
+  .home-card-art{display:none} /* 卡片小，cover 装饰隐藏 */
+  .home-tile-row{max-height:none;overflow-x:auto;overflow-y:hidden;grid-auto-flow:column;grid-auto-columns:clamp(120px,28vw,160px);grid-template-columns:none}
+  .home-tile{flex:0 0 auto}
+}
+
+/* ---------- 段 3：大屏 iPad（≥1024px 横屏，12.9"/13"）---------- */
+@media (hover:none) and (pointer:coarse) and (min-width:1024px){
+  /* 关闭桌面 :hover 视觉反馈（触屏无效） */
+  .glass-saved-button:hover,.desktop-window-btn:hover,.desktop-mode-btn:hover,
+  body.desktop-shell #desktop-titlebar #visual-guide-btn:hover,
+  body.desktop-shell #desktop-titlebar #update-entry:hover,
+  .search-mode-tabs button:hover,.search-history-clear:hover,
+  .search-history-chip:hover,.search-result:hover,
+  .search-result.qq-source:hover,.search-result.netease-source:hover,
+  .search-artist-link:hover,
+  .home-card:hover,.home-tile:hover,.ctrl-btn:hover,.icon-btn:hover{background:inherit;border-color:inherit;color:inherit;text-decoration:inherit;box-shadow:inherit;transform:none}
+  .home-card:active,.home-tile:active,.ctrl-btn:active,.icon-btn:active{transform:scale(.98)}
+  /* 最小触控目标（Apple HIG 44pt = 44px CSS px） */
+  .ctrl-btn,.icon-btn{min-width:44px;min-height:44px}
+  .fx-mini-btn{min-height:32px}
+  /* splash 屏幕跳过 */
+  html.touch-coarse #splash,html.touch-coarse body.splash-active #splash{display:none!important}
+  html.touch-coarse body.splash-active{background:#08090B!important}
+  /* 性能降级：保留 3 层玻璃，关闭玻璃 SVG filter */
+  .search-history-chip,.search-result,.home-card,.home-tile,.fx-mini-btn,
+  .hotkey-btn,#top-right,.control-cluster,#album-bg{
+    backdrop-filter:none!important;-webkit-backdrop-filter:none!important
+  }
+  .ctrl-btn,.glass-saved-button,.danmaku-item,#bottom-bar{backdrop-filter:blur(18px) saturate(1.5)!important;-webkit-backdrop-filter:blur(18px) saturate(1.5)!important}
+  #album-bg{filter:blur(60px) brightness(.3) saturate(1.2)!important;transform:scale(1.1)!important}
+  html.control-glass-svg-ok .ctrl-btn,html.control-glass-svg-ok .glass-saved-button,
+  html.control-glass-svg-ok .danmaku-item{backdrop-filter:blur(12px)!important;-webkit-backdrop-filter:blur(12px)!important}
+  .splash-bg-noise,.splash-signal-line{animation:none!important}
+  /* iPad 6-cell 布局：2×3 网格，私人电台不再 1.18fr 跨行，6 卡全 1fr */
+  .home-mosaic{height:clamp(200px,24vh,240px);min-height:180px;margin-top:10px;gap:10px;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));align-content:stretch}
+  /* 私人电台主功能角标：渐变背景 + 右上角小标 */
+  .home-mosaic-radio{justify-content:center;padding:14px 14px 40px;background:linear-gradient(135deg,rgba(120,90,220,.18),rgba(60,160,220,.12));position:relative;overflow:hidden}
+  .home-mosaic-radio::after{content:'主功能';position:absolute;top:6px;right:8px;font-size:8.5px;font-weight:700;letter-spacing:.06em;padding:2px 5px;border-radius:5px;background:rgba(255,255,255,.10);color:rgba(255,255,255,.7);text-transform:uppercase}
+  .home-mosaic-radio-head{justify-content:center}
+  .home-mosaic-radio-desc{font-size:12.5px;line-height:1.35;flex:0 0 auto;max-height:2.6em;overflow:hidden}
+  .home-mosaic-radio-btn{padding:5px 11px;font-size:12px}
+  .home-mosaic-shortcut-label{font-size:12.5px}
+  .home-mosaic-shortcut-hint{font-size:9.5px}
+  /* 13" Pro M5 (1366) 给 mosaic 留更多垂直空间 */
+  @media (min-width:1280px){
+    .home-mosaic{height:clamp(220px,26vh,260px);min-height:200px;margin-top:12px;gap:12px}
+    .home-mosaic-radio-title{font-size:16px}
+    .home-mosaic-radio-desc{font-size:13px}
+    .home-mosaic-shortcut-label{font-size:13px}
+    .home-mosaic-shortcut-hint{font-size:10px}
+  }
+
+  /* ============================================================
+     听歌报告 dashboard modal
+     ============================================================ */
+  .report-modal{position:fixed;inset:0;z-index:10000;display:none;align-items:center;justify-content:center;padding:24px}
+  .report-modal[data-open="true"]{display:flex;animation:reportFadeIn .25s ease-out}
+  @keyframes reportFadeIn{from{opacity:0}to{opacity:1}}
+  .report-modal-bg{position:absolute;inset:0;background:rgba(8,8,16,.65);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+  .report-modal-card{position:relative;width:min(880px,100%);max-height:90vh;background:linear-gradient(160deg,rgba(28,28,40,.96),rgba(16,16,28,.96));border:1px solid rgba(255,255,255,.08);border-radius:22px;box-shadow:0 30px 80px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.06);overflow:hidden;display:flex;flex-direction:column}
+  .report-modal-head{display:flex;align-items:flex-start;justify-content:space-between;padding:20px 24px 12px;border-bottom:1px solid rgba(255,255,255,.05)}
+  .report-modal-eyebrow{font-size:10.5px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:rgba(180,200,230,.55);margin-bottom:2px}
+  .report-modal-h1{font-size:22px;font-weight:700;color:rgba(255,255,255,.95);letter-spacing:-.01em}
+  .report-modal-close{width:34px;height:34px;border-radius:50%;border:0;background:rgba(255,255,255,.08);color:rgba(255,255,255,.75);font-size:22px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+  .report-modal-close:hover{background:rgba(255,255,255,.15);color:rgba(255,255,255,1);transform:scale(1.05)}
+  .report-modal-tabs{display:flex;gap:6px;padding:14px 24px 0}
+  .report-tab{padding:7px 14px;border:0;background:rgba(255,255,255,.05);color:rgba(255,255,255,.65);font-size:12.5px;font-weight:500;border-radius:18px;cursor:pointer;transition:all .15s}
+  .report-tab:hover{background:rgba(255,255,255,.10);color:rgba(255,255,255,.9)}
+  .report-tab.active{background:linear-gradient(135deg,rgba(120,90,220,.9),rgba(60,160,220,.9));color:#fff;font-weight:600;box-shadow:0 4px 14px rgba(120,90,220,.4)}
+  .report-modal-body{padding:18px 24px 24px;overflow-y:auto;overflow-x:hidden;flex:1 1 auto}
+  .report-modal-body::-webkit-scrollbar{width:6px}
+  .report-modal-body::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:3px}
+
+  /* 4 大数据卡 */
+  .report-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+  .report-stat{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:14px 12px;text-align:center;position:relative;overflow:hidden}
+  .report-stat::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.3),transparent)}
+  .report-stat-num{font-size:24px;font-weight:700;color:rgba(255,255,255,.96);line-height:1.1;letter-spacing:-.02em;font-feature-settings:"tnum";margin-bottom:4px}
+  .report-stat-label{font-size:10.5px;color:rgba(180,200,230,.6);letter-spacing:.04em}
+
+  /* 段区 */
+  .report-section{margin-bottom:18px}
+  .report-section-h{font-size:13px;font-weight:600;color:rgba(255,255,255,.85);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+  .report-section-meta{font-size:9.5px;color:rgba(180,200,230,.5);font-weight:500;letter-spacing:.08em}
+
+  /* 艺人圆头像网格 */
+  .report-artists{display:grid;grid-template-columns:repeat(10,1fr);gap:8px}
+  .report-artist{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:default}
+  .report-artist-avatar{width:100%;aspect-ratio:1;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:#fff;letter-spacing:-.02em;position:relative;overflow:hidden;background-size:cover;background-position:center}
+  .report-artist-avatar::after{content:'';position:absolute;inset:0;border-radius:50%;background:linear-gradient(180deg,transparent 50%,rgba(0,0,0,.5))}
+  .report-artist-count{font-size:9.5px;color:rgba(255,255,255,.55);font-weight:500}
+  .report-artist-name{position:absolute;bottom:0;left:0;right:0;font-size:8px;color:#fff;text-align:center;padding:1px 0;line-height:1.1;z-index:1;text-shadow:0 1px 2px rgba(0,0,0,.6)}
+
+  /* 歌曲行 */
+  .report-songs{display:flex;flex-direction:column;gap:4px;max-height:220px;overflow-y:auto}
+  .report-songs::-webkit-scrollbar{width:4px}
+  .report-songs::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
+  .report-song{display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:8px;background:rgba(255,255,255,.025);font-size:12px}
+  .report-song-rank{width:18px;font-size:11px;color:rgba(180,200,230,.5);font-weight:600;text-align:center;flex-shrink:0}
+  .report-song-rank.top{color:rgba(255,200,80,.95);font-weight:700}
+  .report-song-cover{width:28px;height:28px;border-radius:6px;background-size:cover;background-position:center;flex-shrink:0;background-color:rgba(255,255,255,.08)}
+  .report-song-info{flex:1;min-width:0}
+  .report-song-title{color:rgba(255,255,255,.9);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .report-song-artist{color:rgba(180,200,230,.55);font-size:10.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .report-song-count{font-size:11px;color:rgba(180,200,230,.65);font-weight:500;flex-shrink:0;font-feature-settings:"tnum"}
+
+  /* 24h 分布 */
+  .report-hours{display:flex;align-items:flex-end;gap:2px;height:60px;padding:0 2px}
+  .report-hour{flex:1;background:linear-gradient(180deg,rgba(120,90,220,.7),rgba(60,160,220,.7));border-radius:3px 3px 0 0;min-height:2px;position:relative;transition:all .2s;cursor:default}
+  .report-hour:hover{background:linear-gradient(180deg,rgba(140,110,240,.95),rgba(80,180,240,.95));transform:scaleY(1.05)}
+  .report-hour::after{content:attr(data-h);position:absolute;bottom:-16px;left:50%;transform:translateX(-50%);font-size:8px;color:rgba(180,200,230,.45)}
+  .report-hour[data-peak="true"]{box-shadow:0 0 8px rgba(120,90,220,.6)}
+
+  /* 一句话总结 */
+  .report-summary{text-align:center;font-size:13px;color:rgba(255,255,255,.8);padding:14px 16px;background:linear-gradient(135deg,rgba(120,90,220,.12),rgba(60,160,220,.08));border-radius:12px;border:1px solid rgba(255,255,255,.05);margin-top:6px}
+
+  /* iPad 适配：减少 padding + 调整列数 */
+  @media (max-width:1023px){
+    .report-modal{padding:12px}
+    .report-modal-card{max-height:92vh;border-radius:18px}
+    .report-modal-head{padding:14px 18px 10px}
+    .report-modal-tabs{padding:10px 18px 0}
+    .report-modal-body{padding:14px 18px 18px}
+    .report-stats{grid-template-columns:repeat(2,1fr)}
+    .report-artists{grid-template-columns:repeat(5,1fr)}
+    .report-stat-num{font-size:20px}
+  }
+  /* canvas 自定义手势 */
+  canvas,#stage-canvas,.stage-container,[data-stage],.song-rack-canvas{touch-action:none}
+  /* 桌面标题栏上下 padding 兼容灵动岛 */
+  #desktop-titlebar,#top-right{padding-top:max(env(safe-area-inset-top),0px)}
+  /* bottom-bar 兼容 Home Indicator */
+  #bottom-bar{padding-bottom:max(env(safe-area-inset-bottom),10px)}
+}
+@supports (padding: max(0px, env(safe-area-inset-bottom))){
+  #bottom-bar{padding-bottom:max(env(safe-area-inset-bottom),10px)}
+  #top-right,#desktop-titlebar{padding-top:max(env(safe-area-inset-top),0px)}
+  body.immersive-mode #bottom-bar{padding-bottom:max(env(safe-area-inset-bottom),12px)}
+}
+
+/* ---------- 触屏通用：隐藏桌面独占 UI ----------
+   JS 在 documentElement 加 .touch-coarse（iPad/iPhone/Android 平板）。
+   这些元素需要 macOS 私有 API（NSWindow beyondDesktop、桌面级鼠标穿透），
+   iPad Safari / PWA 都不支持。
+*/
+html.touch-coarse #t-desktopLyrics,
+html.touch-coarse #t-desktopLyricsClickThrough,
+html.touch-coarse #t-desktopLyricsCinema,
+html.touch-coarse #t-desktopLyricsHighlight,
+html.touch-coarse #t-wallpaperMode{
+  display:none!important
+}
+
+/* 触屏通用：status bar / home indicator safe-area 适配
+   桌面标题栏在触屏上没有（被 .desktop-shell 控制），但顶部搜索条需要让出状态栏
+*/
+html.touch-coarse{
+  /* 段1 媒体查询内的 :root 变量在此处全局兜底（≥1024 大屏 iPad 不命中段1，需要这些变量） */
+  --ipad-fab-size:clamp(54px,6vw,64px);
+  --ipad-fab-bottom:clamp(108px,12vh,132px);
+}
+html.touch-coarse .empty-home-shell{padding-top:env(safe-area-inset-top,0px)}
+html.touch-coarse body.immersive-mode #empty-home{padding-bottom:env(safe-area-inset-bottom,0px)}
+
+/* 触屏通用：DIY / fx-fab 永远可见
+   桌面端 fxFabAutoHide 用 hover 触发 peek，iPad 触屏没有 hover，会永久隐藏。
+   段1 (max-width:1023) 已覆盖位置；≥1024 大屏 iPad 走基础 CSS 时也补齐。 */
+html.touch-coarse #fx-fab{
+  width:var(--ipad-fab-size)!important;
+  height:var(--ipad-fab-size)!important;
+  right:18px!important;
+  bottom:calc(var(--ipad-fab-bottom) + env(safe-area-inset-bottom,0px))!important;
+  z-index:30!important
+}
+html.touch-coarse #fx-fab-hide-btn{
+  right:calc(60px + var(--ipad-fab-size))!important;
+  bottom:calc(var(--ipad-fab-bottom) + 10px + env(safe-area-inset-bottom,0px))!important;
+  opacity:0!important;visibility:hidden!important;pointer-events:none!important  /* 触屏无 hover，hide 按钮无意义 */
+}
+html.touch-coarse body.fx-fab-auto-hide #fx-fab,
+html.touch-coarse body.fx-fab-auto-hide.fx-fab-peek #fx-fab{
+  right:18px!important;opacity:1!important;visibility:visible!important;pointer-events:auto!important
+}
+/* 触屏 iPad：顶部功能按钮栏（引导/联系作者/DIY）——让隐藏的 #desktop-titlebar 显示，
+   但隐藏桌面专属的拖拽区、窗口控制按钮、更新入口 */
+html.touch-coarse #desktop-titlebar{
+  display:flex!important;
+  align-items:center!important;justify-content:flex-end!important;
+  -webkit-app-region:no-drag!important;
+  position:fixed!important;top:0;left:0;right:0;z-index:500!important;
+  height:max(44px,calc(env(safe-area-inset-top,0px) + 44px))!important;
+  padding:0 18px!important;padding-top:env(safe-area-inset-top,0px)!important;
+  background:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important
+}
+html.touch-coarse #desktop-titlebar .desktop-window-controls{gap:10px!important}
+html.touch-coarse #desktop-titlebar .desktop-drag-region{display:none!important}
+html.touch-coarse #desktop-titlebar .desktop-window-btn[data-window-action]{display:none!important}
+html.touch-coarse #desktop-titlebar #update-entry{display:none!important}
+/* 触屏 iPad：用户登录胶囊下移，避开顶部功能按钮栏 */
+html.touch-coarse #top-right{top:calc(env(safe-area-inset-top,0px) + 56px)!important}
+/* 触屏 iPad：控制栏评论按钮替换全屏按钮
+   - 默认 .comment-ctrl-btn 隐藏（桌面端用 floating #comment-danmaku-toggle）
+   - touch-coarse 下显示评论按钮、隐藏全屏按钮
+   - 同时隐藏桌面端的 floating 评论按钮和悬浮设置浮窗（iPad 无 hover，改用控制栏按钮直接切换） */
+.comment-ctrl-btn{display:none!important}
+html.touch-coarse .fullscreen-toggle-btn{display:none!important}
+html.touch-coarse .comment-ctrl-btn{display:inline-flex!important}
+html.touch-coarse #comment-danmaku-toggle{display:none!important}
+/* 触屏 iPad：评论按钮控制弹窗显隐，弹窗固定在屏幕底部上方居中（不依赖 hover） */
+html.touch-coarse #danmaku-settings-pop{
+  display:block!important;
+  visibility:hidden;
+  opacity:0;
+  pointer-events:none;
+  position:fixed!important;
+  left:50%!important;
+  bottom:160px!important;
+  top:auto!important;
+  right:auto!important;
+  transform:translateX(-50%)!important;
+  z-index:520!important;
+  transition:opacity .2s,visibility 0s linear .2s
+}
+html.touch-coarse #danmaku-settings-pop.visible{
+  visibility:visible;
+  opacity:1;
+  pointer-events:auto;
+  transition:opacity .2s,visibility 0s
+}
+/* 触屏 iPad：评论卡片/弹幕容器压低到 z:5（低于 mini-queue z:7 和控制栏），
+   避免遮住从控制栏打开的 mini-queue 播放列表 */
+html.touch-coarse #comment-card-container{z-index:5!important;bottom:62%!important}
+html.touch-coarse #danmaku-container{z-index:4!important;bottom:120px!important}
+/* 触屏 iPad：评论卡片字号放大，提升可读性 */
+html.touch-coarse .comment-card{width:min(480px,calc(100vw - 80px))!important}
+html.touch-coarse .comment-card .cc-avatar{width:52px;height:52px;border-radius:14px}
+html.touch-coarse .comment-card .cc-nick{font-size:17px;font-weight:700}
+html.touch-coarse .comment-card .cc-time-loc{font-size:13px}
+html.touch-coarse .comment-card .cc-likes{font-size:15px}
+html.touch-coarse .comment-card .cc-likes svg{width:16px;height:16px}
+html.touch-coarse .comment-card .cc-text{font-size:18px;line-height:1.7;max-height:220px}
+html.touch-coarse .comment-card .cc-source{font-size:12px}
+html.touch-coarse .comment-card .cc-counter{font-size:13px}
+html.touch-coarse .comment-card .cc-divider{margin:16px 0}
+/* 触屏 iPad：弹幕字号也同步放大 */
+html.touch-coarse .danmaku-item{font-size:16px;padding:8px 20px}
+/* 触屏 iPad：清理视觉控制台无意义项
+   - 壁纸透明度滑块（壁纸模式已隐藏）
+   - 歌词源分段（原词/自定义，iPad 无自定义歌词入口）
+   - 摄像头交互（需 mediapipe + 摄像头，iPad 不可用）
+   - 桌面歌词 4 个参数滑块（大小/透明/高度/帧数）
+   - "桌面 / 壁纸" / "桌面帧数" / "摄像头交互" / "歌词源" 4 个分组标题
+   用 :has() 精准隐藏对应分组标题，保留相邻的"歌词翻译"等 */
+html.touch-coarse #wallpaper-opacity-slider,
+html.touch-coarse #cam-seg,
+html.touch-coarse #fx-desktoplyricssize,
+html.touch-coarse #fx-desktoplyricsopacity,
+html.touch-coarse #fx-desktoplyricsy,
+html.touch-coarse #desktop-lyrics-fps-seg,
+html.touch-coarse .lyric-source-row:has(#lyric-source-seg),
+html.touch-coarse .fx-section-label:has(+ .lyric-source-row #lyric-source-seg),
+html.touch-coarse .fx-section-label:has(+ #cam-seg),
+html.touch-coarse .fx-section-label:has(+ #desktop-lyrics-fps-seg),
+html.touch-coarse .fx-section-label:has(+ #fx-desktoplyricssize){display:none!important}
+/* 触屏 iPad：home-grid 占满剩余空间，由 JS 计算卡片高度吃掉空白 */
+html.touch-coarse .home-grid{align-content:start!important}
+/* 触屏 iPad：限制 home-card 标题为一行，防止长歌名换行导致某些卡片偏高 */
+html.touch-coarse .home-card-title{
+  display:-webkit-box!important;
+  -webkit-line-clamp:1!important;
+  -webkit-box-orient:vertical!important;
+  overflow:hidden!important
+}
+/* 触屏 iPad：限制 home-card 副标题（歌手名）为一行，防止多歌手导致卡片偏高 */
+html.touch-coarse .home-card-sub{
+  display:-webkit-box!important;
+  -webkit-line-clamp:1!important;
+  -webkit-box-orient:vertical!important;
+  overflow:hidden!important
+}
+
+/* 触屏通用：马赛克强制 2×3 等宽等高（兜底，防 hover/pointer 媒体查询失配）
+   基础 CSS 默认 1.18fr 1fr 1fr；iPad 上无论 mini/11"/13" 都是 6 卡 1fr */
+html.touch-coarse .home-mosaic{
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  grid-template-rows:repeat(2,minmax(0,1fr))!important;
+  height:clamp(180px,22vh,220px)!important;
+  min-height:160px!important;
+  max-height:none!important;
+  gap:8px!important;
+  align-content:stretch!important;
+  grid-auto-rows:0!important;
+  overflow:hidden!important
+}
+html.touch-coarse .home-mosaic-cell{
+  min-width:0;min-height:0;
+  grid-column:auto!important;
+  grid-row:auto!important;
+  overflow:hidden;
+  border-radius:14px!important
+}
+/* shortcut 卡：紧凑 */
+html.touch-coarse .home-mosaic-shortcut{
+  padding:8px 6px!important;
+  gap:3px!important
+}
+html.touch-coarse .home-mosaic-shortcut-icon{font-size:20px!important}
+html.touch-coarse .home-mosaic-shortcut-label{font-size:11.5px!important}
+html.touch-coarse .home-mosaic-shortcut-hint{font-size:8px!important;letter-spacing:.1em}
+/* 私人电台卡：紧凑，保持内容居中 */
+html.touch-coarse .home-mosaic-radio{
+  padding:10px 10px 30px!important;
+  gap:5px!important
+}
+html.touch-coarse .home-mosaic-radio-logo{width:30px!important;height:30px!important}
+html.touch-coarse .home-mosaic-radio-title{font-size:12.5px!important}
+html.touch-coarse .home-mosaic-radio-desc{font-size:9.5px!important;line-height:1.3!important;max-height:2.4em!important}
+html.touch-coarse .home-mosaic-radio-btn{height:24px!important;min-width:48px!important;font-size:10.5px!important;padding:0 8px!important}
+@media (min-width:1280px){
+  html.touch-coarse .home-mosaic{height:clamp(200px,24vh,240px)!important;min-height:180px!important}
+}
+
+/* 触屏通用：强制横屏提示遮罩
+   监听 orientationchange 旋转后短暂显示"请将 iPad 横放"提示。
+   注意：CSS 不能强制锁定屏幕方向（需要 Electron / PWA manifest / native API），
+   这里只是给一个温和的视觉提示。
+*/
+@media (orientation: portrait) and (hover: none) and (pointer: coarse){
+  body::before{
+    content:"请将设备横放以获得最佳体验";
+    position:fixed;inset:0;z-index:99999;
+    display:flex;align-items:center;justify-content:center;
+    background:rgba(8,9,11,.94);backdrop-filter:blur(20px);
+    color:rgba(255,255,255,.86);font-size:16px;font-weight:500;letter-spacing:.04em;
+    pointer-events:none
+  }
+}
+
+/* ==================== /iPad / 触屏适配 ==================== */
 </style>
 </head>
 <body>
@@ -2218,15 +2706,20 @@ body.immersive-mode #danmaku-container,body.immersive-mode #comment-card-contain
               <button class="home-mosaic-radio-btn home-mosaic-radio-refresh" type="button" data-home-radio-refresh>换一批</button>
             </div>
           </div>
-          <div class="home-mosaic-cell home-mosaic-shortcut" data-shortcut="wallpaper">
-            <div class="home-mosaic-shortcut-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div>
-            <div class="home-mosaic-shortcut-label">壁纸模式</div>
-            <div class="home-mosaic-shortcut-hint">WALLPAPER</div>
+          <div class="home-mosaic-cell home-mosaic-shortcut" data-shortcut="sleep" id="mosaic-sleep" data-sleep-active="false">
+            <div class="home-mosaic-shortcut-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></div>
+            <div class="home-mosaic-shortcut-label">睡眠定时</div>
+            <div class="home-mosaic-shortcut-hint" id="mosaic-sleep-hint">SLEEP</div>
           </div>
-          <div class="home-mosaic-cell home-mosaic-shortcut" data-shortcut="lyrics">
-            <div class="home-mosaic-shortcut-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16"/><path d="M4 10h12"/><path d="M4 14h8"/><path d="M4 18h10"/><path d="M17 13v6"/><path d="M14 16h6"/></svg></div>
-            <div class="home-mosaic-shortcut-label">桌面歌词</div>
-            <div class="home-mosaic-shortcut-hint">LYRICS</div>
+          <div class="home-mosaic-cell home-mosaic-shortcut" data-shortcut="pip" id="mosaic-pip">
+            <div class="home-mosaic-shortcut-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><rect x="13" y="11" width="6" height="6" rx="1"/></svg></div>
+            <div class="home-mosaic-shortcut-label">画中浮窗</div>
+            <div class="home-mosaic-shortcut-hint" id="mosaic-pip-hint">PiP</div>
+          </div>
+          <div class="home-mosaic-cell home-mosaic-shortcut" data-shortcut="report" id="mosaic-report">
+            <div class="home-mosaic-shortcut-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12" y="8" width="3" height="10"/><rect x="17" y="5" width="3" height="13"/></svg></div>
+            <div class="home-mosaic-shortcut-label">听歌报告</div>
+            <div class="home-mosaic-shortcut-hint">REPORT</div>
           </div>
           <div class="home-mosaic-cell home-mosaic-shortcut" data-shortcut="preset">
             <div class="home-mosaic-shortcut-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l1.5 4.5L18 8l-4.5 1.5L12 14l-1.5-4.5L6 8l4.5-1.5z"/><path d="M18 14l1 3 3 1-3 1-1 3-1-3-3-1 3-1z" opacity=".6"/></svg></div>
@@ -2798,6 +3291,7 @@ body.immersive-mode #danmaku-container,body.immersive-mode #comment-card-contain
     <button id="controls-hide-btn" class="ctrl-btn active" onclick="toggleControlsAutoHide()" title="控制条自动隐藏"><svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 8h14"/><path d="M8 12h8"/><path d="M10 16h4"/></svg></button>
     <button id="immersive-btn" class="ctrl-btn" onclick="toggleImmersiveMode()" title="全沉浸式" aria-label="全沉浸式" aria-pressed="false"><svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.9" viewBox="0 0 24 24"><path d="M4 9V5a1 1 0 0 1 1-1h4"/><path d="M15 4h4a1 1 0 0 1 1 1v4"/><path d="M20 15v4a1 1 0 0 1-1 1h-4"/><path d="M9 20H5a1 1 0 0 1-1-1v-4"/><circle cx="12" cy="12" r="2.2"/></svg></button>
     <button class="ctrl-btn fullscreen-toggle-btn" onclick="toggleFullscreen()" title="全屏 (F)"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 7V3h4"/><path d="M21 7V3h-4"/><path d="M3 17v4h4"/><path d="M21 17v4h-4"/></svg></button>
+    <button class="ctrl-btn comment-ctrl-btn" id="comment-ctrl-btn" onclick="toggleCommentCardMode()" title="评论卡片"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></button>
     <div id="time-display">0:00 / 0:00</div>
     </div>
   </div>
@@ -3053,7 +3547,7 @@ var neteaseWebLoginBusy = false;
 var qqWebLoginBusy = false;
 var qqManualCookieOpen = false;
 var loginStatusChecked = false, loginStatusCheckFailed = false;
-var qrPollTimer = null, qrKey = null;
+var qrPollTimer = null, qrKey = null, qqQrSession = null, qqQrToken = null, qqQrSig = null, qqCookieReady = false;
 var volumeTween = null, trackSwitchToken = 0;
 var audioFadeTimer = null, audioElementFadeFrame = 0, audioFadeSerial = 0;
 var AUDIO_FADE_IN_MS = 460;
@@ -4263,10 +4757,11 @@ var RENDER_PIXEL_BUDGET = 5200000;
 var RENDER_MIN_DPR = 0.72;
 // 0 = display vsync. Keep visible playback high-refresh capable instead of capping 120Hz+ screens to 60/72.
 var RENDER_VISIBLE_VSYNC = true;
-var RENDER_ACTIVE_FPS = 0;
-var RENDER_LARGE_FPS = 0;
-var RENDER_HUGE_FPS = 0;
-var RENDER_INTERACTION_FPS = 0;
+// iPad / 触屏：强制 24fps 渲染上限（A10X / 老设备 GPU 撑不住 60fps WebGL 复杂 shader）
+var RENDER_ACTIVE_FPS = (typeof window !== 'undefined' && window.__mineradioFastBoot) ? 24 : 0;
+var RENDER_LARGE_FPS = (typeof window !== 'undefined' && window.__mineradioFastBoot) ? 18 : 0;
+var RENDER_HUGE_FPS = (typeof window !== 'undefined' && window.__mineradioFastBoot) ? 12 : 0;
+var RENDER_INTERACTION_FPS = (typeof window !== 'undefined' && window.__mineradioFastBoot) ? 30 : 0;
 var RENDER_INTERACTION_LARGE_FPS = 0;
 var RENDER_INTERACTION_HUGE_FPS = 0;
 var RENDER_INTERACTION_HOLD_MS = 900;
@@ -4311,7 +4806,8 @@ function getRenderLoadTier() {
 }
 var renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true, powerPreference: 'high-performance' });
 renderer.setClearColor(0x000000, 0);
-renderer.setPixelRatio(getRenderPixelRatio());
+// iPad / 触屏：devicePixelRatio 强制 1.0，避免 2x backbuffer 撑爆 iPad 内存
+renderer.setPixelRatio(window.__mineradioFastBoot ? 1 : getRenderPixelRatio());
 renderer.setSize(innerWidth, innerHeight);
 renderer.domElement.style.background = 'transparent';
 renderer.domElement.style.display = 'block';
@@ -7307,36 +7803,6 @@ function destroyFloatLayer() {
 //  安魂 — 3D 粒子建模层
 // ============================================================
 var SKULL_PRESET_INDEX = 6;
-// ── 通用模型粒子预设（支持多个，添加新预设只需加一行） ──
-var MODEL_PARTICLE_PRESETS = [
-  { index: 8, effectFile: 'cyber-model-effect.js',   binFile: 'cyber-model-particles.bin',   wireframeFile: 'cyber-model-wireframe.bin' },
-  { index: 9, effectFile: 'cyber-model-effect-2.js', binFile: 'cyber-model-particles-2.bin', wireframeFile: 'cyber-model-wireframe-2.bin', wireframeScale: 7.56 },
-];
-var modelParticleStates = {};  // { 8: {group, opacity, data, effectLoaded, dataRequested, effectConfig, vertexShader, fragmentShader}, ... }
-function isModelParticlePreset(p) {
-  for (var i = 0; i < MODEL_PARTICLE_PRESETS.length; i++) {
-    if (MODEL_PARTICLE_PRESETS[i].index === p) return true;
-  }
-  return false;
-}
-function getModelParticlePreset(presetIdx) {
-  for (var i = 0; i < MODEL_PARTICLE_PRESETS.length; i++) {
-    if (MODEL_PARTICLE_PRESETS[i].index === presetIdx) return MODEL_PARTICLE_PRESETS[i];
-  }
-  return null;
-}
-function getModelParticleState(presetIdx) {
-  if (!modelParticleStates[presetIdx]) {
-    modelParticleStates[presetIdx] = {
-      group: null, opacity: 0, data: null, effectLoaded: false,
-      dataRequested: false, baseRotationY: 0,
-      effectConfig: null, vertexShader: '', fragmentShader: '',
-      wireframeGroup: null, wireframeData: null, wireframeRequested: false,
-      baselineUninitialized: true
-    };
-  }
-  return modelParticleStates[presetIdx];
-}
 var SKULL_MODEL_BASE_ROTATION_X = -0.26;
 var SKULL_MODEL_BASE_ROTATION_Y = 0.00;
 var SKULL_MODEL_SCALE = 2.34;
@@ -7869,241 +8335,6 @@ function updateSkullParticleLayer(dt) {
   skullParticleGroup.rotation.y += (targetRotY - skullParticleGroup.rotation.y) * rotEase;
   skullParticleGroup.rotation.x += (targetRotX - skullParticleGroup.rotation.x) * rotEase;
   skullParticleGroup.rotation.z += (0 - skullParticleGroup.rotation.z) * Math.min(1, dt * 6.0);
-}
-
-// ============================================================
-//  通用模型粒子层 (支持多个预设)
-//   - 每个预设有独立的 .js (config + shader) + .bin (粒子数据)
-//   - 添加新预设只需在 MODEL_PARTICLE_PRESETS 数组加一行
-// ============================================================
-function preloadModelParticleData(presetIdx) {
-  var preset = getModelParticlePreset(presetIdx);
-  if (!preset) return;
-  var state = getModelParticleState(presetIdx);
-  if (state.dataRequested) return;
-  state.dataRequested = true;
-  var script = document.createElement('script');
-  script.src = preset.effectFile;
-  script.onload = function() {
-    // .js 加载后会设置全局变量 EFFECT_CONFIG / EFFECT_VERTEX_SHADER / EFFECT_FRAGMENT_SHADER
-    // 立即保存到 state（注意：var 声明的全局变量不可 delete，但因 dataRequested 标志不会重复加载）
-    state.effectConfig = window.EFFECT_CONFIG || null;
-    state.vertexShader = window.EFFECT_VERTEX_SHADER || '';
-    state.fragmentShader = window.EFFECT_FRAGMENT_SHADER || '';
-    state.effectLoaded = true;
-    /* 自动同步预设名称和描述到 presetMeta */
-    if (state.effectConfig && presetMeta[presetIdx]) {
-      if (state.effectConfig.name) presetMeta[presetIdx].name = state.effectConfig.name;
-      if (state.effectConfig.desc) presetMeta[presetIdx].desc = state.effectConfig.desc;
-      buildPresetGrid();
-    }
-    // 如果当前是这个预设，更新相机基线并创建粒子层
-    if (fx && fx.preset === presetIdx) {
-      var cam = (state.effectConfig && state.effectConfig.camera) || null;
-      if (cam) {
-        // 只更新基线（baseline），不覆盖用户当前镜头（userRadius/Phi/Theta），
-        // 避免异步加载完成后把用户已调整的轨道相机二次拉回正前方。
-        orbit.baselineRadius = cam.radius;
-        orbit.baselinePhi = cam.phi;
-        orbit.baselineTheta = cam.theta;
-        if (state.baselineUninitialized) {
-          orbit.userRadius = cam.radius; orbit.userPhi = cam.phi; orbit.userTheta = cam.theta;
-          state.baselineUninitialized = false;
-        }
-      }
-      createModelParticleLayer(presetIdx);
-    }
-    loadModelParticleBinData(presetIdx);
-    loadModelWireframeData(presetIdx);
-  };
-  script.onerror = function() {
-    console.warn('模型粒子特效文件加载失败:', preset.effectFile);
-  };
-  document.head.appendChild(script);
-}
-function loadModelParticleBinData(presetIdx) {
-  var preset = getModelParticlePreset(presetIdx);
-  var state = getModelParticleState(presetIdx);
-  if (!preset || !state.effectConfig) return;
-  var dataFile = preset.binFile;
-  fetch(dataFile)
-    .then(function(r) { return r.arrayBuffer(); })
-    .then(function(buffer) {
-      var data = new Float32Array(buffer);
-      var off = 0;
-      var storedCount = Math.floor(data[off++]);
-      var positions = new Float32Array(storedCount * 3);
-      var uvs = new Float32Array(storedCount * 2);
-      var rands = new Float32Array(storedCount);
-      var colors = new Float32Array(storedCount * 3);
-      for (var i = 0; i < storedCount * 3; i++) positions[i] = data[off + i];
-      off += storedCount * 3;
-      for (var i = 0; i < storedCount * 2; i++) uvs[i] = data[off + i];
-      off += storedCount * 2;
-      for (var i = 0; i < storedCount; i++) rands[i] = data[off + i];
-      off += storedCount;
-      if (data.length >= 1 + storedCount * 9) {
-        for (var i = 0; i < storedCount * 3; i++) colors[i] = data[off + i];
-      } else {
-        for (var i = 0; i < storedCount * 3; i++) colors[i] = 1.0;
-      }
-      state.data = { positions: positions, uvs: uvs, rands: rands, colors: colors, count: storedCount };
-      if (fx && fx.preset === presetIdx) createModelParticleLayer(presetIdx);
-    })
-    .catch(function(e) { console.warn('模型粒子数据加载失败:', dataFile, e); });
-}
-function createModelParticleLayer(presetIdx) {
-  var state = getModelParticleState(presetIdx);
-  if (state.group) return state.group;
-  if (!state.effectLoaded || !state.data) { preloadModelParticleData(presetIdx); return null; }
-  var d = state.data;
-  var cfg = state.effectConfig || {};
-  var geo = new THREE.BufferGeometry();
-  geo.setAttribute('position', new THREE.BufferAttribute(d.positions, 3));
-  geo.setAttribute('aUv', new THREE.BufferAttribute(d.uvs, 2));
-  geo.setAttribute('aRand', new THREE.BufferAttribute(d.rands, 1));
-  geo.setAttribute('aColor', new THREE.BufferAttribute(d.colors || d.positions, 3));
-  var uniformsMP = {
-    uTime: { value: 0 },
-    uPixel: { value: window.devicePixelRatio || 1 },
-    uPointScale: { value: 1 },
-    uColorBoost: { value: 1 },
-    uBass: { value: 0 },
-    uMid: { value: 0 },
-    uTreble: { value: 0 },
-    uBeat: { value: 0 },
-    uBeatBurst: { value: 0 },
-    uEnergy: { value: 0 },
-    uIntensity: { value: 1 },
-    uOpacity: { value: 0 },
-    uLoading: { value: 0 }
-  };
-  var mat = new THREE.ShaderMaterial({
-    uniforms: uniformsMP,
-    vertexShader: state.vertexShader,
-    fragmentShader: state.fragmentShader,
-    transparent: true,
-    depthWrite: false,
-    blending: THREE.NormalBlending
-  });
-  var group = new THREE.Points(geo, mat);
-  group.frustumCulled = false;
-  group.visible = false;
-  group.scale.setScalar(cfg.modelScale || 0.90);
-  group.position.set(0, 0, 0);
-  group.renderOrder = 33;
-  scene.add(group);
-  state.group = group;
-  return group;
-}
-function loadModelWireframeData(presetIdx) {
-  var preset = getModelParticlePreset(presetIdx);
-  var state = getModelParticleState(presetIdx);
-  if (!preset || !preset.wireframeFile || state.wireframeRequested) return;
-  state.wireframeRequested = true;
-  fetch(preset.wireframeFile)
-    .then(function(r) { if (!r.ok) throw new Error('404'); return r.arrayBuffer(); })
-    .then(function(buffer) {
-      var data = new Float32Array(buffer);
-      var off = 0;
-      var vertexCount = Math.floor(data[off++]);
-      var positions = new Float32Array(vertexCount * 3);
-      var colors = new Float32Array(vertexCount * 3);
-      for (var i = 0; i < vertexCount * 3; i++) positions[i] = data[off + i];
-      off += vertexCount * 3;
-      for (var i = 0; i < vertexCount * 3; i++) colors[i] = data[off + i];
-      state.wireframeData = { positions: positions, colors: colors, count: vertexCount };
-      if (fx && fx.preset === presetIdx) createModelWireframeLayer(presetIdx);
-    })
-    .catch(function() {});
-}
-function createModelWireframeLayer(presetIdx) {
-  var state = getModelParticleState(presetIdx);
-  if (state.wireframeGroup) return state.wireframeGroup;
-  if (!state.wireframeData) return null;
-  var d = state.wireframeData;
-  var cfg = state.effectConfig || {};
-  var geo = new THREE.BufferGeometry();
-  geo.setAttribute('position', new THREE.BufferAttribute(d.positions, 3));
-  geo.setAttribute('color', new THREE.BufferAttribute(d.colors, 3));
-  var mat = new THREE.LineBasicMaterial({
-    vertexColors: true,
-    transparent: true,
-    opacity: 0.30,
-    depthWrite: false,
-    blending: THREE.NormalBlending
-  });
-  var wireframe = new THREE.LineSegments(geo, mat);
-  wireframe.frustumCulled = false;
-  wireframe.visible = false;
-  wireframe.renderOrder = 32; // 粒子层 33 → 线框先画、粒子后画（粒子永远在前）
-  var presetCfg = getModelParticlePreset(presetIdx) || {};
-  wireframe.scale.setScalar(presetCfg.wireframeScale || cfg.modelScale || 0.90);
-  wireframe.position.set(0, 0, 0);
-  scene.add(wireframe);
-  state.wireframeGroup = wireframe;
-  return wireframe;
-}
-function clearModelParticlePresetResidue(presetIdx) {
-  var state = getModelParticleState(presetIdx);
-  state.opacity = 0;
-  if (!state.group) return;
-  state.group.visible = false;
-  if (state.group.material && state.group.material.uniforms) {
-    if (state.group.material.uniforms.uOpacity) state.group.material.uniforms.uOpacity.value = 0;
-  }
-  if (state.wireframeGroup) {
-    state.wireframeGroup.visible = false;
-    if (state.wireframeGroup.material) state.wireframeGroup.material.opacity = 0;
-  }
-}
-function updateModelParticleLayer(presetIdx, dt) {
-  var state = getModelParticleState(presetIdx);
-  var active = fx && fx.preset === presetIdx;
-  if (active) createModelParticleLayer(presetIdx);
-  if (active) createModelWireframeLayer(presetIdx);
-  if (!state.group) return;
-  var target = active ? 1 : 0;
-  state.opacity += (target - state.opacity) * Math.min(1, dt * (active ? 3.2 : 2.4));
-  if (state.opacity < 0.006 && !active) {
-    state.group.visible = false;
-    if (state.wireframeGroup) state.wireframeGroup.visible = false;
-    return;
-  }
-  state.group.visible = true;
-  var u = state.group.material.uniforms;
-  u.uTime.value = uniforms.uTime.value;
-  u.uPixel.value = uniforms.uPixel ? uniforms.uPixel.value : (window.devicePixelRatio || 1);
-  u.uPointScale.value = clampRange(fx.point || 1, 0.05, 2.4);
-  u.uColorBoost.value = clampRange(fx.color || 1, 0.5, 2.0);
-  u.uBass.value = bass || 0;
-  u.uMid.value = mid || 0;
-  u.uTreble.value = treble || 0;
-  u.uBeat.value = beatPulse || 0;
-  u.uBeatBurst.value = uniforms.uBeatBurst ? uniforms.uBeatBurst.value : 0;
-  u.uEnergy.value = audioEnergy || 0;
-  u.uIntensity.value = clampRange(fx.intensity || 1, 0.2, 1.6);
-  u.uOpacity.value = state.opacity;
-  u.uLoading.value = fx.loading || 0;
-  var targetRotY = (orbit.centerLocked ? 0 : gestureRotation.y) + state.baseRotationY;
-  state.group.rotation.y += (targetRotY - state.group.rotation.y) * Math.min(1, dt * 3.6);
-  state.group.rotation.x = (orbit.centerLocked ? 0 : gestureRotation.x * 0.5);
-  // 线框跟随粒子层旋转，透明度随音频能量动态降低
-  // scale 独立设置（preset 9 用 wireframeScale 补偿数据范围差异，preset 8 用 modelScale）
-  if (state.wireframeGroup) {
-    state.wireframeGroup.visible = state.group.visible;
-    state.wireframeGroup.rotation.copy(state.group.rotation);
-    if (state.wireframeGroup.material) {
-      var energy = ((bass || 0) + (mid || 0) + (treble || 0)) / 3;
-      var wireframeOpacity = state.opacity * 0.30 * (1 - clampRange(energy, 0, 1) * 0.7);
-      state.wireframeGroup.material.opacity = wireframeOpacity;
-    }
-  }
-}
-function updateAllModelParticleLayers(dt) {
-  for (var i = 0; i < MODEL_PARTICLE_PRESETS.length; i++) {
-    updateModelParticleLayer(MODEL_PARTICLE_PRESETS[i].index, dt);
-  }
 }
 
 // ============================================================
@@ -10260,7 +10491,7 @@ function updateStageLyrics3D(dt) {
       var opacityEase = shelfDetailOpen && currentOpacity > lyricOpacityTarget ? shelfDetailLyricProfile.easeDown : 0.16;
       opacity = clampRange(currentOpacity + (lyricOpacityTarget - currentOpacity) * opacityEase, 0, 1);
       if (data.textMat) data.textMat.uniforms.uOpacity.value = opacity;
-      if (data.trMat) data.trMat.uniforms.uOpacity.value = opacity * 0.62;
+      if (data.trMat) data.trMat.uniforms.uOpacity.value = opacity * 0.80;
       if (data.readabilityMat) {
         var readabilityTarget = opacity * shelfDetailLyricProfile.readability;
         var readabilityEase = shelfDetailOpen && data.readabilityMat.opacity > readabilityTarget ? 0.28 : 0.16;
@@ -16473,7 +16704,7 @@ function cssImageUrl(url) {
 function setHomeArt(id, url, size) {
   var el = document.getElementById(id);
   if (!el) return;
-  var src = url ? coverUrlWithSize(url, size || 260) : '';
+  var src = url ? coverProxySrc(coverUrlWithSize(url, size || 260)) : '';
   el.style.backgroundImage = src ? 'url("' + cssImageUrl(src) + '")' : '';
   el.classList.toggle('has-cover', !!src);
   el.classList.toggle('home-skeleton', !src && homeDiscoverState.loading);
@@ -16719,8 +16950,12 @@ function fallbackHomeTiles() {
 }
 function homeTileCover(item) {
   if (!item) return '';
-  if (item.kind === 'song' || item.kind === 'weatherSong' || item.kind === 'topSong') return songCoverSrc(item.song, 220);
-  return item.cover ? coverUrlWithSize(item.cover, 220) : '';
+  var raw = '';
+  if (item.kind === 'song' || item.kind === 'weatherSong' || item.kind === 'topSong') raw = songCoverSrc(item.song, 220);
+  else raw = item.cover ? coverUrlWithSize(item.cover, 220) : '';
+  /* WKWebView 需走 /api/cover 代理加载网易云/QQ 防盗链封面 */
+  if (raw && typeof coverProxySrc === 'function' && coverProxySrc(raw)) return coverProxySrc(raw);
+  return raw;
 }
 function homeToneForItem(item, index) {
   if (!item) return 'daily';
@@ -16895,7 +17130,34 @@ function renderHomeDiscover() {
   renderHomeTiles();
   renderHomePortrait();
   if (summary.topArtist) loadArtistAvatar(summary.topArtist.name);
+  layoutTouchCoarseHomeGrid();
 }
+/* 触屏 iPad：根据 grid 容器实际高度动态计算卡片高度，吃掉空白空间
+   使 grid 底部紧贴 rail 顶部，整体 (grid+rail) 底部与 hero 底部对齐 */
+function layoutTouchCoarseHomeGrid() {
+  if (!document.documentElement.classList.contains('touch-coarse')) return;
+  requestAnimationFrame(function() {
+    var grid = document.querySelector('.home-grid');
+    if (!grid) return;
+    var cards = grid.querySelectorAll('.home-card');
+    if (cards.length < 2) return;
+    for (var i = 0; i < cards.length; i++) cards[i].style.height = '';
+    var gridH = grid.clientHeight;
+    if (!gridH || gridH < 120) return;
+    var gap = 12;
+    var rows = Math.ceil(cards.length / 2);
+    var cardH = Math.floor((gridH - gap * (rows - 1)) / rows);
+    cardH = Math.max(120, Math.min(180, cardH));
+    for (var j = 0; j < cards.length; j++) {
+      cards[j].style.height = cardH + 'px';
+      cards[j].style.overflow = 'hidden';
+    }
+  });
+}
+window.addEventListener('resize', layoutTouchCoarseHomeGrid);
+window.addEventListener('orientationchange', function() {
+  setTimeout(layoutTouchCoarseHomeGrid, 300);
+});
 var _artistAvatarCache = {};
 async function loadArtistAvatar(name) {
   if (!name || _artistAvatarCache[name] !== undefined) {
@@ -17133,9 +17395,625 @@ if (emptyHomeStartEl) {
     else if (key === 'lyrics') { toggleFx('desktopLyrics'); updateMosaicShortcutStates(); }
     else if (key === 'preset') { randomPreset(); }
     else if (key === 'shelf') { toggleShelfMode(); updateMosaicShortcutStates(); }
+    else if (key === 'sleep') { cycleSleepTimer(); updateMosaicShortcutStates(); }
+    else if (key === 'pip') { togglePipWindow(); updateMosaicShortcutStates(); }
+    else if (key === 'report') { openReportModal(); }
   });
   updateMosaicShortcutStates();
 }
+
+// ============================================================
+//  iPad / 触屏专属：睡眠定时 + 画中浮窗
+//  纯 JS 实现，睡眠定时在 iPad Safari 后台会暂停（与 iOS 音频策略一致）
+// ============================================================
+var sleepTimerOptions = [15, 30, 45, 60];
+var sleepTimerIndex = 0;
+var sleepTimerState = { active:false, endsAt:0, intervalId:null, originalVolume:1 };
+
+function cycleSleepTimer(){
+  if (sleepTimerState.active) { cancelSleepTimer(); return; }
+  var minutes = sleepTimerOptions[sleepTimerIndex];
+  startSleepTimer(minutes);
+  sleepTimerIndex = (sleepTimerIndex + 1) % sleepTimerOptions.length;
+}
+function startSleepTimer(minutes){
+  if (sleepTimerState.active) cancelSleepTimer();
+  if (typeof audio !== 'undefined' && audio) {
+    sleepTimerState.originalVolume = audio.volume || 1;
+  }
+  sleepTimerState.active = true;
+  sleepTimerState.endsAt = Date.now() + minutes * 60000;
+  sleepTimerState.intervalId = setInterval(updateSleepTimerDisplay, 1000);
+  var cell = document.getElementById('mosaic-sleep');
+  var hint = document.getElementById('mosaic-sleep-hint');
+  if (cell) cell.classList.add('active');
+  if (hint) hint.textContent = minutes + ':00';
+  if (typeof showToast === 'function') showToast('睡眠定时 ' + minutes + ' 分钟');
+}
+function cancelSleepTimer(){
+  if (sleepTimerState.intervalId) { clearInterval(sleepTimerState.intervalId); sleepTimerState.intervalId = null; }
+  sleepTimerState.active = false;
+  if (typeof audio !== 'undefined' && audio && sleepTimerState.originalVolume) audio.volume = sleepTimerState.originalVolume;
+  var cell = document.getElementById('mosaic-sleep');
+  var hint = document.getElementById('mosaic-sleep-hint');
+  if (cell) cell.classList.remove('active');
+  if (hint) hint.textContent = 'SLEEP';
+  if (typeof showToast === 'function') showToast('已取消睡眠定时');
+}
+function updateSleepTimerDisplay(){
+  if (!sleepTimerState.active) return;
+  var remaining = sleepTimerState.endsAt - Date.now();
+  if (remaining <= 0) { triggerSleepPause(); return; }
+  var minutes = Math.floor(remaining / 60000);
+  var seconds = Math.floor((remaining % 60000) / 1000);
+  var hint = document.getElementById('mosaic-sleep-hint');
+  if (hint) hint.textContent = minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
+  // 最后 30s 渐弱
+  if (remaining < 30000 && typeof audio !== 'undefined' && audio && sleepTimerState.originalVolume) {
+    var fadeProgress = 1 - (remaining / 30000);
+    audio.volume = sleepTimerState.originalVolume * (1 - fadeProgress);
+  }
+}
+function triggerSleepPause(){
+  if (sleepTimerState.intervalId) { clearInterval(sleepTimerState.intervalId); sleepTimerState.intervalId = null; }
+  sleepTimerState.active = false;
+  if (typeof audio !== 'undefined' && audio) {
+    try { audio.pause(); } catch(e) {}
+    if (sleepTimerState.originalVolume) audio.volume = sleepTimerState.originalVolume;
+  }
+  var cell = document.getElementById('mosaic-sleep');
+  var hint = document.getElementById('mosaic-sleep-hint');
+  if (cell) cell.classList.remove('active');
+  if (hint) hint.textContent = 'SLEEP';
+  if (typeof showToast === 'function') showToast('睡眠时间到，已暂停播放');
+}
+
+// 画中浮窗（iOS Safari Web PiP API）
+// 原理：audio 经 AudioContext → MediaStreamDestination，与 canvas 绘制封面的 video stream 合并，
+//       喂给 video 元素，调用 requestPictureInPicture()。
+var pipState = { active:false, video:null, canvas:null, drawInterval:null, audioDest:null, coverImage:null, drawFrame:null };
+
+async function togglePipWindow(){
+  if (pipState.active) { exitPip(); return; }
+  /* iOS WKWebView 支持 PiP 的两条路径：
+     1) 标准 document.pictureInPictureEnabled（iOS 14+ Safari）
+     2) WebKit 私有 video.webkitSupportsPresentationMode('picture-in-picture')
+     任一可用即放行，避免误报"不支持" */
+  var probe = document.createElement('video');
+  var stdPip = (typeof document !== 'undefined' && 'pictureInPictureEnabled' in document && document.pictureInPictureEnabled);
+  var wkPip = !!(probe.webkitSupportsPresentationMode && probe.webkitSupportsPresentationMode('picture-in-picture'));
+  if (!stdPip && !wkPip) {
+    if (typeof showToast === 'function') showToast('当前浏览器不支持画中浮窗');
+    return;
+  }
+  try { await enterPip({ useWebKit: wkPip && !stdPip }); }
+  catch (err) {
+    console.warn('[PiP] failed:', err);
+    if (typeof showToast === 'function') showToast('画中浮窗启动失败：' + (err && err.message ? err.message : err));
+  }
+}
+async function enterPip(opts){
+  opts = opts || {};
+  var coverImg = document.getElementById('album-bg') || document.querySelector('.album-art img, .home-now-cover img, .home-now-cover video');
+  var coverUrl = '';
+  if (coverImg) coverUrl = coverImg.currentSrc || coverImg.src || '';
+
+  var canvas = document.createElement('canvas');
+  canvas.width = 480; canvas.height = 480;
+  var ctx = canvas.getContext('2d');
+
+  var img = null;
+  if (coverUrl) {
+    img = new Image();
+    img.crossOrigin = 'anonymous';
+    await new Promise(function(res){
+      img.onload = function(){ res(); };
+      img.onerror = function(){ img = null; res(); };
+      img.src = coverUrl;
+      setTimeout(res, 1500);
+    });
+  }
+
+  function drawFrame(){
+    var grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+    grad.addColorStop(0, '#1a1a24'); grad.addColorStop(1, '#0a0a14');
+    ctx.fillStyle = grad; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    if (img && img.naturalWidth > 0) {
+      var size = Math.min(canvas.width, canvas.height) * 0.72;
+      var x = (canvas.width - size) / 2, y = (canvas.height - size) / 2;
+      ctx.save();
+      ctx.beginPath();
+      var r = 18;
+      ctx.moveTo(x + r, y);
+      ctx.arcTo(x + size, y, x + size, y + size, r);
+      ctx.arcTo(x + size, y + size, x, y + size, r);
+      ctx.arcTo(x, y + size, x, y, r);
+      ctx.arcTo(x, y, x + size, y, r);
+      ctx.closePath();
+      ctx.clip();
+      ctx.drawImage(img, x, y, size, size);
+      ctx.restore();
+    } else {
+      ctx.fillStyle = 'rgba(255,255,255,.08)';
+      ctx.beginPath();
+      ctx.arc(canvas.width / 2, canvas.height / 2, canvas.width * 0.28, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.fillStyle = 'rgba(255,255,255,.88)';
+    ctx.font = '600 22px -apple-system, system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    var titleEl = document.getElementById('home-now-title') || document.querySelector('.now-title, .track-title');
+    var title = titleEl ? (titleEl.textContent || '') : '';
+    if (title) ctx.fillText(title.length > 22 ? title.slice(0, 22) + '…' : title, canvas.width / 2, canvas.height * 0.92);
+  }
+  pipState.drawFrame = drawFrame;
+  drawFrame();
+
+  var videoStream = canvas.captureStream(30);
+
+  if (typeof audioCtx === 'undefined' || !audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (typeof source === 'undefined' || !source) {
+    if (typeof audio !== 'undefined' && audio) {
+      source = audioCtx.createMediaElementSource(audio);
+    }
+  }
+  if (!source) throw new Error('No audio source available');
+  var audioDest = audioCtx.createMediaStreamDestination();
+  source.connect(audioDest);
+  /* 同时连回音频输出设备，避免 PiP 接管后主扬声器静音 */
+  try { source.connect(audioCtx.destination); } catch(e) {}
+
+  var combined = new MediaStream();
+  videoStream.getVideoTracks().forEach(function(t){ combined.addTrack(t); });
+  audioDest.stream.getAudioTracks().forEach(function(t){ combined.addTrack(t); });
+
+  var video = document.createElement('video');
+  video.srcObject = combined;
+  video.muted = false;
+  video.autoplay = true;
+  video.playsInline = true;
+  video.style.position = 'fixed';
+  video.style.bottom = '20px';
+  video.style.right = '20px';
+  video.style.width = '200px';
+  video.style.height = '200px';
+  video.style.zIndex = '9999';
+  video.style.borderRadius = '14px';
+  video.style.boxShadow = '0 12px 40px rgba(0,0,0,.5)';
+  document.body.appendChild(video);
+
+  await video.play();
+  /* iOS WKWebView 优先用 WebKit 私有 API，回退到标准 requestPictureInPicture */
+  if (opts.useWebKit || (typeof video.requestPictureInPicture !== 'function' && video.webkitSetPresentationMode)) {
+    if (!video.webkitSetPresentationMode) throw new Error('WebKit PiP API 不可用');
+    video.webkitSetPresentationMode('picture-in-picture');
+  } else {
+    await video.requestPictureInPicture();
+  }
+
+  pipState.video = video;
+  pipState.canvas = canvas;
+  pipState.audioDest = audioDest;
+  pipState.coverImage = img;
+  pipState.drawInterval = setInterval(drawFrame, 1000 / 30);
+  pipState.active = true;
+
+  var cell = document.getElementById('mosaic-pip');
+  if (cell) cell.classList.add('active');
+
+  video.addEventListener('leavepictureinpicture', function(){ exitPip(); });
+  if (typeof showToast === 'function') showToast('已进入画中浮窗');
+}
+function exitPip(){
+  if (pipState.drawInterval) { clearInterval(pipState.drawInterval); pipState.drawInterval = null; }
+  if (pipState.audioDest) { try { pipState.audioDest.disconnect(); } catch(e) {} }
+  if (pipState.video) {
+    /* 优先 WebKit API 退出 PiP，避免 video 被 remove 后 PiP 窗口残留 */
+    try { if (pipState.video.webkitSetPresentationMode) pipState.video.webkitSetPresentationMode('inline'); } catch(e) {}
+    try { pipState.video.pause(); pipState.video.srcObject = null; pipState.video.remove(); } catch(e) {}
+  }
+  if (typeof document !== 'undefined' && document.pictureInPictureElement) {
+    try { document.exitPictureInPicture(); } catch(e) {}
+  }
+  pipState.active = false;
+  pipState.video = null; pipState.canvas = null; pipState.audioDest = null; pipState.coverImage = null;
+  var cell = document.getElementById('mosaic-pip');
+  if (cell) cell.classList.remove('active');
+  if (typeof showToast === 'function') showToast('已退出画中浮窗');
+}
+
+// ============================================================
+//  听歌报告 dashboard
+//  数据源：localStorage('mineradio-listen-history') = [{ songId, title, artist, coverUrl, startedAt, duration }]
+//  注意：完全本地，不上传服务器
+// ============================================================
+var REPORT_STORAGE_KEY = 'mineradio-listen-history';
+var REPORT_MAX_RECORDS = 5000; // 防止 localStorage 无限增长
+var reportCurrentRange = 'today';
+var listenTracker = {
+  current: null, // { songId, title, artist, coverUrl, startedAt }
+  lastTickAt: 0,
+  tickInterval: null,
+  flushInterval: null
+};
+
+function getListenHistory(){
+  try { return JSON.parse(localStorage.getItem(REPORT_STORAGE_KEY) || '[]') || []; }
+  catch(e){ return []; }
+}
+function saveListenHistory(arr){
+  try { localStorage.setItem(REPORT_STORAGE_KEY, JSON.stringify(arr.slice(-REPORT_MAX_RECORDS))); }
+  catch(e){ console.warn('[report] save failed', e); }
+}
+function getCurrentSongMeta(){
+  // 从全局变量取当前播放歌曲的信息
+  var meta = { songId: '', title: '', artist: '', coverUrl: '' };
+  try {
+    // 优先从 DOM 取
+    var titleEl = document.getElementById('home-now-title') || document.querySelector('.now-title, .track-title');
+    if (titleEl) meta.title = (titleEl.textContent || '').trim();
+    var artistEl = document.getElementById('home-now-artist') || document.querySelector('.now-artist, .track-artist');
+    if (artistEl) meta.artist = (artistEl.textContent || '').trim();
+    var coverEl = document.getElementById('home-now-cover') || document.querySelector('.now-cover, .album-art img');
+    if (coverEl) meta.coverUrl = (coverEl.currentSrc || coverEl.src || '').trim();
+    // 用 audio.src 作为 songId
+    if (typeof audio !== 'undefined' && audio && audio.src) {
+      meta.songId = audio.src;
+    }
+  } catch(e) {}
+  return meta;
+}
+function startListenTracking(){
+  if (typeof audio === 'undefined' || !audio) return;
+  // 启动时记一次（如果已经在播放）
+  if (!audio.paused) {
+    var meta = getCurrentSongMeta();
+    if (meta.songId) {
+      listenTracker.current = { ...meta, startedAt: Date.now() };
+      listenTracker.lastTickAt = Date.now();
+    }
+  }
+  // 每 5 秒累计一次
+  if (!listenTracker.tickInterval) {
+    listenTracker.tickInterval = setInterval(function(){
+      if (typeof audio === 'undefined' || !audio || audio.paused) return;
+      if (!listenTracker.current) {
+        var m = getCurrentSongMeta();
+        if (!m.songId) return;
+        listenTracker.current = { ...m, startedAt: Date.now() };
+        listenTracker.lastTickAt = Date.now();
+        return;
+      }
+      var now = Date.now();
+      var delta = (now - listenTracker.lastTickAt) / 1000;
+      listenTracker.lastTickAt = now;
+      // 累计到 history
+      var history = getListenHistory();
+      var last = history[history.length - 1];
+      if (last && last.songId === listenTracker.current.songId && (now - last.startedAt) < 10000) {
+        last.duration += delta;
+      } else {
+        history.push({
+          songId: listenTracker.current.songId,
+          title: listenTracker.current.title,
+          artist: listenTracker.current.artist,
+          coverUrl: listenTracker.current.coverUrl,
+          startedAt: listenTracker.current.startedAt,
+          duration: delta
+        });
+      }
+      saveListenHistory(history);
+    }, 5000);
+  }
+  // 切歌时刷新 current
+  audio.addEventListener('play', function(){
+    var m = getCurrentSongMeta();
+    if (m.songId && (!listenTracker.current || listenTracker.current.songId !== m.songId)) {
+      listenTracker.current = { ...m, startedAt: Date.now() };
+      listenTracker.lastTickAt = Date.now();
+    }
+  });
+  audio.addEventListener('pause', function(){
+    listenTracker.current = null;
+  });
+}
+
+function filterHistoryByRange(range){
+  var history = getListenHistory();
+  var now = new Date();
+  var start = new Date();
+  if (range === 'today') {
+    start.setHours(0,0,0,0);
+  } else if (range === 'week') {
+    start.setDate(now.getDate() - 6);
+    start.setHours(0,0,0,0);
+  } else if (range === 'month') {
+    start.setDate(now.getDate() - 29);
+    start.setHours(0,0,0,0);
+  } else {
+    start = new Date(0);
+  }
+  return history.filter(function(h){
+    return h.startedAt >= start.getTime();
+  });
+}
+
+function aggregateReportData(range){
+  var history = filterHistoryByRange(range);
+  var totalDuration = 0;
+  var totalSongs = history.length;
+  var dayMap = {}; // 'YYYY-MM-DD' -> { duration, songs: Set }
+  var songMap = {}; // songId -> { title, artist, coverUrl, count, duration }
+  var artistMap = {}; // artist -> { count, duration }
+  var hourMap = new Array(24).fill(0);
+  var daysWithListen = new Set();
+
+  history.forEach(function(h){
+    totalDuration += h.duration;
+    var d = new Date(h.startedAt);
+    var dayKey = d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate();
+    if (!dayMap[dayKey]) dayMap[dayKey] = { duration: 0, songs: {} };
+    dayMap[dayKey].duration += h.duration;
+    dayMap[dayKey].songs[h.songId] = (dayMap[dayKey].songs[h.songId] || 0) + 1;
+    daysWithListen.add(dayKey);
+
+    if (!songMap[h.songId]) songMap[h.songId] = { title: h.title, artist: h.artist, coverUrl: h.coverUrl, count: 0, duration: 0 };
+    songMap[h.songId].count += 1;
+    songMap[h.songId].duration += h.duration;
+
+    if (h.artist) {
+      if (!artistMap[h.artist]) artistMap[h.artist] = { count: 0, duration: 0 };
+      artistMap[h.artist].count += 1;
+      artistMap[h.artist].duration += h.duration;
+    }
+    hourMap[d.getHours()] += h.duration;
+  });
+
+  // 连续天数
+  var streak = 0;
+  var dayArr = Array.from(daysWithListen).sort().reverse();
+  if (dayArr.length) {
+    var today = new Date(); today.setHours(0,0,0,0);
+    var checkDate = new Date(today);
+    // 如果今天没听，从昨天开始
+    if (!dayMap[checkDate.getFullYear() + '-' + (checkDate.getMonth()+1) + '-' + checkDate.getDate()]) {
+      checkDate.setDate(checkDate.getDate() - 1);
+    }
+    while (dayMap[checkDate.getFullYear() + '-' + (checkDate.getMonth()+1) + '-' + checkDate.getDate()]) {
+      streak++;
+      checkDate.setDate(checkDate.getDate() - 1);
+    }
+  }
+
+  // 最高单日
+  var topDayCount = 0;
+  Object.keys(dayMap).forEach(function(k){
+    var songsCount = Object.keys(dayMap[k].songs).length;
+    if (songsCount > topDayCount) topDayCount = songsCount;
+  });
+
+  // Top 10 artists
+  var topArtists = Object.keys(artistMap)
+    .map(function(k){ return { name: k, count: artistMap[k].count, duration: artistMap[k].duration }; })
+    .sort(function(a,b){ return b.count - a.count; })
+    .slice(0, 10);
+
+  // Top 10 songs
+  var topSongs = Object.keys(songMap)
+    .map(function(k){ return { songId: k, title: songMap[k].title || '未知歌曲', artist: songMap[k].artist || '', coverUrl: songMap[k].coverUrl, count: songMap[k].count, duration: songMap[k].duration }; })
+    .sort(function(a,b){ return b.count - a.count; })
+    .slice(0, 10);
+
+  // 24h peak
+  var maxHour = 0, peakHour = 0;
+  hourMap.forEach(function(v, i){ if (v > maxHour) { maxHour = v; peakHour = i; } });
+
+  return {
+    totalDuration: totalDuration,
+    totalSongs: totalSongs,
+    streak: streak,
+    topDay: topDayCount,
+    topArtists: topArtists,
+    topSongs: topSongs,
+    hourMap: hourMap,
+    peakHour: peakHour,
+    hasData: history.length > 0
+  };
+}
+
+function formatDuration(seconds){
+  if (!seconds || seconds < 1) return '0m';
+  if (seconds < 60) return Math.floor(seconds) + 's';
+  if (seconds < 3600) return Math.floor(seconds / 60) + 'm';
+  var h = Math.floor(seconds / 3600);
+  var m = Math.floor((seconds % 3600) / 60);
+  return h + 'h' + (m > 0 ? m + 'm' : '');
+}
+
+function artistColorHash(name){
+  var colors = [
+    ['#7c5cff','#4ea3ff'], ['#ff6b9d','#c84eff'], ['#ffb84d','#ff6b6b'],
+    ['#4effc4','#4ea3ff'], ['#c84eff','#7c5cff'], ['#ff8c5c','#ffb84d'],
+    ['#5cffa8','#4effc4'], ['#ff5c8c','#ff6b9d'], ['#4ec8ff','#7c5cff'],
+    ['#ffd24d','#ff8c5c']
+  ];
+  var h = 0;
+  for (var i = 0; i < (name||'').length; i++) h = (h * 31 + (name||'').charCodeAt(i)) & 0xffffffff;
+  return colors[Math.abs(h) % colors.length];
+}
+function artistInitial(name){
+  if (!name) return '?';
+  // 简单取首字符
+  return (name.match(/[一-龥]/) || name[0] || '?')[0];
+}
+
+function countUpNumber(el, target, format){
+  if (typeof target !== 'number' || isNaN(target)) target = 0;
+  var duration = 1200;
+  var start = performance.now();
+  var startVal = 0;
+  function step(now){
+    var t = Math.min(1, (now - start) / duration);
+    var eased = 1 - Math.pow(1 - t, 3); // easeOutCubic
+    var v = startVal + (target - startVal) * eased;
+    el.textContent = format === 'duration' ? formatDuration(v) : Math.floor(v).toString();
+    if (t < 1) requestAnimationFrame(step);
+    else el.textContent = format === 'duration' ? formatDuration(target) : Math.floor(target).toString();
+  }
+  requestAnimationFrame(step);
+}
+
+function renderReport(range){
+  reportCurrentRange = range;
+  var data = aggregateReportData(range);
+
+  // 4 大数据
+  countUpNumber(document.getElementById('report-stat-duration'), data.totalDuration, 'duration');
+  countUpNumber(document.getElementById('report-stat-songs'), data.totalSongs, 'int');
+  countUpNumber(document.getElementById('report-stat-streak'), data.streak, 'int');
+  countUpNumber(document.getElementById('report-stat-topday'), data.topDay, 'int');
+
+  // Top 10 artists
+  var artistsEl = document.getElementById('report-artists');
+  if (data.topArtists.length === 0) {
+    artistsEl.innerHTML = '<div class="report-empty">暂无数据</div>';
+  } else {
+    artistsEl.innerHTML = data.topArtists.map(function(a){
+      var colors = artistColorHash(a.name);
+      var initial = artistInitial(a.name);
+      return '<div class="report-artist" title="' + a.name + ' · ' + a.count + '次">' +
+        '<div class="report-artist-avatar" style="background:linear-gradient(135deg,' + colors[0] + ',' + colors[1] + ')">' +
+          initial +
+          '<div class="report-artist-name">' + (a.name.length > 4 ? a.name.slice(0,4) + '…' : a.name) + '</div>' +
+        '</div>' +
+        '<div class="report-artist-count">' + a.count + '次</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  // Top 10 songs
+  var songsEl = document.getElementById('report-songs');
+  if (data.topSongs.length === 0) {
+    songsEl.innerHTML = '<div class="report-empty">暂无数据</div>';
+  } else {
+    songsEl.innerHTML = data.topSongs.map(function(s, i){
+      var coverStyle = s.coverUrl ? 'background-image:url(' + s.coverUrl + ')' : '';
+      return '<div class="report-song">' +
+        '<div class="report-song-rank' + (i < 3 ? ' top' : '') + '">' + (i + 1) + '</div>' +
+        '<div class="report-song-cover" style="' + coverStyle + '"></div>' +
+        '<div class="report-song-info">' +
+          '<div class="report-song-title">' + s.title + '</div>' +
+          '<div class="report-song-artist">' + s.artist + '</div>' +
+        '</div>' +
+        '<div class="report-song-count">' + s.count + '次</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  // 24h 分布
+  var hoursEl = document.getElementById('report-hours');
+  if (data.hourMap.every(function(v){ return v === 0; })) {
+    hoursEl.innerHTML = '<div class="report-empty">暂无数据</div>';
+  } else {
+    var maxV = Math.max.apply(null, data.hourMap) || 1;
+    hoursEl.innerHTML = data.hourMap.map(function(v, i){
+      var h = Math.max(4, (v / maxV) * 60);
+      var isPeak = (i === data.peakHour && v > 0);
+      return '<div class="report-hour" style="height:' + h + 'px" data-h="' + i + '" data-peak="' + isPeak + '"></div>';
+    }).join('');
+  }
+
+  // 一句话总结
+  var summary = document.getElementById('report-summary');
+  if (!data.hasData) {
+    summary.textContent = '开始听歌，开启你的听歌旅程 ✨';
+  } else {
+    var ph = data.peakHour;
+    var timeOfDay;
+    if (ph >= 0 && ph < 5) timeOfDay = '深夜';
+    else if (ph < 9) timeOfDay = '清晨';
+    else if (ph < 12) timeOfDay = '上午';
+    else if (ph < 14) timeOfDay = '午间';
+    else if (ph < 18) timeOfDay = '下午';
+    else if (ph < 22) timeOfDay = '夜晚';
+    else timeOfDay = '深夜';
+    var topArtist = data.topArtists[0];
+    var summaryText = timeOfDay + '音乐家';
+    if (topArtist) summaryText += ' · 最爱 ' + topArtist.name;
+    if (data.streak >= 3) summaryText += ' · 连续 ' + data.streak + ' 天';
+    summary.textContent = summaryText;
+  }
+}
+
+function openReportModal(){
+  var modal = document.getElementById('report-modal');
+  if (!modal) return;
+  modal.setAttribute('data-open', 'true');
+  modal.setAttribute('aria-hidden', 'false');
+  document.body.classList.add('modal-open');
+  // tab 状态
+  Array.from(document.querySelectorAll('.report-tab')).forEach(function(t){
+    t.classList.toggle('active', t.getAttribute('data-range') === reportCurrentRange);
+  });
+  renderReport(reportCurrentRange);
+}
+function closeReportModal(){
+  var modal = document.getElementById('report-modal');
+  if (!modal) return;
+  modal.setAttribute('data-open', 'false');
+  modal.setAttribute('aria-hidden', 'true');
+  document.body.classList.remove('modal-open');
+}
+
+// tab 切换（一次性绑定）
+document.addEventListener('click', function(e){
+  var tab = e.target.closest && e.target.closest('.report-tab');
+  if (!tab) return;
+  Array.from(document.querySelectorAll('.report-tab')).forEach(function(t){ t.classList.remove('active'); });
+  tab.classList.add('active');
+  renderReport(tab.getAttribute('data-range'));
+});
+// ESC 关闭
+document.addEventListener('keydown', function(e){
+  if (e.key === 'Escape') {
+    var modal = document.getElementById('report-modal');
+    if (modal && modal.getAttribute('data-open') === 'true') closeReportModal();
+  }
+});
+
+// 启动听歌跟踪（DOMContentLoaded 后）
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', startListenTracking);
+} else {
+  setTimeout(startListenTracking, 100);
+}
+
+// 调试/截图用：URL 查询参数触发自动开 modal
+if (/[?&]demo=1\b/.test(location.search)) {
+  setTimeout(function(){
+    // 注入一些 demo 数据让 dashboard 不空
+    var demoSeed = [
+      { songId: 'demo1', title: '夜曲', artist: '周杰伦', startedAt: Date.now() - 3600000, duration: 240, coverUrl: '' },
+      { songId: 'demo2', title: '稻香', artist: '周杰伦', startedAt: Date.now() - 3000000, duration: 220, coverUrl: '' },
+      { songId: 'demo3', title: '青花瓷', artist: '周杰伦', startedAt: Date.now() - 2400000, duration: 240, coverUrl: '' },
+      { songId: 'demo4', title: '告白气球', artist: '周杰伦', startedAt: Date.now() - 1800000, duration: 210, coverUrl: '' },
+      { songId: 'demo5', title: '晴天', artist: '周杰伦', startedAt: Date.now() - 1200000, duration: 270, coverUrl: '' },
+      { songId: 'demo6', title: '以父之名', artist: '周杰伦', startedAt: Date.now() - 600000, duration: 320, coverUrl: '' },
+      { songId: 'demo7', title: '七里香', artist: '周杰伦', startedAt: Date.now() - 300000, duration: 300, coverUrl: '' },
+      { songId: 'demo8', title: '红尘客栈', artist: '周杰伦', startedAt: Date.now() - 5000, duration: 260, coverUrl: '' },
+      { songId: 'demo9', title: '简单爱', artist: '周杰伦', startedAt: Date.now() - 7200000, duration: 270, coverUrl: '' },
+      { songId: 'demo10', title: '龙卷风', artist: '周杰伦', startedAt: Date.now() - 10800000, duration: 250, coverUrl: '' },
+      { songId: 'demo11', title: '光辉岁月', artist: 'Beyond', startedAt: Date.now() - 18000000, duration: 320, coverUrl: '' },
+      { songId: 'demo12', title: '海阔天空', artist: 'Beyond', startedAt: Date.now() - 20000000, duration: 320, coverUrl: '' },
+      { songId: 'demo13', title: '真的爱你', artist: 'Beyond', startedAt: Date.now() - 22000000, duration: 260, coverUrl: '' }
+    ];
+    saveListenHistory(demoSeed);
+    openReportModal();
+  }, 1500);
+}
+
 function locateWeatherRadio() {
   var previousWeatherCity = homeWeatherRadioState.city || '上海';
   homeWeatherToken++;
@@ -17247,10 +18125,12 @@ function prewarmHomeWallpaperPreview() {
   if (homeWallpaperPrewarmStarted) return;
   homeWallpaperPrewarmStarted = true;
   if (!shouldUseIdleWallpaperPreview(true)) return;
+  // iPad 模式：延后 1.6 秒再触发壁纸预览，让首屏先稳定
+  var wallpaperDelay = window.__mineradioFastBoot ? 1600 : 900;
   scheduleVisualApply(function(){
     if (!shouldUseIdleWallpaperPreview(true)) return;
     activateHomeWallpaperPreview({ skipTransition: true, instant: true });
-  }, 900, 2600);
+  }, wallpaperDelay, 2600);
 }
 function deactivateHomeWallpaperPreview(playback) {
   document.body.classList.remove('home-wallpaper-preview');
@@ -19013,7 +19893,8 @@ function renderSongSearchResults(songs) {
     var vipTag = (s.fee === 1) ? '<span class="tag-vip">VIP</span>' : '';
     var sourceTag = songSourceTagHtml(s);
     var sourceClass = songProviderKey(s) + '-source';
-    var thumb = songCoverSrc(s, 80);
+    var rawThumb = songCoverSrc(s, 80);
+    var thumb = rawThumb ? (typeof coverProxySrc === 'function' ? coverProxySrc(rawThumb) || rawThumb : rawThumb) : '';
     var imgTag = thumb
       ? '<img src="' + thumb + '" alt="" loading="lazy" onerror="this.style.opacity=0.2">'
       : '<div style="width:40px;height:40px;border-radius:6px;background:rgba(255,255,255,0.06);flex-shrink:0"></div>';
@@ -21054,8 +21935,8 @@ function renderUserPlaylistsList(opts) {
   function playlistCardHtml(pl) {
     var provider = pl.provider === 'qq' ? 'qq' : 'netease';
     var providerLabel = provider === 'qq' ? 'QQ' : 'NE';
-    var thumb = pl.cover ? (provider === 'qq' ? pl.cover : (pl.cover + '?param=88y88')) : '';
-    var imgTag = thumb ? '<img src="' + thumb + '" alt="" loading="lazy" decoding="async" onerror="this.style.opacity=0.2">' : '<div style="width:44px;height:44px;border-radius:8px;background:rgba(255,255,255,.06);flex-shrink:0"></div>';
+    var thumb = pl.cover ? coverProxySrc(provider === 'qq' ? pl.cover : coverUrlWithSize(pl.cover, 88)) : '';
+    var imgTag = thumb ? '<img src="' + escHtml(thumb) + '" alt="" loading="lazy" decoding="async" onerror="this.style.opacity=0.2">' : '<div style="width:44px;height:44px;border-radius:8px;background:rgba(255,255,255,.06);flex-shrink:0"></div>';
     var key = playlistPanelKey(provider, pl.id);
     var expanded = playlistPanelDetailState.key === key ? ' expanded' : '';
     return '<div class="pl-card' + expanded + '" data-playlist-provider="' + provider + '" data-playlist-id="' + escHtml(String(pl.id || '')) + '" data-playlist-title="' + escHtml(pl.name || '') + '">' +
@@ -21504,8 +22385,6 @@ var presetMeta = [
   { name: '星河', desc: '壁纸粒子 · 音乐律动' },
   { name: '安魂', desc: '骷髅·YUI7W', descHtml: '骷髅·<span class="pc-yui7w">YUI7W</span>' },
   { name: 'Emily粒子专辑+行星环', desc: '双倍粒子·双倍快乐' },
-  { name: '模型声波剥离', desc: '3D模型粒子·音频驱动向外剥离与声波流转' },
-  { name: '六翼天使', desc: '3D模型粒子·圣剑裁决' },
 ];
 var presetIcons = [
   '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 14c3-2 5-2 8 0s5 2 8 0M3 10c3-2 5-2 8 0s5 2 8 0M3 18c3-2 5-2 8 0s5 2 8 0"/></svg>',
@@ -21516,10 +22395,8 @@ var presetIcons = [
   '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 15c2.2-4.4 4.4-4.4 6.6 0s4.4 4.4 6.6 0S20.6 10.6 23 15"/><path d="M3 9c2.2 2.2 4.4 2.2 6.6 0s4.4-2.2 6.6 0S20.6 11.2 23 9"/><circle cx="12" cy="12" r="1.7" fill="currentColor"/></svg>',
   '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3.2h4v6.2h4.2v3.8H14v7.6h-4v-7.6H5.8V9.4H10z"/></svg>',
   '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5v17M3.5 12h17" opacity=".45"/><circle cx="12" cy="8" r="1.8" fill="currentColor"/><circle cx="15.5" cy="11" r="1.2" fill="currentColor"/><circle cx="9" cy="14" r="1.4" fill="currentColor"/><circle cx="14" cy="16" r="1" fill="currentColor"/></svg>',
-  '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2L4 6v6c0 5 3.5 8.5 8 10 4.5-1.5 8-5 8-10V6z"/><circle cx="12" cy="11" r="2.5" fill="currentColor" opacity=".7"/><path d="M12 8.5v5M9.5 11h5" stroke-width="1.2"/></svg>',
-  '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2L4 6v6c0 5 3.5 8.5 8 10 4.5-1.5 8-5 8-10V6z"/><circle cx="12" cy="11" r="3" fill="currentColor" opacity=".5"/><path d="M8 8l8 8M16 8l-8 8" stroke-width="1.2" opacity=".6"/></svg>',
 ];
-var presetDisplayOrder = [0, 7, 6, 5, 4, 2, 1, 3, 8, 9];
+var presetDisplayOrder = [0, 7, 6, 5, 4, 2, 1, 3];
 var lyricColorPresets = [
   { name:'雾蓝', color:'#a9b8c8' },
   { name:'银蓝', color:'#9db8cf' },
@@ -22725,15 +23602,14 @@ function refreshPresetGrid() {
 function triggerPresetParticleTransition(fromPreset, toPreset) {
   presetTransition.active = true;
   presetTransition.start = uniforms.uTime.value;
-  presetTransition.duration = toPreset === 5 ? 0.30 : (isModelParticlePreset(toPreset) ? 0.42 : 0.24);
+  presetTransition.duration = toPreset === 5 ? 0.30 : 0.24;
   presetTransition.from = fromPreset;
   presetTransition.to = toPreset;
   var newVisual = toPreset >= 4;
   var wallpaperFlow = toPreset === 5;
-  var modelParticleFlow = isModelParticlePreset(toPreset);
   uniforms.uScatter.value = Math.max(uniforms.uScatter.value, fx.scatter + (newVisual ? (wallpaperFlow ? 0.008 : 0.024) : 0.12));
-  uniforms.uBurstAmt.value = Math.max(uniforms.uBurstAmt.value, wallpaperFlow ? 0.05 : (modelParticleFlow ? 0.20 : 0.15));
-  camPunch = Math.max(camPunch, wallpaperFlow ? 0.04 : (modelParticleFlow ? 0.18 : 0.12));
+  uniforms.uBurstAmt.value = Math.max(uniforms.uBurstAmt.value, wallpaperFlow ? 0.05 : 0.15);
+  camPunch = Math.max(camPunch, wallpaperFlow ? 0.04 : 0.12);
   for (var i = 0; i < 3; i++) {
     triggerRipple((Math.random() - 0.5) * 3.4, (Math.random() - 0.5) * 3.4, 0.58 + Math.random() * 0.32);
   }
@@ -22752,10 +23628,9 @@ function tickPresetTransition() {
   var wave = Math.sin(t * Math.PI);
   var newVisual = presetTransition.to >= 4;
   var wallpaperFlow = presetTransition.to === 5;
-  var modelParticleFlow = isModelParticlePreset(presetTransition.to);
   uniforms.uScatter.value = Math.max(uniforms.uScatter.value, fx.scatter + wave * (newVisual ? (wallpaperFlow ? 0.008 : 0.026) : 0.16));
-  uniforms.uBurstAmt.value = Math.max(uniforms.uBurstAmt.value, wave * (wallpaperFlow ? 0.045 : (modelParticleFlow ? 0.16 : (newVisual ? 0.12 : 0.15))));
-  uniforms.uPointScale.value = fx.point * (1 + wave * (wallpaperFlow ? 0.016 : (modelParticleFlow ? 0.06 : 0.048)));
+  uniforms.uBurstAmt.value = Math.max(uniforms.uBurstAmt.value, wave * (wallpaperFlow ? 0.045 : (newVisual ? 0.12 : 0.15)));
+  uniforms.uPointScale.value = fx.point * (1 + wave * (wallpaperFlow ? 0.016 : 0.048));
   if (raw >= 1) {
     presetTransition.active = false;
     syncFxUniforms();
@@ -22768,13 +23643,6 @@ function setPreset(p, opts) {
   var changed = prev !== p;
   fx.preset = p;
   if (changed && prev === SKULL_PRESET_INDEX && p !== SKULL_PRESET_INDEX) clearSkullPresetResidue();
-  if (changed) {
-    for (var mi = 0; mi < MODEL_PARTICLE_PRESETS.length; mi++) {
-      var mpIdx = MODEL_PARTICLE_PRESETS[mi].index;
-      if (prev === mpIdx && p !== mpIdx) clearModelParticlePresetResidue(mpIdx);
-      if (p === mpIdx) { preloadModelParticleData(mpIdx); createModelParticleLayer(mpIdx); }
-    }
-  }
   if (p === SKULL_PRESET_INDEX) loadSkullParticleAsset();
   uniforms.uPreset.value = p;
   refreshPresetGrid();
@@ -22796,14 +23664,6 @@ function setPreset(p, opts) {
     else if (p === 5) { orbit.userRadius = 9.4; orbit.userPhi = 0.34; orbit.userTheta = -0.52; orbit.baselineRadius = 9.4; orbit.baselinePhi = 0.34; }
     else if (p === 6) { orbit.userRadius = 7.4; orbit.userPhi = 0.10; orbit.userTheta = 0.18; orbit.baselineRadius = 7.4; orbit.baselinePhi = 0.10; }
     else if (p === 7) { orbit.userRadius = 8.5; orbit.userPhi = 0.25; orbit.userTheta = -0.20; orbit.baselineRadius = 8.5; orbit.baselinePhi = 0.25; }
-    else if (isModelParticlePreset(p)) {
-      var mpState = getModelParticleState(p);
-      if (mpState.effectLoaded && mpState.effectConfig && mpState.effectConfig.camera) {
-        var mpCam = mpState.effectConfig.camera;
-        orbit.userRadius = mpCam.radius; orbit.userPhi = mpCam.phi; orbit.userTheta = mpCam.theta;
-        orbit.baselineRadius = mpCam.radius; orbit.baselinePhi = mpCam.phi;
-      }
-    }
     else              { orbit.userRadius = 6.6; orbit.userPhi = 0.08; orbit.userTheta = 0.0; orbit.baselineRadius = 6.6; orbit.baselinePhi = 0.08; }
     orbit.baselineTheta = p === 5 ? -0.52 : (p === 6 ? 0.18 : (p === 7 ? -0.20 : 0.0));
   }
@@ -23721,16 +24581,6 @@ function bindFxPanel() {
   organizeFxPanel();
   relabelFxPanelControls();
   bindHotkeySettings();
-  /* 预读 effect 文件，同步 presetMeta 名称和描述 */
-  MODEL_PARTICLE_PRESETS.forEach(function(mp) {
-    fetch(mp.effectFile).then(function(r){ return r.text(); }).then(function(txt) {
-      var mName = txt.match(/name\s*:\s*'([^']+)'/);
-      var mDesc = txt.match(/desc\s*:\s*'([^']+)'/);
-      if (mName && presetMeta[mp.index]) presetMeta[mp.index].name = mName[1];
-      if (mDesc && presetMeta[mp.index]) presetMeta[mp.index].desc = mDesc[1];
-      if (mName || mDesc) buildPresetGrid();
-    }).catch(function(){});
-  });
   buildPresetGrid();
   renderUserFxArchives();
   buildLyricColorControls();
@@ -25056,17 +25906,21 @@ function updateLoginProviderUi() {
   var neteaseBtn = document.getElementById('login-provider-netease');
   var qqBtn = document.getElementById('login-provider-qq');
   var canOpenNeteaseWeb = !!(window.desktopWindow && typeof window.desktopWindow.openNeteaseMusicLogin === 'function');
+  var canOpenQQWeb = !!(window.desktopWindow && typeof window.desktopWindow.openQQMusicLogin === 'function') || !!(window.iosBridge && typeof window.iosBridge.openQQMusicLogin === 'function');
+  var qqUseQr = isQQ && !canOpenQQWeb;
   if (neteaseBtn) neteaseBtn.classList.toggle('active', loginProvider === 'netease');
   if (qqBtn) qqBtn.classList.toggle('active', isQQ);
   if (title) title.textContent = '扫码登录' + meta.label;
   if (desc) desc.innerHTML = isQQ
-    ? '打开 <b>QQ 音乐官方网页登录窗口</b> 扫码，成功后会自动同步账号会话。'
+    ? (qqUseQr
+      ? '使用 <b>QQ 音乐 App</b> 扫码登录，成功后自动同步账号会话。'
+      : '打开 <b>QQ 音乐官方网页登录窗口</b> 扫码，成功后会自动同步账号会话。')
     : (canOpenNeteaseWeb
       ? '打开 <b>网易云音乐官方网页登录窗口</b> 扫码，避开接口二维码风控；成功后会自动同步账号会话。'
       : '使用 <b>网易云音乐 App</b> 扫码，可同步歌单、红心与播客。');
   if (shell) {
-    shell.classList.toggle('web-login-preview', isQQ || canOpenNeteaseWeb);
-    shell.classList.toggle('qq-preview', isQQ);
+    shell.classList.toggle('web-login-preview', (isQQ && !qqUseQr) || (!isQQ && canOpenNeteaseWeb));
+    shell.classList.toggle('qq-preview', isQQ && !qqUseQr);
     shell.classList.toggle('netease-preview', !isQQ && canOpenNeteaseWeb);
   }
   if (qqPanel) qqPanel.classList.toggle('show', isQQ && qqManualCookieOpen);
@@ -25084,29 +25938,76 @@ function updateLoginProviderUi() {
       : (neteaseWebLoginBusy ? '等待扫码确认' : '打开官方登录窗口');
   }
   if (st) {
-    st.className = isQQ ? 'preview' : '';
+    st.className = (isQQ && !qqUseQr) ? 'preview' : '';
     st.textContent = isQQ
-      ? (qqLoginStatus.loggedIn ? ('已保存 QQ 音乐会话 · ' + (qqLoginStatus.nickname || '')) : '点击“扫码登录”打开 QQ 音乐官方窗口')
+      ? (qqLoginStatus.loggedIn ? ('已保存 QQ 音乐会话 · ' + (qqLoginStatus.nickname || '')) : (qqUseQr ? '正在生成二维码…' : '点击“扫码登录”打开 QQ 音乐官方窗口'))
       : (canOpenNeteaseWeb ? '点击“网页登录”打开网易云官方窗口' : '正在生成二维码…');
   }
   if (refreshBtn) {
     refreshBtn.disabled = isQQ ? !!qqWebLoginBusy : !!neteaseWebLoginBusy;
-    refreshBtn.textContent = isQQ ? (qqWebLoginBusy ? '等待扫码…' : '扫码登录') : (canOpenNeteaseWeb ? (neteaseWebLoginBusy ? '等待扫码…' : '网页登录') : '刷新二维码');
-    refreshBtn.onclick = isQQ ? openQQWebLogin : (canOpenNeteaseWeb ? openNeteaseWebLogin : refreshQr);
+    if (isQQ) {
+      refreshBtn.textContent = qqUseQr ? '刷新二维码' : (qqWebLoginBusy ? '等待扫码…' : '扫码登录');
+      refreshBtn.onclick = qqUseQr ? refreshQr : openQQWebLogin;
+    } else {
+      refreshBtn.textContent = canOpenNeteaseWeb ? (neteaseWebLoginBusy ? '等待扫码…' : '网页登录') : '刷新二维码';
+      refreshBtn.onclick = canOpenNeteaseWeb ? openNeteaseWebLogin : refreshQr;
+    }
   }
 }
 async function refreshQr() {
   stopQrPoll();
   updateLoginProviderUi();
   if (loginProvider === 'qq') {
-    qrKey = null;
-    var qqStatus = document.getElementById('qr-status');
-    var qqImg = document.getElementById('qr-img');
-    if (qqImg) qqImg.src = '';
-    var info = await refreshQQLoginStatus();
-    if (qqStatus) {
-      qqStatus.textContent = info && info.loggedIn ? ('已保存 QQ 音乐会话 · ' + (info.nickname || '')) : '点击“扫码登录”打开 QQ 音乐官方窗口';
-      qqStatus.className = 'preview';
+    var canOpenQQWeb = !!(window.desktopWindow && typeof window.desktopWindow.openQQMusicLogin === 'function') || !!(window.iosBridge && typeof window.iosBridge.openQQMusicLogin === 'function');
+    if (canOpenQQWeb) {
+      qrKey = null;
+      qqQrSession = null;
+      var qqStatus = document.getElementById('qr-status');
+      var qqImg = document.getElementById('qr-img');
+      if (qqImg) qqImg.src = '';
+      var info = await refreshQQLoginStatus();
+      if (qqStatus) {
+        qqStatus.textContent = info && info.loggedIn ? ('已保存 QQ 音乐会话 · ' + (info.nickname || '')) : '点击"扫码登录"打开 QQ 音乐官方窗口';
+        qqStatus.className = 'preview';
+      }
+      return;
+    }
+    // QR 扫码流程（非桌面端）
+    try {
+      qqQrSession = null;
+      qqQrToken = null;
+      qqQrSig = null;
+      qqCookieReady = false;
+      var r = await apiJson('/api/qq/qr/create');
+      if (!r.img) throw new Error('生成二维码失败');
+      qqQrSession = r.sessionId;
+      qqQrToken = r.ptqrtoken || null;
+      qqQrSig = r.qrsig || null;
+      document.getElementById('qr-img').src = r.img;
+      document.getElementById('qr-status').textContent = '正在准备扫码环境…';
+      document.getElementById('qr-status').className = '';
+      // 通过 native WKHTTPCookieStore 注入 qrsig cookie 到 ssl.ptlogin2.qq.com 域
+      // 这样客户端 JSONP 请求 ptqrlogin 时才会带上 qrsig，server 才能识别是哪个二维码
+      if (qqQrSig && window.setQrCookieForDomain) {
+        window.setQrCookieForDomain('qrsig', qqQrSig, '.ptlogin2.qq.com', '/', function(ok) {
+          qqCookieReady = ok;
+          document.getElementById('qr-status').textContent = ok ? '请使用 QQ App 扫码' : 'Cookie 注入失败，请刷新重试';
+          document.getElementById('qr-status').className = ok ? '' : 'fail';
+          if (ok) startQrPoll();
+        });
+      } else if (qqQrSig) {
+        // 非 iOS 环境（桌面浏览器调试）：直接开始轮询（JSONP 可能不工作，但至少不会卡住）
+        qqCookieReady = true;
+        document.getElementById('qr-status').textContent = '请使用 QQ App 扫码';
+        document.getElementById('qr-status').className = '';
+        startQrPoll();
+      } else {
+        document.getElementById('qr-status').textContent = 'qrsig 缺失，请刷新重试';
+        document.getElementById('qr-status').className = 'fail';
+      }
+    } catch (e) {
+      document.getElementById('qr-status').textContent = '出错: ' + e.message;
+      document.getElementById('qr-status').className = 'fail';
     }
     return;
   }
@@ -25116,7 +26017,7 @@ async function refreshQr() {
     var neStatus = document.getElementById('qr-status');
     if (neImg) neImg.src = '';
     if (neStatus) {
-      neStatus.textContent = loginStatus.loggedIn ? ('已保存网易云会话 · ' + (loginStatus.nickname || '')) : '点击“网页登录”打开网易云官方窗口';
+      neStatus.textContent = loginStatus.loggedIn ? ('已保存网易云会话 · ' + (loginStatus.nickname || '')) : '点击"网页登录"打开网易云官方窗口';
       neStatus.className = 'preview';
     }
     return;
@@ -25193,8 +26094,13 @@ async function openNeteaseWebLogin() {
 async function openQQWebLogin() {
   if (qqWebLoginBusy) return;
   var statusEl = document.getElementById('qr-status');
-  var api = window.desktopWindow;
-  if (!api || !api.isDesktop || typeof api.openQQMusicLogin !== 'function') {
+  // 优先 desktopWindow（Electron/Tauri），其次 iosBridge（WKWebView native sheet）
+  var api = (window.desktopWindow && window.desktopWindow.isDesktop && typeof window.desktopWindow.openQQMusicLogin === 'function')
+    ? window.desktopWindow
+    : (window.iosBridge && typeof window.iosBridge.openQQMusicLogin === 'function')
+      ? window.iosBridge
+      : null;
+  if (!api) {
     qqManualCookieOpen = true;
     updateLoginProviderUi();
     if (statusEl) { statusEl.textContent = '当前环境不支持自动网页登录，可先使用手动导入。'; statusEl.className = 'fail'; }
@@ -25277,6 +26183,112 @@ async function submitQQCookieLogin() {
   }
 }
 async function checkQr() {
+  // QQ 音乐 QR 轮询 —— 客户端 JSONP 直连 ptqrlogin（绕过 APISIX JA3 TLS 指纹检测）
+  if (loginProvider === 'qq' && qqQrSession) {
+    if (!qqQrToken) { console.warn('QQ QR: missing ptqrtoken, skip poll'); return; }
+    if (!qqCookieReady) { console.warn('QQ QR: cookie not ready, skip poll'); return; }
+    function qqLog(obj) {
+      try { fetch('/api/qq/qr/log', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(obj) }); } catch(e) {}
+    }
+    try {
+      var r = await new Promise(function(resolve, reject) {
+        var script = document.createElement('script');
+        var done = false;
+        var timeout = setTimeout(function() {
+          if (done) return; done = true;
+          script.parentNode && script.parentNode.removeChild(script);
+          delete window.ptuiCB;
+          qqLog({ step: 'jsonp_timeout', ptqrtoken: qqQrToken });
+          reject(new Error('QQ QR JSONP timeout'));
+        }, 8000);
+        // ptuiCB 回调签名: ptuiCB(code, status, check_sig_url_or_empty, arg4, message, nickname)
+        window.ptuiCB = function(code, status, url, arg4, msg, nickname) {
+          if (done) return; done = true;
+          clearTimeout(timeout);
+          script.parentNode && script.parentNode.removeChild(script);
+          delete window.ptuiCB;
+          // 在所有参数里查找 check_sig URL（不同版本位置不同）
+          var checkSigUrl = '';
+          var args = [url, arg4, msg, nickname];
+          for (var i = 0; i < args.length; i++) {
+            if (typeof args[i] === 'string' && args[i].indexOf('check_sig') !== -1) { checkSigUrl = args[i]; break; }
+          }
+          qqLog({ step: 'ptuiCB', code: code, status: status, url: typeof url === 'string' ? url.substring(0, 100) : '', arg4: typeof arg4 === 'string' ? arg4.substring(0, 100) : '', msg: msg, nickname: nickname, checkSigUrl: checkSigUrl ? checkSigUrl.substring(0, 100) : '' });
+          resolve({ code: parseInt(code, 10) || 0, status: status, url: url, checkSigUrl: checkSigUrl, msg: msg, nickname: nickname });
+        };
+        var ptqrloginUrl = 'https://ssl.ptlogin2.qq.com/ptqrlogin'
+          + '?u1=' + encodeURIComponent('https://y.qq.com/n/ryqq/profile')
+          + '&ptqrtoken=' + encodeURIComponent(qqQrToken)
+          + '&ptredirect=1&h=1&t=1&from_ui=1&ptlang=2052'
+          + '&action=0-0-' + Date.now()
+          + '&js_ver=10290&js_type=1&login_sig='
+          + '&pt_uistyle=40&aid=716027609&daid=383&';
+        qqLog({ step: 'jsonp_start', url: ptqrloginUrl.substring(0, 120), ptqrtoken: qqQrToken });
+        script.src = ptqrloginUrl;
+        script.onerror = function() {
+          if (done) return; done = true;
+          clearTimeout(timeout);
+          script.parentNode && script.parentNode.removeChild(script);
+          delete window.ptuiCB;
+          qqLog({ step: 'jsonp_onerror', ptqrtoken: qqQrToken });
+          reject(new Error('QQ QR JSONP script error'));
+        };
+        document.head.appendChild(script);
+      });
+      var $st = document.getElementById('qr-status');
+      // 66=未失效(等待扫码) 67=认证中(等待扫码) 68=已扫码待确认 0=登录成功
+      if (r.code === 66 || r.code === 67) {
+        $st.textContent = '请使用 QQ App 扫码'; $st.className = '';
+      } else if (r.code === 68) {
+        $st.textContent = '已扫码, 请在手机确认…'; $st.className = 'scan';
+      } else if (r.code === 0) {
+        $st.textContent = '扫码成功，正在同步登录…'; $st.className = 'scan';
+        stopQrPoll();
+        var checkSigUrl = r.checkSigUrl;
+        var sessionIdForSig = qqQrSession;
+        qqQrToken = null;
+        if (!checkSigUrl) {
+          $st.textContent = '未获取到 check_sig URL, 请刷新二维码重试'; $st.className = 'fail';
+          qqQrSession = null;
+          return;
+        }
+        try {
+          var resp = await fetch('/api/qq/qr/checksig', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url: checkSigUrl, sessionId: sessionIdForSig })
+          });
+          var result = await resp.json();
+          if (result && result.success) {
+            qqQrSession = null;
+            var info = await refreshQQLoginStatus();
+            if (info && info.loggedIn) {
+              activeAccountProvider = 'qq';
+              qqManualCookieOpen = false;
+              renderUserBtn();
+              refreshUserPlaylists(true);
+              setTimeout(function() {
+                closeLoginModal();
+                showToast('QQ 音乐已登录: ' + (info.nickname || info.userId || ''));
+              }, 300);
+            } else {
+              $st.textContent = '登录凭证不完整，请刷新二维码重试'; $st.className = 'fail';
+            }
+          } else {
+            qqQrSession = null;
+            $st.textContent = '同步登录失败: ' + (result && result.error ? result.error : '未知错误');
+            $st.className = 'fail';
+          }
+        } catch (e) {
+          qqQrSession = null;
+          $st.textContent = '同步登录失败: ' + e.message; $st.className = 'fail';
+        }
+      } else {
+        $st.textContent = '未知状态码: ' + r.code + (r.msg ? ' (' + r.msg + ')' : ''); $st.className = 'fail';
+      }
+    } catch (e) { console.warn('QQ QR JSONP error:', e); }
+    return;
+  }
   if (!qrKey) return;
   try {
     var r = await apiJson('/api/login/qr/check?key=' + encodeURIComponent(qrKey));
@@ -27750,6 +28762,17 @@ document.addEventListener('DOMContentLoaded', function(){
   var s = document.getElementById('splash');
   if (!s) return;
   markAppPerf('dom-content-loaded');
+  // iPad 模式：跳过 splash 屏幕与音效，立即进主界面
+  if (window.__mineradioFastBoot) {
+    s.style.display = 'none';
+    document.body.classList.remove('splash-active');
+    splashReadyToEnter = true;
+    armSplashSoundFallback();
+    prewarmHomeWallpaperPreview();
+    setTimeout(function(){ relocateWeatherRadio(); }, 600);
+    setTimeout(dismissSplash, 0);
+    return;
+  }
   armSplashSoundFallback();
   prewarmHomeWallpaperPreview();
   // 每次打开应用自动重新定位
@@ -27772,7 +28795,14 @@ document.addEventListener('DOMContentLoaded', function(){
     return;
   }
   playMineradioIntroSound();
-  splashTimer = setTimeout(markSplashReadyToEnter, 5000);
+  // iPad 快速通道：1.4 秒后自动 dismiss，不等用户点击（iOS Safari click 在 100vh 边界不稳）
+  var splashDelay = window.__mineradioFastBoot ? 1400 : 5000;
+  splashTimer = setTimeout(function(){
+    markSplashReadyToEnter();
+    if (window.__mineradioFastBoot) {
+      setTimeout(dismissSplash, 50);
+    }
+  }, splashDelay);
 });
 
 var desktopOverlayPushState = {
@@ -28152,6 +29182,16 @@ function toggleFullscreen() {
 // ============================================================
 //  启动
 // ============================================================
+// iPad 触屏：强制 DIY 模式 + 关闭 fxFabAutoHide（无 hover 永远不可见）
+try {
+  if (document.documentElement.classList.contains('touch-coarse')) {
+    if (!diyPlayerMode) diyPlayerMode = true;
+    if (fxFabAutoHide) {
+      fxFabAutoHide = false;
+      try { localStorage.setItem(FX_FAB_AUTO_HIDE_STORE_KEY, '0'); } catch(e){}
+    }
+  }
+} catch(e) {}
 applyDiyMode(diyPlayerMode, { save: false });
 bindFxPanel();
 applySavedLyricPaletteState();
@@ -28169,6 +29209,7 @@ scheduleUiWarmTask(function(){
 }, 900);
 applyUserCapsuleAutoHideState();
 applyFxFabAutoHideState();
+
 applyControlsAutoHidePreference();
 applyDesktopLyricsState(false);
 applyWallpaperModeState(false);
@@ -28620,12 +29661,11 @@ function animate() {
   // v7.2 旋转 = 头部+眼球追踪 + 鼠标/手势拖动 + 惯性
   tickGestureRotation(dt);
   var skullPresetActive = fx && fx.preset === SKULL_PRESET_INDEX;
-  var modelParticlePresetActive = fx && isModelParticlePreset(fx.preset);
-  var shouldHideMainParticles = skullPresetActive || modelParticlePresetActive;
+  var shouldHideMainParticles = skullPresetActive;
   particles.visible = !shouldHideMainParticles;
   if (bloomParticles) bloomParticles.visible = !shouldHideMainParticles && fx.bloom && fx.bloomStrength > 0.01;
-  if (floatGroup) floatGroup.visible = !skullPresetActive && !modelParticlePresetActive;
-  if (backCoverGroup) backCoverGroup.visible = !skullPresetActive && !modelParticlePresetActive;
+  if (floatGroup) floatGroup.visible = !skullPresetActive;
+  if (backCoverGroup) backCoverGroup.visible = !skullPresetActive;
 
   var targetRotY = orbit.centerLocked ? 0 : (headParallax.active ? headParallax.x * 0.5 : 0) + gestureRotation.y;
   var targetRotX = orbit.centerLocked ? 0 : (headParallax.active ? -headParallax.y * 0.35 : 0) + gestureRotation.x;
@@ -28642,7 +29682,6 @@ function animate() {
     backCoverGroup.rotation.copy(particles.rotation);
   }
   updateSkullParticleLayer(dt);
-  updateAllModelParticleLayers(dt);
   updateStageLyrics3D(dt);
   syncDesktopOverlayState();
 
@@ -29256,12 +30295,16 @@ document.addEventListener('DOMContentLoaded', function() {
     try { saveLyricLayout(); } catch(e) {}
     if (mode === 'off') {
       showToast('评论弹幕已关闭');
-      toggleSettingsPop(false);
+      /* 触屏 iPad：弹窗不自动关闭，等用户点外部或再点评论按钮关闭 */
+      if (!document.documentElement.classList.contains('touch-coarse')) toggleSettingsPop(false);
+      else ensureCommentsThenStart();
     } else if (mode === 'danmaku') {
       showToast('弹幕滚动模式');
+      if (!document.documentElement.classList.contains('touch-coarse')) toggleSettingsPop(false);
       ensureCommentsThenStart();
     } else if (mode === 'card') {
       showToast('卡片轮播模式');
+      if (!document.documentElement.classList.contains('touch-coarse')) toggleSettingsPop(false);
       ensureCommentsThenStart();
     }
   }
@@ -29296,6 +30339,33 @@ document.addEventListener('DOMContentLoaded', function() {
   /* ── 设置浮窗 ── */
   var _popHoverTimer = null;
 
+  /* 控制栏评论按钮：点击切换弹窗可见性，复用桌面端弹幕/卡片/关闭三档选择
+     （iPad 无 hover，原 floating 按钮和 hover 弹窗机制不可用） */
+  window.toggleCommentCardMode = function() {
+    var pop = document.getElementById('danmaku-settings-pop');
+    if (!pop) return;
+    /* 延迟一帧再 toggle，避免与按钮自身的 mousedown/click 事件链
+       （先 open 立刻被 outside-click 监听器判定为外部） */
+    setTimeout(function() {
+      pop.classList.toggle('visible');
+      if (pop.classList.contains('visible')) {
+        try { updateDanmakuSettingsPanelMode(); } catch(e) {}
+      }
+    }, 0);
+  };
+
+  /* 触屏 iPad：点击弹窗外部关闭弹窗（iPad 无 hover-leave）
+     用 capture 阶段 + mousedown，避开按钮 click 的事件链 */
+  if (document.documentElement.classList.contains('touch-coarse') && !window._danmakuOutsideTapBound) {
+    window._danmakuOutsideTapBound = true;
+    document.addEventListener('mousedown', function(e) {
+      var pop = document.getElementById('danmaku-settings-pop');
+      if (!pop || !pop.classList.contains('visible')) return;
+      if (e.target.closest('#danmaku-settings-pop') || e.target.closest('#comment-ctrl-btn')) return;
+      pop.classList.remove('visible');
+    }, true);
+  }
+
   function toggleSettingsPop(show) {
     var pop = document.getElementById('danmaku-settings-pop');
     if (!pop) return;
@@ -29306,7 +30376,6 @@ document.addEventListener('DOMContentLoaded', function() {
     var dmPanel = document.getElementById('danmaku-settings-danmaku');
     var cardPanel = document.getElementById('danmaku-settings-card');
     var offBtn = document.getElementById('dm-off-btn');
-    /* 高亮当前模式按钮 */
     var modeBtns = document.querySelectorAll('.dm-mode-btn');
     modeBtns.forEach(function(b) {
       b.classList.toggle('active', b.getAttribute('data-mode') === fx.danmakuMode);
@@ -29482,8 +30551,9 @@ document.addEventListener('DOMContentLoaded', function() {
     var likes = c.likedCount || 0;
     var card = document.createElement('div');
     card.className = 'comment-card';
-    /* 头像URL使用coverUrlWithSize处理，和app其他头像一致 */
-    var safeAvatarUrl = avatarUrl ? (typeof coverUrlWithSize === 'function' ? coverUrlWithSize(avatarUrl, 96) : avatarUrl.replace(/^http:/, 'https:')) : '';
+    /* 头像URL走 /api/cover 代理，避免 WKWebView 防盗链导致加载失败 */
+    var rawAvatar = avatarUrl ? (typeof coverUrlWithSize === 'function' ? coverUrlWithSize(avatarUrl, 96) : avatarUrl.replace(/^http:/, 'https:')) : '';
+    var safeAvatarUrl = rawAvatar ? (typeof coverProxySrc === 'function' ? coverProxySrc(rawAvatar) : rawAvatar) : '';
     var avatarHtml = safeAvatarUrl
       ? '<img alt="" onerror="this.onerror=null;this.parentNode.innerHTML=\'<span class=cc-avatar-fallback>🎵</span>\'">'
       : '<span class="cc-avatar-fallback">🎵</span>';
@@ -29910,5 +30980,62 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 <div id="comment-card-container"></div>
 <div id="danmaku-container"></div>
+
+<!-- 听歌报告 dashboard modal (iPad / 触屏) -->
+<div class="report-modal" id="report-modal" aria-hidden="true" data-open="false">
+  <div class="report-modal-bg" onclick="closeReportModal()"></div>
+  <div class="report-modal-card">
+    <div class="report-modal-head">
+      <div class="report-modal-title">
+        <div class="report-modal-eyebrow">Mineradio</div>
+        <div class="report-modal-h1">听歌报告</div>
+      </div>
+      <button class="report-modal-close" type="button" onclick="closeReportModal()" aria-label="关闭">×</button>
+    </div>
+    <div class="report-modal-tabs" id="report-tabs">
+      <button class="report-tab active" data-range="today" type="button">今日</button>
+      <button class="report-tab" data-range="week" type="button">本周</button>
+      <button class="report-tab" data-range="month" type="button">本月</button>
+      <button class="report-tab" data-range="all" type="button">全部</button>
+    </div>
+    <div class="report-modal-body" id="report-body">
+      <div class="report-stats" id="report-stats">
+        <div class="report-stat">
+          <div class="report-stat-num" data-target="0" data-format="duration" id="report-stat-duration">0m</div>
+          <div class="report-stat-label">听歌时长</div>
+        </div>
+        <div class="report-stat">
+          <div class="report-stat-num" data-target="0" data-format="int" id="report-stat-songs">0</div>
+          <div class="report-stat-label">总首数</div>
+        </div>
+        <div class="report-stat">
+          <div class="report-stat-num" data-target="0" data-format="int" id="report-stat-streak">0</div>
+          <div class="report-stat-label">连续天数</div>
+        </div>
+        <div class="report-stat">
+          <div class="report-stat-num" data-target="0" data-format="int" id="report-stat-topday">0</div>
+          <div class="report-stat-label">最高单日</div>
+        </div>
+      </div>
+
+      <div class="report-section">
+        <div class="report-section-h">最爱艺人 <span class="report-section-meta">TOP 10</span></div>
+        <div class="report-artists" id="report-artists"></div>
+      </div>
+
+      <div class="report-section">
+        <div class="report-section-h">最爱歌曲 <span class="report-section-meta">TOP 10</span></div>
+        <div class="report-songs" id="report-songs"></div>
+      </div>
+
+      <div class="report-section">
+        <div class="report-section-h">24 小时时段分布</div>
+        <div class="report-hours" id="report-hours"></div>
+      </div>
+
+      <div class="report-summary" id="report-summary">—</div>
+    </div>
+  </div>
+</div>
 </body>
 </html>

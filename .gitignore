@@ -1,5 +1,6 @@
 # Dependencies
 node_modules/
+package-lock.json
 
 # Electron user data
 .electron-userdata/
@@ -54,3 +55,18 @@ tmp/
 *.png.tmp
 verification/
 screenshots/
+
+# iOS/Xcode build artifacts
+ios-shell/build/
+ios-shell/DerivedData/
+ios-shell/*.xcuserstate
+ios-shell/*.xcuserdata
+ios-shell/project.xcworkspace/xcuserdata/
+ios-shell/project.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~

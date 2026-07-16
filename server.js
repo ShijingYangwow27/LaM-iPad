@@ -49,6 +49,7 @@ const http = require('http');
 const https = require('https');
 const fs   = require('fs');
 const path = require('path');
+const { execFileSync } = require('child_process');
 const crypto = require('crypto');
 const tls = require('tls');
 const { once } = require('events');
@@ -205,7 +206,14 @@ function serveStatic(res, filePath) {
   const ext = path.extname(filePath);
   fs.readFile(filePath, (err, data) => {
     if (err) { res.writeHead(404); res.end('Not Found'); return; }
-    res.writeHead(200, { 'Content-Type': MIME[ext] || 'text/plain' });
+    const headers = { 'Content-Type': MIME[ext] || 'text/plain' };
+    // HTML 文件强制 no-cache（iPad Safari 经常缓存主页面导致改完 CSS 不生效）
+    if (ext === '.html' || ext === '.htm') {
+      headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, proxy-revalidate';
+      headers['Pragma'] = 'no-cache';
+      headers['Expires'] = '0';
+    }
+    res.writeHead(200, headers);
     res.end(data);
   });
 }
@@ -1795,6 +1803,34 @@ function requestText(targetUrl, opts, body) {
   });
 }
 
+function requestRaw(targetUrl, opts) {
+  opts = opts || {};
+  return new Promise((resolve, reject) => {
+    const u = new URL(targetUrl);
+    const lib = u.protocol === 'https:' ? https : http;
+    const req = lib.request(u, {
+      method: opts.method || 'GET',
+      headers: opts.headers || {},
+    }, response => {
+      const chunks = [];
+      response.on('data', chunk => chunks.push(chunk));
+      response.on('end', () => {
+        resolve({
+          statusCode: response.statusCode,
+          headers: response.headers,
+          body: Buffer.concat(chunks),
+          setCookies: response.headers['set-cookie'] || [],
+          location: response.headers.location || '',
+        });
+      });
+    });
+    req.setTimeout(15000, () => req.destroy(new Error('Request timeout')));
+    req.on('error', reject);
+    if (opts.body) req.write(opts.body);
+    req.end();
+  });
+}
+
 async function requestJson(targetUrl, opts, body) {
   const text = await requestText(targetUrl, opts, body);
   try {
@@ -2577,6 +2613,162 @@ function normalizeQQProfile(body, cookieObj) {
     profileSource: profileNick || profileAvatar ? 'qq-profile' : (cookieNick || avatar ? 'cookie' : 'fallback'),
     totalListenSong,
   };
+}
+
+// ---------- QQ 音乐 QR 扫码登录 ----------
+const qqQrSessions = new Map();
+
+function hash33(t) {
+  for (var e = 0, i = 0; i < t.length; i++)
+    e += (e << 5) + t.charCodeAt(i);
+  return 2147483647 & e;
+}
+
+function extractCookiesFromSetCookie(setCookieArray) {
+  const cookies = {};
+  for (const sc of setCookieArray) {
+    const parts = sc.split(';');
+    const eq = parts[0].indexOf('=');
+    if (eq > 0) {
+      const key = parts[0].substring(0, eq).trim();
+      const value = parts[0].substring(eq + 1).trim();
+      if (key && !['path', 'domain', 'expires', 'max-age', 'samesite', 'secure', 'httponly'].includes(key.toLowerCase())) {
+        cookies[key] = value;
+      }
+    }
+  }
+  return cookies;
+}
+
+function cookieObjToString(obj) {
+  return Object.entries(obj).map(([k, v]) => `${k}=${v}`).join('; ');
+}
+
+// 用 curl 发请求，绕过 QQ 的 TLS 指纹检测
+function curlGet(targetUrl, cookieHeader, referer) {
+  const args = ['-s', '--max-time', '15', '-D', '-', '-H', `User-Agent: ${UA}`, '-H', 'Referer: ' + (referer || 'https://y.qq.com/')];
+  if (cookieHeader) args.push('-H', `Cookie: ${cookieHeader}`);
+  args.push(targetUrl);
+  const raw = execFileSync('curl', args, { encoding: 'utf8', timeout: 20000, maxBuffer: 2 * 1024 * 1024 });
+  // 解析 headers + body（可能有多段 HTTP 响应，取最后一段）
+  const parts = raw.split('\r\n\r\n');
+  const lastHeaderIdx = parts.length > 1 ? parts.length - 2 : 0;
+  const headerSection = parts.length > 1 ? parts.slice(0, lastHeaderIdx + 1).join('\r\n\r\n') : '';
+  const body = parts.length > 1 ? parts[parts.length - 1] : raw;
+  const setCookies = [];
+  let location = '';
+  // 遍历所有 header 段
+  for (const part of parts.slice(0, parts.length > 1 ? parts.length - 1 : 0)) {
+    for (const line of part.split('\r\n')) {
+      const lower = line.toLowerCase();
+      if (lower.startsWith('set-cookie:')) setCookies.push(line.substring(11).trim());
+      if (lower.startsWith('location:')) location = line.substring(9).trim();
+    }
+  }
+  const statusMatch = headerSection.match(/HTTP\/[\d.]+\s+(\d+)/);
+  const statusCode = statusMatch ? parseInt(statusMatch[1]) : 200;
+  return { statusCode, body, setCookies, location };
+}
+
+async function qqQrCreate() {
+  // 1. 先访问 xui.ptlogin2 的 xlogin 页面，获取 pt_local_tk 等 cookie
+  const xloginResp = curlGet('https://xui.ptlogin2.qq.com/cgi-bin/xlogin?appid=716027609&daid=383&pt_skey_valid=0&style=40&s_url=' + encodeURIComponent('https://y.qq.com/n/ryqq/profile') + '&supdaid=383&auth_token=');
+  const xloginCookies = extractCookiesFromSetCookie(xloginResp.setCookies);
+  console.log('[QQQrLogin] xlogin cookies=' + Object.keys(xloginCookies).join(','));
+
+  // 2. 获取二维码，带上 xlogin 的 cookie
+  const t = Math.random().toString(36).slice(2);
+  const url = `https://ssl.ptlogin2.qq.com/ptqrshow?appid=716027609&e=2&l=M&s=3&d=72&v=4&t=${t}`;
+  const resp = await requestRaw(url, {
+    headers: { 'User-Agent': UA, Referer: 'https://y.qq.com/', Cookie: cookieObjToString(xloginCookies) }
+  });
+  const cookies = { ...xloginCookies, ...extractCookiesFromSetCookie(resp.setCookies) };
+  const qrsig = cookies.qrsig || '';
+  if (!qrsig) throw new Error('QR qrsig missing');
+  const ptqrtoken = hash33(qrsig);
+  const sessionId = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  qqQrSessions.set(sessionId, { qrsig, ptqrtoken, qrCookies: cookies, createdAt: Date.now() });
+  // 清理超过 3 分钟的 session
+  for (const [key, val] of qqQrSessions) {
+    if (Date.now() - val.createdAt > 180000) qqQrSessions.delete(key);
+  }
+  const dataUrl = 'data:image/png;base64,' + resp.body.toString('base64');
+  return { img: dataUrl, sessionId, ptqrtoken, qrsig };
+}
+
+async function qqQrCheck(sessionId) {
+  const session = qqQrSessions.get(sessionId);
+  if (!session) return { code: 800, message: '二维码已过期' };
+  const { qrsig, ptqrtoken, qrCookies } = session;
+  const xloginReferer = 'https://xui.ptlogin2.qq.com/cgi-bin/xlogin?appid=716027609&daid=383&pt_skey_valid=0&style=40&s_url=' + encodeURIComponent('https://y.qq.com/n/ryqq/profile') + '&supdaid=383&auth_token=';
+  const checkUrl = `https://ssl.ptlogin2.qq.com/ptqrlogin?u1=${encodeURIComponent('https://y.qq.com/n/ryqq/profile')}&ptqrtoken=${ptqrtoken}&ptredirect=0&h=1&t=1&g=1&from_ui=1&ptlang=2052&action=0-0-${Date.now()}&js_ver=10275&js_type=1&login_sig=&pt_uistyle=40&aid=716027609&daid=383&pt_3rd_aid=0`;
+  // 用 curl 代替 Node.js https.request，绕过 QQ 的 TLS 指纹检测；Referer 用 xlogin 页面
+  const cookieStr = qrCookies ? cookieObjToString(qrCookies) : `qrsig=${qrsig}`;
+  let curlResp;
+  try {
+    curlResp = curlGet(checkUrl, cookieStr, xloginReferer);
+  } catch (e) {
+    console.warn('[QQQrLogin] curl error: ' + e.message);
+    return { code: 801, message: '等待扫码' };
+  }
+  const text = curlResp.body || '';
+  console.log('[QQQrLogin] ptqrlogin status=' + curlResp.statusCode + ' bodyLen=' + text.length + ' body=' + text.substring(0, 200));
+  const match = text.match(/ptuiCB\('(\d+)','(\d+)','([^']*)','(\d+)','([^']*)'/);
+  if (!match) {
+    console.log('[QQQrLogin] ptuiCB regex no match');
+    return { code: 801, message: '等待扫码' };
+  }
+  const code = match[1];
+  const checkSigUrl = match[3];
+  const nickname = match[5];
+  console.log('[QQQrLogin] code=' + code + ' nickname=' + nickname);
+
+  if (code === '66') return { code: 801, message: '请在手机 QQ 中扫码' };
+  if (code === '67') return { code: 802, message: '已扫码，请在手机确认' };
+  if (code === '65') return { code: 800, message: '二维码已过期' };
+
+  if (code === '0' && checkSigUrl) {
+    console.log('[QQQrLogin] 扫码成功, nickname=' + nickname + ', 开始跟随 check_sig');
+    const allCookies = { ...(qrCookies || {}), qrsig };
+
+    // 用 curl 跟随 check_sig 重定向链（最多 8 次）
+    let currentUrl = checkSigUrl;
+    for (let i = 0; i < 8 && currentUrl; i++) {
+      try {
+        const stepResp = curlGet(currentUrl, cookieObjToString(allCookies));
+        const stepCookies = extractCookiesFromSetCookie(stepResp.setCookies);
+        Object.assign(allCookies, stepCookies);
+        console.log('[QQQrLogin] redirect step ' + i + ' status=' + stepResp.statusCode + ' cookies=' + Object.keys(stepCookies).join(','));
+        if (stepResp.statusCode >= 300 && stepResp.statusCode < 400 && stepResp.location) {
+          currentUrl = stepResp.location;
+        } else {
+          break;
+        }
+      } catch (e) {
+        console.warn('[QQQrLogin] redirect step ' + i + ' failed: ' + e.message);
+        break;
+      }
+    }
+
+    // 访问 y.qq.com 获取 qm_keyst
+    try {
+      const yResp = curlGet('https://y.qq.com/n/ryqq/profile', cookieObjToString(allCookies));
+      const yCookies = extractCookiesFromSetCookie(yResp.setCookies);
+      Object.assign(allCookies, yCookies);
+      console.log('[QQQrLogin] y.qq.com cookies=' + Object.keys(yCookies).join(','));
+    } catch (e) { /* 忽略 */ }
+
+    const finalCookieStr = cookieObjToString(allCookies);
+    console.log('[QQQrLogin] 最终 cookie keys=' + Object.keys(allCookies).join(','));
+    saveQQCookie(finalCookieStr);
+    qqQrSessions.delete(sessionId);
+
+    const info = await getQQLoginInfo();
+    console.log('[QQQrLogin] getQQLoginInfo loggedIn=' + info.loggedIn + ' uin=' + info.userId);
+    return { code: 803, message: '登录成功', nickname, loginInfo: info };
+  }
+
+  return { code: 801, message: '等待扫码' };
 }
 
 async function getQQLoginInfo() {
@@ -3759,6 +3951,86 @@ const server = http.createServer(async (req, res) => {
     } catch (err) {
       console.error('[QQLyric]', err);
       sendJSON(res, { provider: 'qq', error: err.message, lyric: '' }, 500);
+    }
+    return;
+  }
+
+  // ---------- QQ 音乐 QR 扫码登录 ----------
+  if (pn === '/api/qq/qr/create') {
+    try {
+      console.log('[QQQrCreate] request received');
+      const result = await qqQrCreate();
+      sendJSON(res, result);
+    } catch (err) {
+      console.error('[QQQrCreate]', err);
+      sendJSON(res, { error: err.message }, 500);
+    }
+    return;
+  }
+
+  if (pn === '/api/qq/qr/check') {
+    try {
+      const sessionId = (url.searchParams.get('session') || '').trim();
+      console.log('[QQQrCheck] session=' + sessionId);
+      if (!sessionId) { sendJSON(res, { code: 800, message: '缺少 session 参数' }); return; }
+      const result = await qqQrCheck(sessionId);
+      console.log('[QQQrCheck] result code=' + result.code);
+      sendJSON(res, result);
+    } catch (err) {
+      console.error('[QQQrCheck]', err);
+      sendJSON(res, { code: 800, message: err.message }, 500);
+    }
+    return;
+  }
+
+  // Client 端 JSONP 诊断日志上报
+  if (pn === '/api/qq/qr/log') {
+    try {
+      let body = '';
+      for await (const chunk of req) body += chunk;
+      console.log('[QQQrClientLog]', body);
+      sendJSON(res, { ok: true });
+    } catch (e) {
+      sendJSON(res, { ok: false });
+    }
+    return;
+  }
+
+  // Client 端 JSONP 检测到扫码成功后，把 check_sig URL 发给 server 跟随重定向获取 cookie
+  if (pn === '/api/qq/qr/checksig') {
+    try {
+      let body = '';
+      for await (const chunk of req) body += chunk;
+      const { url: checkSigUrl, sessionId } = JSON.parse(body);
+      console.log('[QQQrCheckSig] received url=' + checkSigUrl.substring(0, 80) + '...');
+      const session = qqQrSessions.get(sessionId);
+      const allCookies = { ...(session?.qrCookies || {}), qrsig: session?.qrsig };
+      // 用 curl 跟随 check_sig 重定向链
+      let currentUrl = checkSigUrl;
+      for (let i = 0; i < 8 && currentUrl; i++) {
+        try {
+          const stepResp = curlGet(currentUrl, cookieObjToString(allCookies));
+          const stepCookies = extractCookiesFromSetCookie(stepResp.setCookies);
+          Object.assign(allCookies, stepCookies);
+          console.log('[QQQrCheckSig] redirect step ' + i + ' status=' + stepResp.statusCode + ' cookies=' + Object.keys(stepCookies).join(','));
+          if (stepResp.statusCode >= 300 && stepResp.statusCode < 400 && stepResp.location) {
+            currentUrl = stepResp.location;
+          } else { break; }
+        } catch (e) { break; }
+      }
+      // 访问 y.qq.com 获取 qm_keyst
+      try {
+        const yResp = curlGet('https://y.qq.com/n/ryqq/profile', cookieObjToString(allCookies));
+        Object.assign(allCookies, extractCookiesFromSetCookie(yResp.setCookies));
+      } catch (e) {}
+      const finalCookieStr = cookieObjToString(allCookies);
+      console.log('[QQQrCheckSig] final cookie keys=' + Object.keys(allCookies).join(','));
+      saveQQCookie(finalCookieStr);
+      qqQrSessions.delete(sessionId);
+      sendJSON(res, { success: true, cookies: Object.keys(allCookies) });
+    } catch (err) {
+      console.error('[QQQrCheckSig]', err);
+      sendJSON(res, { success: false, error: err.message }, 500);
     }
     return;
   }

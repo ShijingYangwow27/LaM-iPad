@@ -10260,7 +10260,7 @@ function updateStageLyrics3D(dt) {
       var opacityEase = shelfDetailOpen && currentOpacity > lyricOpacityTarget ? shelfDetailLyricProfile.easeDown : 0.16;
       opacity = clampRange(currentOpacity + (lyricOpacityTarget - currentOpacity) * opacityEase, 0, 1);
       if (data.textMat) data.textMat.uniforms.uOpacity.value = opacity;
-      if (data.trMat) data.trMat.uniforms.uOpacity.value = opacity * 0.62;
+      if (data.trMat) data.trMat.uniforms.uOpacity.value = opacity * 0.80;
       if (data.readabilityMat) {
         var readabilityTarget = opacity * shelfDetailLyricProfile.readability;
         var readabilityEase = shelfDetailOpen && data.readabilityMat.opacity > readabilityTarget ? 0.28 : 0.16;
