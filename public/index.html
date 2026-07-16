@@ -19,6 +19,8 @@
 <script src="vendor/three.r128.min.js"></script>
 <script src="vendor/music-tempo.min.js"></script>
 <script src="vendor/gsap.min.js"></script>
+<!-- 原生音频桥接：iPad 原生壳中用 AVPlayer 接管播放，浏览器版自动跳过 -->
+<script src="/native-audio-bridge.js"></script>
 <!-- Hero Image Crop Modal -->
 <div class="crop-modal-mask" id="crop-modal-mask" style="display:none">
   <div class="crop-modal">
@@ -17475,6 +17477,15 @@ var pipState = { active:false, video:null, canvas:null, drawInterval:null, audio
 
 async function togglePipWindow(){
   if (pipState.active) { exitPip(); return; }
+  // 原生 iOS 模式：交给原生 PiPManager（AVPictureInPictureController），不走浏览器 canvas 画中画
+  if (window.__isNativeAudio) {
+    try {
+      if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.pip) {
+        window.webkit.messageHandlers.pip.postMessage({action: 'enter'});
+      }
+    } catch(e) {}
+    return;
+  }
   /* iOS WKWebView 支持 PiP 的两条路径：
      1) 标准 document.pictureInPictureEnabled（iOS 14+ Safari）
      2) WebKit 私有 video.webkitSupportsPresentationMode('picture-in-picture')
@@ -19980,6 +19991,23 @@ async function doSearch(q, opts) {
 function initAudio() {
   if (audioReady) return;
   audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  // ── 原生模式：analyser 由原生频谱数据喂养，不接 <audio> ──
+  if (window.__isNativeAudio) {
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize = FFT_SIZE;
+    analyser.smoothingTimeConstant = 0.58;
+    beatAnalyser = audioCtx.createAnalyser();
+    beatAnalyser.fftSize = BEAT_FFT_SIZE;
+    beatAnalyser.smoothingTimeConstant = 0.10;
+    gainNode = audioCtx.createGain();   // 占位（不接 destination，音量由原生控制）
+    window.installNativeAnalyserShim(analyser, beatAnalyser);
+    frequencyData.fill(0);
+    beatFrequencyData.fill(0);
+    beatTimeDomainData.fill(128);
+    resetRealtimeBeatEngine();
+    audioReady = true;
+    return;
+  }
   source = audioCtx.createMediaElementSource(audio);
   analyser = audioCtx.createAnalyser();
   beatAnalyser = audioCtx.createAnalyser();
@@ -20093,6 +20121,7 @@ function clearAudioFadeTimers() {
   }
 }
 function currentAudioOutputGain() {
+  if (window.__isNativeAudio && audio) return clampRange(Number(audio.volume), 0, 1);
   if (gainNode && gainNode.gain && isFinite(gainNode.gain.value)) return clampRange(Number(gainNode.gain.value), 0, 1);
   if (audio && isFinite(audio.volume)) return clampRange(Number(audio.volume), 0, 1);
   return clampRange(targetVolume, 0, 1);
@@ -20126,6 +20155,7 @@ function holdAudioOutputGain(now) {
 function setAudioOutputGainImmediate(value) {
   value = normalizeAudioFadeTarget(value);
   clearAudioFadeTimers();
+  if (window.__isNativeAudio) { if (audio) audio.volume = value; return; }
   if (gainNode && audioCtx) {
     var now = audioCtx.currentTime || 0;
     gainNode.gain.cancelScheduledValues(now);
@@ -20139,6 +20169,20 @@ function rampAudioOutputGain(value, durationMs) {
   durationMs = Math.max(0, Number(durationMs) || 0);
   clearAudioFadeTimers();
   var serial = audioFadeSerial;
+  if (window.__isNativeAudio) {
+    if (!audio) return;
+    var from = currentAudioOutputGain();
+    var started = performance.now();
+    (function tickAudioFadeNative(nowMs) {
+      if (serial !== audioFadeSerial || !audio) return;
+      var t = durationMs ? clampRange((nowMs - started) / durationMs, 0, 1) : 1;
+      var eased = 1 - Math.pow(1 - t, 3);
+      audio.volume = from + (value - from) * eased;
+      if (t < 1) audioElementFadeFrame = requestAnimationFrame(tickAudioFadeNative);
+      else audioElementFadeFrame = 0;
+    })(performance.now());
+    return;
+  }
   if (gainNode && audioCtx) {
     var now = audioCtx.currentTime || 0;
     holdAudioOutputGain(now);
@@ -20197,6 +20241,7 @@ function fadeOutAndPauseAudio() {
 }
 
 function applyVolumeToAudio() {
+  if (window.__isNativeAudio) { if (audio) audio.volume = targetVolume; return; }
   if (audio) {
     audio.muted = false;
     audio.volume = gainNode ? 1 : targetVolume;
@@ -20763,13 +20808,15 @@ async function playQueueAt(idx, opts) {
     var proxyAudioUrl = '/api/audio?url=' + encodeURIComponent(data.url);
     audio.src = proxyAudioUrl;
     
-    // 通知原生端开始后台音频播放
-    try {
-      if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.pip) {
-        var fullUrl = location.origin + proxyAudioUrl;
-        window.webkit.messageHandlers.pip.postMessage({action: 'bgAudioStart', url: fullUrl});
-      }
-    } catch(e) {}
+    // 通知原生端开始后台音频播放（原生音频桥接模式下由 Adapter 自动处理，此处仅旧双播放器模式需要）
+    if (!window.__isNativeAudio) {
+      try {
+        if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.pip) {
+          var fullUrl = location.origin + proxyAudioUrl;
+          window.webkit.messageHandlers.pip.postMessage({action: 'bgAudioStart', url: fullUrl});
+        }
+      } catch(e) {}
+    }
     
     updatePlaybackProgressUi();
     audio.onended = function(){
@@ -20940,24 +20987,27 @@ async function togglePlay() {
     if (!audio) return;
     if (audio.paused || audio.ended) {
       await attemptAudioPlay({ manual: true });
-      // 通知原生端恢复后台音频
-      try {
-        if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.pip) {
-          window.webkit.messageHandlers.pip.postMessage({action: 'bgAudioResume'});
-        }
-      } catch(e) {}
+      // 通知原生端恢复后台音频（原生音频桥接模式下由 Adapter 自动处理）
+      if (!window.__isNativeAudio) {
+        try {
+          if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.pip) {
+            window.webkit.messageHandlers.pip.postMessage({action: 'bgAudioResume'});
+          }
+        } catch(e) {}
+      }
     } else {
       await fadeOutAndPauseAudio();
       playing = false;
       setPlayIcon(false);
       hideLoading();
-      // 通知原生端暂停后台音频
-      try {
-        if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.pip) {
-          window.webkit.messageHandlers.pip.postMessage({action: 'bgAudioPause'});
-        }
-      } catch(e) {}
-      safePlaybackStep('listen-stats-pause', function(){ updateListenStatsTick(true); });
+      // 通知原生端暂停后台音频（原生音频桥接模式下由 Adapter 自动处理）
+      if (!window.__isNativeAudio) {
+        try {
+          if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.pip) {
+            window.webkit.messageHandlers.pip.postMessage({action: 'bgAudioPause'});
+          }
+        } catch(e) {}
+      }      safePlaybackStep('listen-stats-pause', function(){ updateListenStatsTick(true); });
       forcePlaybackControlsInteractive();
       safePlaybackStep('sync-pause-state', function(){ syncPlaybackStateFromAudioEvent('manual-pause'); });
       safePlaybackStep('pause-controls-hide', function(){ scheduleControlsHide(520); });

@@ -6,6 +6,7 @@ package-lock.json
 .electron-userdata/
 
 # Build output
+.workbuddy/
 dist/
 dist-*/
 out/

@@ -26,6 +26,7 @@ targets:
     sources:
       - path: MineradioApp.swift
       - path: ContentView.swift
+      - path: NativeAudioEngine.swift
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.mineradio.app
