@@ -37,6 +37,10 @@ targets:
         INFOPLIST_KEY_UIStatusBarHidden: YES
         INFOPLIST_KEY_UIRequiresFullScreen: YES
         INFOPLIST_KEY_LSApplicationCategoryType: "public.app-category.music"
+        INFOPLIST_KEY_UIBackgroundModes:
+          - audio
+          - fetch
+          - processing
         GENERATE_INFOPLIST_FILE: YES
         ENABLE_PREVIEWS: NO
         SWIFT_EMIT_LOC_STRINGS: YES

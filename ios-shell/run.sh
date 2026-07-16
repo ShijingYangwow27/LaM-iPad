@@ -19,6 +19,7 @@ export PATH="$DEVELOPER_DIR/usr/bin:$DEVELOPER_DIR/bin:$PATH"
 
 SIM_UDID="${SIM_UDID:-E84A828A-C2DD-4569-BA74-5005156740E5}"
 APP_ID="${APP_ID:-com.mineradio.app}"
+DEV_URL="${DEV_URL:-http://127.0.0.1:3000/}"
 PROJECT="MineradioApp.xcodeproj"
 SCHEME="MineradioApp"
 CONFIG="Debug"
