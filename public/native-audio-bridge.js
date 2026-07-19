@@ -37,7 +37,9 @@
     volume: 1,
     muted: false,
     src: '',
-    playbackRate: 1
+    playbackRate: 1,
+    _seeking: false,  // seek 期间屏蔽外推和 tick, seeked 到达后解除
+    seekTarget: null  // 仅用于进度条显示的目标位置 (歌词仍跟随真实播放位置)
   };
 
   // ── 频谱缓冲 (原生 base64 推送, 这里解码后填入) ──
@@ -80,14 +82,38 @@
       state.duration = 0;
       state.currentTime = 0;
       state.paused = true;
+      state._seeking = false;
+      state.seekTarget = null;
+      window.__nativeSeekTarget = null;
+      if (state._seekTimeout) { clearTimeout(state._seekTimeout); state._seekTimeout = null; }
       this._dispatch('emptied');
     },
 
     get currentTime() { return state.currentTime; },
     set currentTime(t) {
-      state.currentTime = t;
+      // 关键修复: 不要乐观地把 state.currentTime 设成目标值。
+      // 否则歌词/进度条会立刻跳到目标, 而原生 AVPlayer.seek 是异步的,
+      // 真实人声还在旧位置 → "人声比歌词进度慢"。
+      // 这里只记录目标(供进度条显示)并置 _seeking 屏蔽 tick 推送,
+      // state.currentTime 保持真实播放位置, 等原生 seeked 回传真实位置后再前进。
+      // 冻结 state.currentTime 在真实旧位置: 原生 AVPlayer.seek 是异步的,
+      // 真实人声要到 seeked 事件后才在新位置出声。若这里乐观写目标, 歌词会领先人声。
+      // tick 推送在 seek 期间已被屏蔽(state._seeking), 直到 seeked 才放行。
+      state._seeking = true;
+      state.seekTarget = t;
+      window.__nativeSeekTarget = t;
+      // 安全兜底: 若原生 seeked 因异常未回传, 4s 后强制解除冻结并跳到目标,
+      // 避免歌词永久卡在旧位置。
+      if (state._seekTimeout) clearTimeout(state._seekTimeout);
+      state._seekTimeout = setTimeout(function () {
+        state._seeking = false;
+        state.seekTarget = null;
+        window.__nativeSeekTarget = null;
+        state._seekTimeout = null;
+        state.currentTime = t;
+        adapter._dispatch('timeupdate');
+      }, 4000);
       handler.postMessage({ action: 'seek', time: t });
-      // 立即更新 UI, 原生 seek 完成后会再派发 seeked
       this._dispatch('seeking');
     },
 
@@ -198,7 +224,16 @@
   // 播放事件 (play/pause/ended/loadedmetadata/canplay/seeked/error/...)
   window.__nativeAudioEvent = function (payload) {
     if (!payload) return;
-    if (payload.currentTime != null) state.currentTime = payload.currentTime;
+    // seeked 事件: 解除 _seeking 屏蔽, 清掉目标标记
+    if (payload.type === 'seeked') {
+      if (state._seekTimeout) { clearTimeout(state._seekTimeout); state._seekTimeout = null; }
+      state._seeking = false;
+      state.seekTarget = null;
+      window.__nativeSeekTarget = null;
+    }
+    if (payload.currentTime != null) {
+      state.currentTime = payload.currentTime;
+    }
     if (payload.duration != null) state.duration = payload.duration;
     if (payload.paused != null) state.paused = payload.paused;
     if (payload.ended != null) state.ended = payload.ended;
@@ -226,7 +261,17 @@
   // 频谱 + 时间高频推送 (DisplayLink 30fps)
   window.__nativeAudioTick = function (payload) {
     if (!payload) return;
-    if (payload.currentTime != null) state.currentTime = payload.currentTime;
+    // 时间高频推送(原生 isPlaying 时触发, 30fps)。
+    // 正常播放: state.currentTime 严格 = 原生真实位置, 歌词跟随人声, 绝不领先。
+    // seek 期间(state._seeking = true): 冻结 state.currentTime —— 不覆盖,
+    //   让歌词停在真实旧位置。原生 AVPlayer.seek 是异步的, 真实人声要到 seeked
+    //   事件回传后才在新位置出声; 若这里把 tick 推来的新位置写进 state.currentTime,
+    //   歌词会领先人声。因此 seek 期间忽略 tick, 等 __nativeAudioEvent('seeked')
+    //   (或 4s 安全兜底) 解除 _seeking 后再继续跟随。这与浏览器 <audio>.currentTime
+    //   行为一致: seek 期间 currentTime 不变, seeked 后才跳到目标。
+    if (payload.currentTime != null && !state._seeking) {
+      state.currentTime = payload.currentTime;
+    }
     if (payload.duration != null) state.duration = payload.duration;
     if (payload.paused != null) state.paused = payload.paused;
 
@@ -241,6 +286,32 @@
     // 触发 timeupdate, 让进度条/歌词跟随
     adapter._dispatch('timeupdate');
   };
+
+  // ════════════════════════════════════════════════════════════
+  //  元信息 → 原生 (锁屏 Now Playing)
+  //  由 index.html 的 updateControlTrackInfo() 调用
+  // ════════════════════════════════════════════════════════════
+  window.__nativeSetMeta = function (title, artist, coverUrl) {
+    try {
+      handler.postMessage({
+        action: 'meta',
+        title: title || '',
+        artist: artist || '',
+        coverUrl: coverUrl || ''
+      });
+    } catch (e) {
+      console.warn('[NativeAudio] __nativeSetMeta error', e);
+    }
+  };
+
+  // ════════════════════════════════════════════════════════════
+  //  时间模型: 直接采用原生推送的 currentTime, 不做 rAF 外推。
+  //  原因: 原生 displayLinkTick 30fps 推送 player.currentTime() 真实可听位置。
+  //  任何 rAF 外推(state.currentTime = lastNative + elapsed)都会因 evaluateJavaScript
+  //  5-100ms 可变延迟而在推送迟到时超前真实音频, 待推送到达再被拉回 → 歌词振荡/领先人声。
+  //  直接采用推送值: 它是真实位置的稳定快照, 与浏览器 <audio>.currentTime 单时钟一致。
+  //  原生仅在 isPlaying 时推送 tick, seek/缓冲期间不会提前把 state.currentTime 推到目标。
+  // ════════════════════════════════════════════════════════════
 
   // ════════════════════════════════════════════════════════════
   //  Analyser shim: 让原 analyser.getByteFrequencyData 读原生数据

@@ -18,8 +18,10 @@ const {
   logout,
   user_account,
   user_playlist,
+  user_record,
   comment_music,
   artist_detail,
+  artists,
   artist_top_song,
   artist_songs,
   like: like_song,
@@ -186,6 +188,8 @@ function rawCookieFallback(input) {
   return '';
 }
 let userCookie = '';
+let listenReportCache = null; // { ts, uid, data } 听歌报告 5 分钟内存缓存
+let artistInfoCache = {};     // { id: { ts, data } } 艺人头像 5 分钟内存缓存
 try { if (fs.existsSync(COOKIE_FILE)) userCookie = fs.readFileSync(COOKIE_FILE, 'utf8').trim(); }
 catch (e) { userCookie = ''; }
 function saveCookie(c) {
@@ -2839,6 +2843,18 @@ function audioContentTypeForUrl(audioUrl, upstreamType) {
   return upstreamType || 'audio/mpeg';
 }
 
+function neteaseCoverFromId(coverImgId, size) {
+  if (!coverImgId) return '';
+  const idStr = String(coverImgId);
+  const magic = '3go8&$8*3*3h0k(2)2';
+  let xored = '';
+  for (let i = 0; i < idStr.length; i++) {
+    xored += String.fromCharCode(idStr.charCodeAt(i) ^ magic.charCodeAt(i % magic.length));
+  }
+  const encId = crypto.createHash('md5').update(xored, 'utf8').digest('base64').replace(/\//g, '_').replace(/\+/g, '-');
+  return `https://p1.music.126.net/${encId}/${idStr}.jpg${size ? `?param=${size}y${size}` : ''}`;
+}
+
 function mapQQPlaylist(pl, kind) {
   pl = pl || {};
   const id = pl.dissid || pl.tid || pl.dirid || pl.id || pl.diss_id;
@@ -3680,6 +3696,7 @@ function normalizeLoginInfo(profile, account, extra) {
     userId,
     nickname: profile.nickname || profile.userName || '网易云用户',
     avatar: profile.avatarUrl || profile.avatar || '',
+    createTime: profile.createTime || 0, // 注册时间戳(ms)，用于听歌报告「注册时长」
     ...vip,
   };
 }
@@ -4414,7 +4431,7 @@ const server = http.createServer(async (req, res) => {
       const list = ((r.body && r.body.playlist) || []).map(pl => ({
         id: pl.id,
         name: pl.name,
-        cover: pl.coverImgUrl || '',
+        cover: pl.coverImgUrl || neteaseCoverFromId(pl.coverImgId || pl.coverImgId_str, 300) || '',
         trackCount: pl.trackCount || 0,
         playCount: pl.playCount || 0,
         creator: (pl.creator && pl.creator.nickname) || '',
@@ -4425,6 +4442,121 @@ const server = http.createServer(async (req, res) => {
     } catch (err) {
       console.error('[UserPlaylists]', err);
       sendJSON(res, { error: err.message, loggedIn: false, playlists: [] }, 500);
+    }
+    return;
+  }
+
+  // ---------- 听歌报告：真实播放记录（网易云 user/record） ----------
+  if (pn === '/api/listen-report') {
+    // 带 5 分钟内存缓存，避免反复打网易云
+    const _now = Date.now();
+    if (listenReportCache && listenReportCache.ts && (_now - listenReportCache.ts) < 5 * 60 * 1000
+        && listenReportCache.uid === (await getLoginInfo().then(i => i.userId))) {
+      sendJSON(res, listenReportCache.data);
+      return;
+    }
+    try {
+      const info = await getLoginInfo();
+      if (!info.loggedIn || !info.userId) { sendJSON(res, { loggedIn: false, hasData: false }); return; }
+      const r = await user_record({ uid: info.userId, type: 0, cookie: userCookie, timestamp: Date.now() });
+      const body = (r && r.body) || {};
+      const allData = body.allData || [];
+      const weekData = body.weekData || [];
+      function normalize(list) {
+        return (list || []).map(function (it) {
+          const song = it.song || {};
+          const ar = (song.ar || []);
+          return {
+            id: song.id,
+            title: song.name || '未知歌曲',
+            artist: ar.map(function (a) { return a.name; }).join('/'),
+            artistIds: ar.map(function (a) { return a.id; }).filter(Boolean),
+            coverUrl: (song.al && song.al.picUrl) || '',
+            playCount: it.playCount || 0,
+            durationMs: song.dt || 0
+          };
+        });
+      }
+      function aggregate(list) {
+        const songs = normalize(list);
+        const N = songs.length;
+        const artistMap = {};
+        const artistIdMap = {}; // 名字 -> 第一个遇到的艺人 ID
+        let totalPlays = 0;
+        songs.forEach(function (s, i) {
+          const w = N - i; // 排名权重（playCount 缺失时兜底）
+          const plays = s.playCount > 0 ? s.playCount : w;
+          s.plays = plays;
+          s.durationSec = (s.durationMs / 1000) * plays; // 真实时长（秒）× 播放次数
+          totalPlays += plays;
+          s.artist.split('/').forEach(function (a, idx) {
+            a = (a || '').trim();
+            if (!a) return;
+            artistMap[a] = (artistMap[a] || 0) + plays;
+            if (!artistIdMap[a] && s.artistIds && s.artistIds[idx]) artistIdMap[a] = s.artistIds[idx];
+          });
+        });
+        const topArtists = Object.keys(artistMap)
+          .map(function (k) { return { name: k, score: artistMap[k], artistId: artistIdMap[k] || null }; })
+          .sort(function (a, b) { return b.score - a.score; })
+          .slice(0, 10);
+        return {
+          // 返回完整列表（前端需与本地数据按歌曲合并）
+          songs: songs.map(function (s) {
+            return { id: s.id, title: s.title, artist: s.artist, artistIds: s.artistIds, coverUrl: s.coverUrl, plays: s.plays, durationSec: s.durationSec };
+          }),
+          topArtists: topArtists,
+          totalPlays: totalPlays,
+          distinctSongs: N
+        };
+      }
+      // 累计听歌数 listenSongs 来自 /api/v1/user/level；createTime 来自登录态。
+      // 两者随报告一并返回，避免前端依赖 loginStatus 的异步时序（冷启动时竞态会导致注册时长清零）。
+      const lvRes = await user_level({ cookie: userCookie, timestamp: Date.now() }).catch(function(){ return null; });
+      const lvBody = (lvRes && lvRes.body) || {};
+      const lvData = lvBody.data || lvBody;
+      const listenSongs = lvData.nowPlayCount || lvData.listenSongs || 0;
+      const data = {
+        loggedIn: true,
+        provider: 'netease',
+        hasData: (allData.length + weekData.length) > 0,
+        createTime: info.createTime || 0,
+        listenSongs: listenSongs,
+        all: aggregate(allData),
+        week: aggregate(weekData)
+      };
+      listenReportCache = { ts: _now, uid: info.userId, data: data };
+      sendJSON(res, data);
+    } catch (err) {
+      console.error('[ListenReport]', err);
+      sendJSON(res, { error: err.message, loggedIn: false, hasData: false }, 500);
+    }
+    return;
+  }
+
+  // ---------- 艺人头像信息（用于听歌报告 TOP 艺人） ----------
+  if (pn === '/api/artist-info') {
+    try {
+      const id = url.searchParams.get('id');
+      if (!id) { sendJSON(res, { error: 'Missing artist id' }, 400); return; }
+      const _now = Date.now();
+      if (artistInfoCache[id] && (_now - artistInfoCache[id].ts) < 5 * 60 * 1000) {
+        sendJSON(res, artistInfoCache[id].data);
+        return;
+      }
+      const r = await artists({ id: Number(id), cookie: userCookie, timestamp: Date.now() });
+      const body = (r && r.body) || {};
+      const artist = body.artist || body.data || {};
+      const data = {
+        id: Number(id),
+        name: artist.name || '',
+        picUrl: artist.picUrl || artist.picUrlStr || artist.coverUrl || ''
+      };
+      artistInfoCache[id] = { ts: _now, data };
+      sendJSON(res, data);
+    } catch (err) {
+      console.error('[ArtistInfo]', err);
+      sendJSON(res, { error: err.message }, 500);
     }
     return;
   }

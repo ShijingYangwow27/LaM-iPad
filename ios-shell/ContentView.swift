@@ -1,10 +1,5 @@
 import SwiftUI
 import WebKit
-import AVKit
-import AVFoundation
-import MediaPlayer
-import CoreMedia
-import CoreVideo
 
 func swiftLog(_ step: String, _ extra: [String: Any] = [:]) {
     var payload: [String: Any] = ["step": "swift_" + step]
@@ -21,353 +16,6 @@ func swiftLog(_ step: String, _ extra: [String: Any] = [:]) {
 class MainWebViewHolder {
     weak var webView: WKWebView?
     static let shared = MainWebViewHolder()
-}
-
-class PiPHostView: UIView {
-    var playerLayer: AVPlayerLayer?
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        playerLayer?.frame = bounds
-    }
-}
-
-class PiPManager: NSObject, AVPictureInPictureControllerDelegate, ObservableObject {
-    @Published var pipActive = false
-    var pipController: AVPictureInPictureController?
-    var pipPlayer: AVPlayer?
-    var pipHostView: PiPHostView?
-    var coverImage: UIImage?
-    var currentTitle: String = ""
-    var currentArtist: String = ""
-    weak var webView: WKWebView?
-
-    private let videoURL = FileManager.default.temporaryDirectory.appendingPathComponent("pip_frame.mp4")
-    private var videoReady = false
-
-    override init() {
-        super.init()
-        setup()
-        setupNotifications()
-    }
-
-    private func setupNotifications() {
-        NotificationCenter.default.addObserver(self, selector: #selector(playerItemDidReachEnd), name: .AVPlayerItemDidPlayToEndTime, object: nil)
-    }
-
-    private func setup() {
-        pipPlayer = AVPlayer()
-        pipPlayer?.volume = 0.001
-        pipPlayer?.isMuted = false
-        pipPlayer?.actionAtItemEnd = .none
-        pipPlayer?.automaticallyWaitsToMinimizeStalling = false
-
-        pipHostView = PiPHostView()
-        pipHostView?.frame = CGRect(x: 0, y: 0, width: 480, height: 480)
-        pipHostView?.backgroundColor = .clear
-        pipHostView?.isUserInteractionEnabled = false
-        pipHostView?.isHidden = false
-
-        let playerLayer = AVPlayerLayer(player: pipPlayer)
-        playerLayer.frame = CGRect(x: 0, y: 0, width: 480, height: 480)
-        playerLayer.videoGravity = .resizeAspect
-        pipHostView?.layer.addSublayer(playerLayer)
-        pipHostView?.playerLayer = playerLayer
-
-        if AVPictureInPictureController.isPictureInPictureSupported() {
-            pipController = AVPictureInPictureController(playerLayer: playerLayer)
-            pipController?.delegate = self
-            pipController?.canStartPictureInPictureAutomaticallyFromInline = false
-            swiftLog("pip_controller_created", ["supported": true])
-        } else {
-            swiftLog("pip_not_supported", [:])
-        }
-
-        generateInitialVideo()
-    }
-
-    private func generateInitialVideo() {
-        currentTitle = "Mineradio"
-        currentArtist = "等待播放..."
-        generateCoverVideo { [weak self] url in
-            guard let self = self, let url = url else { return }
-            DispatchQueue.main.async {
-                let item = AVPlayerItem(url: url)
-                self.pipPlayer?.replaceCurrentItem(with: item)
-                self.videoReady = true
-                self.pipPlayer?.play()
-                swiftLog("initial_video_ready", [:])
-            }
-        }
-    }
-
-    @objc private func playerItemDidReachEnd() {
-        pipPlayer?.seek(to: .zero)
-        pipPlayer?.play()
-    }
-
-    func attachHostView(to parentView: UIView) {
-        guard let hostView = pipHostView, hostView.superview == nil else { return }
-        hostView.frame = CGRect(x: -500, y: -500, width: 480, height: 480)
-        hostView.clipsToBounds = false
-        hostView.alpha = 1
-        hostView.isHidden = false
-        parentView.addSubview(hostView)
-        swiftLog("host_view_attached", ["parent": String(describing: type(of: parentView))])
-    }
-
-    func startPiP() {
-        guard videoReady else {
-            swiftLog("pip_start_skipped_video_not_ready", [:])
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in self?.startPiP() }
-            return
-        }
-        guard let pip = pipController else {
-            swiftLog("pip_start_skipped_no_controller", [:])
-            showFallbackToast("当前设备不支持画中画")
-            return
-        }
-        if pipActive {
-            stopPiP()
-            return
-        }
-
-        pipPlayer?.seek(to: .zero)
-        pipPlayer?.play()
-
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
-            guard let self = self else { return }
-            if pip.isPictureInPicturePossible {
-                pip.startPictureInPicture()
-                swiftLog("pip_start_called", ["possible": true])
-            } else {
-                swiftLog("pip_not_possible", [:])
-                self.showFallbackToast("画中画暂时不可用，请确保正在播放歌曲")
-            }
-        }
-    }
-
-    func stopPiP() {
-        pipController?.stopPictureInPicture()
-        pipActive = false
-    }
-
-    private func showFallbackToast(_ msg: String) {
-        DispatchQueue.main.async {
-            self.webView?.evaluateJavaScript("if(typeof showToast==='function')showToast('\(msg)')")
-        }
-    }
-
-    func updateInfo(title: String, artist: String, coverData: Data?) {
-        currentTitle = title
-        currentArtist = artist
-        if let data = coverData {
-            coverImage = UIImage(data: data)
-        } else {
-            coverImage = nil
-        }
-
-        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            self?.generateCoverVideo { [weak self] url in
-                guard let self = self, let url = url else { return }
-                DispatchQueue.main.async {
-                    let wasPlaying = self.pipActive
-                    let item = AVPlayerItem(url: url)
-                    self.pipPlayer?.replaceCurrentItem(with: item)
-                    self.pipPlayer?.seek(to: .zero)
-                    self.videoReady = true
-                    if wasPlaying || self.pipActive {
-                        self.pipPlayer?.play()
-                    }
-                }
-            }
-        }
-    }
-
-    private func generateCoverVideo(completion: @escaping (URL?) -> Void) {
-        let size = CGSize(width: 480, height: 480)
-        let durationSec: Double = 600
-
-        try? FileManager.default.removeItem(at: videoURL)
-
-        guard let writer = try? AVAssetWriter(outputURL: videoURL, fileType: .mp4) else {
-            print("[PiP] Failed to create AVAssetWriter")
-            completion(nil)
-            return
-        }
-
-        let videoSettings: [String: Any] = [
-            AVVideoCodecKey: AVVideoCodecType.h264,
-            AVVideoWidthKey: NSNumber(value: Int(size.width)),
-            AVVideoHeightKey: NSNumber(value: Int(size.height))
-        ]
-
-        let writerInput = AVAssetWriterInput(mediaType: .video, outputSettings: videoSettings)
-        writerInput.expectsMediaDataInRealTime = false
-
-        let pixelBufferAttributes: [String: Any] = [
-            kCVPixelBufferCGImageCompatibilityKey as String: true,
-            kCVPixelBufferCGBitmapContextCompatibilityKey as String: true,
-            kCVPixelBufferPixelFormatTypeKey as String: Int(kCVPixelFormatType_32BGRA),
-            kCVPixelBufferWidthKey as String: NSNumber(value: Int(size.width)),
-            kCVPixelBufferHeightKey as String: NSNumber(value: Int(size.height))
-        ]
-
-        let adaptor = AVAssetWriterInputPixelBufferAdaptor(
-            assetWriterInput: writerInput,
-            sourcePixelBufferAttributes: pixelBufferAttributes
-        )
-
-        writer.add(writerInput)
-
-        guard writer.startWriting() else {
-            print("[PiP] startWriting failed: \(writer.error?.localizedDescription ?? "unknown")")
-            completion(nil)
-            return
-        }
-        writer.startSession(atSourceTime: .zero)
-
-        let frameImage = renderFrameImage(size: size)
-
-        func appendPixelBuffer(at time: CMTime) -> Bool {
-            var pb: CVPixelBuffer?
-            let status = CVPixelBufferPoolCreatePixelBuffer(kCFAllocatorDefault, adaptor.pixelBufferPool!, &pb)
-            guard status == kCVReturnSuccess, let buffer = pb else { return false }
-            CVPixelBufferLockBaseAddress(buffer, [])
-            defer { CVPixelBufferUnlockBaseAddress(buffer, []) }
-
-            guard let ctx = CGContext(
-                data: CVPixelBufferGetBaseAddress(buffer),
-                width: Int(size.width),
-                height: Int(size.height),
-                bitsPerComponent: 8,
-                bytesPerRow: CVPixelBufferGetBytesPerRow(buffer),
-                space: CGColorSpaceCreateDeviceRGB(),
-                bitmapInfo: CGImageAlphaInfo.premultipliedFirst.rawValue | CGBitmapInfo.byteOrder32Little.rawValue
-            ) else { return false }
-
-            ctx.draw(frameImage, in: CGRect(origin: .zero, size: size))
-            return adaptor.append(buffer, withPresentationTime: time)
-        }
-
-        writerInput.requestMediaDataWhenReady(on: DispatchQueue(label: "pip.videowriter")) {
-            while writerInput.isReadyForMoreMediaData {
-                if !appendPixelBuffer(at: .zero) { break }
-                if !appendPixelBuffer(at: CMTime(seconds: durationSec - 1, preferredTimescale: 600)) { break }
-                writerInput.markAsFinished()
-                writer.finishWriting {
-                    DispatchQueue.main.async {
-                        if writer.status == .completed {
-                            completion(self.videoURL)
-                        } else {
-                            print("[PiP] finishWriting failed: \(writer.error?.localizedDescription ?? "unknown")")
-                            completion(nil)
-                        }
-                    }
-                }
-                return
-            }
-        }
-    }
-
-    private func renderFrameImage(size: CGSize) -> CGImage {
-        let renderer = UIGraphicsImageRenderer(size: size)
-        let rendered = renderer.image { context in
-            let c = context.cgContext
-            let w = size.width, h = size.height
-
-            let colorSpace = CGColorSpaceCreateDeviceRGB()
-            let colors = [
-                UIColor(red: 0.11, green: 0.11, blue: 0.16, alpha: 1.0).cgColor,
-                UIColor(red: 0.055, green: 0.055, blue: 0.094, alpha: 1.0).cgColor
-            ]
-            let gradient = CGGradient(colorsSpace: colorSpace, colors: colors as CFArray, locations: [0.0, 1.0])!
-            c.drawLinearGradient(gradient, start: CGPoint(x: 0, y: 0), end: CGPoint(x: 0, y: h), options: [])
-
-            let coverSize = w * 0.62
-            let coverX = (w - coverSize) / 2
-            let coverY: CGFloat = 58
-            let coverRect = CGRect(x: coverX, y: coverY, width: coverSize, height: coverSize)
-            let cornerRadius: CGFloat = 22
-
-            let path = UIBezierPath(roundedRect: coverRect, cornerRadius: cornerRadius)
-            path.addClip()
-            if let image = coverImage {
-                let imgSize = image.size
-                let aspectW = coverSize / imgSize.width
-                let aspectH = coverSize / imgSize.height
-                let aspect = max(aspectW, aspectH)
-                let drawW = imgSize.width * aspect
-                let drawH = imgSize.height * aspect
-                let drawX = coverX + (coverSize - drawW) / 2
-                let drawY = coverY + (coverSize - drawH) / 2
-                image.draw(in: CGRect(x: drawX, y: drawY, width: drawW, height: drawH))
-            } else {
-                UIColor(red: 0.2, green: 0.2, blue: 0.28, alpha: 1.0).setFill()
-                UIRectFill(coverRect)
-                let symbolConfig = UIImage.SymbolConfiguration(pointSize: coverSize * 0.4, weight: .light)
-                if let musicIcon = UIImage(systemName: "music.note", withConfiguration: symbolConfig) {
-                    let tinted = musicIcon.withTintColor(.white.withAlphaComponent(0.6), renderingMode: .alwaysOriginal)
-                    let ix = coverX + (coverSize - tinted.size.width) / 2
-                    let iy = coverY + (coverSize - tinted.size.height) / 2
-                    tinted.draw(at: CGPoint(x: ix, y: iy))
-                }
-            }
-            c.resetClip()
-
-            UIColor.white.withAlphaComponent(0.08).setStroke()
-            let borderPath = UIBezierPath(roundedRect: coverRect, cornerRadius: cornerRadius)
-            borderPath.lineWidth = 1
-            borderPath.stroke()
-
-            let titleText = currentTitle.isEmpty ? "Mineradio" : currentTitle
-            let artistText = currentArtist.isEmpty ? "" : currentArtist
-            let paraStyle = NSMutableParagraphStyle()
-            paraStyle.alignment = .center
-            paraStyle.lineBreakMode = .byTruncatingTail
-            let titleFont = UIFont.systemFont(ofSize: 26, weight: .bold)
-            let artistFont = UIFont.systemFont(ofSize: 17, weight: .regular)
-            let titleAttrs: [NSAttributedString.Key: Any] = [.font: titleFont, .foregroundColor: UIColor.white, .paragraphStyle: paraStyle]
-            let artistAttrs: [NSAttributedString.Key: Any] = [.font: artistFont, .foregroundColor: UIColor.white.withAlphaComponent(0.5), .paragraphStyle: paraStyle]
-            let textMaxWidth = w - 60
-            let titleTextSize = (titleText as NSString).boundingRect(with: CGSize(width: textMaxWidth, height: .greatestFiniteMagnitude), options: .usesLineFragmentOrigin, attributes: titleAttrs, context: nil).size
-            let titleY = coverY + coverSize + 36
-            (titleText as NSString).draw(in: CGRect(x: 30, y: titleY, width: textMaxWidth, height: titleTextSize.height), withAttributes: titleAttrs)
-            if !artistText.isEmpty {
-                (artistText as NSString).draw(in: CGRect(x: 30, y: titleY + titleTextSize.height + 6, width: textMaxWidth, height: 24), withAttributes: artistAttrs)
-            }
-        }
-        return rendered.cgImage!
-    }
-
-    func pictureInPictureControllerDidStartPictureInPicture(_ pictureInPictureController: AVPictureInPictureController) {
-        DispatchQueue.main.async {
-            self.pipActive = true
-            swiftLog("pip_did_start", [:])
-        }
-    }
-
-    func pictureInPictureControllerDidStopPictureInPicture(_ pictureInPictureController: AVPictureInPictureController) {
-        DispatchQueue.main.async {
-            self.pipActive = false
-            self.pipPlayer?.seek(to: .zero)
-            self.webView?.evaluateJavaScript("if(typeof exitPip==='function')exitPip()")
-            swiftLog("pip_did_stop", [:])
-        }
-    }
-
-    func pictureInPictureControllerWillStopPictureInPicture(_ pictureInPictureController: AVPictureInPictureController) {}
-
-    func pictureInPictureController(_ pictureInPictureController: AVPictureInPictureController, failedToStartPictureInPictureWithError error: Error) {
-        DispatchQueue.main.async {
-            self.pipActive = false
-            print("[PiP] Failed to start: \(error)")
-            swiftLog("pip_failed", ["error": error.localizedDescription])
-        }
-    }
-
-    func pictureInPictureController(_ pictureInPictureController: AVPictureInPictureController, restoreUserInterfaceForPictureInPictureStopWithCompletionHandler completionHandler: @escaping (Bool) -> Void) {
-        completionHandler(true)
-    }
 }
 
 struct QQLoginSheetView: View {
@@ -528,7 +176,6 @@ struct WebView: UIViewRepresentable {
         webView.backgroundColor = .black
         webView.scrollView.backgroundColor = .black
         context.coordinator.webView = webView
-        context.coordinator.pipManager.webView = webView
         context.coordinator.audioEngine.webView = webView
         MainWebViewHolder.shared.webView = webView
         
@@ -544,9 +191,7 @@ struct WebView: UIViewRepresentable {
     final class Coordinator: NSObject, WKScriptMessageHandler, WKNavigationDelegate {
         let onQQLoginRequest: (String) -> Void
         weak var webView: WKWebView?
-        let pipManager = PiPManager()
         let audioEngine = NativeAudioEngine()
-        private var didAttachPipHost = false
 
         init(onQQLoginRequest: @escaping (String) -> Void) {
             self.onQQLoginRequest = onQQLoginRequest
@@ -554,12 +199,6 @@ struct WebView: UIViewRepresentable {
         }
 
         func bind(to webView: WKWebView) { webView.navigationDelegate = self }
-        
-        func attachPipIfNeeded(to webView: WKWebView) {
-            guard !didAttachPipHost else { return }
-            didAttachPipHost = true
-            pipManager.attachHostView(to: webView)
-        }
 
         func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
             if message.name == "openQQLogin" {
@@ -571,14 +210,15 @@ struct WebView: UIViewRepresentable {
             } else if message.name == "pip" {
                 guard let body = message.body as? [String: Any],
                       let action = body["action"] as? String else { return }
-                
+
                 switch action {
                 case "enter":
-                    if let wv = webView { attachPipIfNeeded(to: wv) }
-                    pipManager.startPiP()
+                    // PiP 已移除，后台播放由 NativeAudioEngine 的 AVAudioSession .playback 接管
+                    webView?.evaluateJavaScript("if(typeof showToast==='function')showToast('后台播放已由系统接管，无需画中画')")
                 case "exit":
-                    pipManager.stopPiP()
+                    break
                 case "update":
+                    // 元信息转发给 NativeAudioEngine (锁屏 Now Playing)
                     let title = body["title"] as? String ?? ""
                     let artist = body["artist"] as? String ?? ""
                     let coverUrl = body["coverUrl"] as? String
@@ -587,12 +227,10 @@ struct WebView: UIViewRepresentable {
                         URLSession.shared.dataTask(with: url) { [weak self] data, _, error in
                             guard let self = self, error == nil else { return }
                             DispatchQueue.main.async {
-                                self.pipManager.updateInfo(title: title, artist: artist, coverData: data)
                                 self.audioEngine.updateMeta(title: title, artist: artist, coverData: data)
                             }
                         }.resume()
                     } else {
-                        pipManager.updateInfo(title: title, artist: artist, coverData: nil)
                         audioEngine.updateMeta(title: title, artist: artist, coverData: nil)
                     }
                 case "bgAudioStart":
@@ -626,6 +264,20 @@ struct WebView: UIViewRepresentable {
                     else if let v = body["volume"] as? NSNumber { audioEngine.setVolume(Float(v.floatValue)) }
                 case "stop":
                     audioEngine.stop()
+                case "meta":
+                    let title = body["title"] as? String ?? ""
+                    let artist = body["artist"] as? String ?? ""
+                    let coverUrl = body["coverUrl"] as? String
+                    if let urlStr = coverUrl, let url = URL(string: urlStr) {
+                        URLSession.shared.dataTask(with: url) { [weak self] data, _, error in
+                            guard let self = self, error == nil else { return }
+                            DispatchQueue.main.async {
+                                self.audioEngine.updateMeta(title: title, artist: artist, coverData: data)
+                            }
+                        }.resume()
+                    } else {
+                        audioEngine.updateMeta(title: title, artist: artist, coverData: nil)
+                    }
                 default:
                     break
                 }
@@ -633,7 +285,6 @@ struct WebView: UIViewRepresentable {
         }
 
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-            attachPipIfNeeded(to: webView)
         }
 
         func webView(_ webView: WKWebView, didFailProvisionalNavigation nav: WKNavigation!, withError error: Error) {

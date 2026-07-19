@@ -59,6 +59,7 @@ screenshots/
 
 # iOS/Xcode build artifacts
 ios-shell/build/
+ios-shell/build_dd/
 ios-shell/DerivedData/
 ios-shell/*.xcuserstate
 ios-shell/*.xcuserdata

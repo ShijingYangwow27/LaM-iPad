@@ -57,11 +57,13 @@ class NativeAudioEngine: NSObject, ObservableObject {
     private var displayLink: CADisplayLink?
     private var lastFreqPush: CFTimeInterval = 0
     private let freqPushInterval: CFTimeInterval = 1.0 / 30.0
+    private var hasLoggedTapStatus = false   // 一次性日志: tap 是否在工作
 
     // ── 状态 ────────────────────────────────────────────────────
     private(set) var currentTime: Double = 0
     private(set) var duration: Double = 0
     private(set) var isPlaying: Bool = false
+    private var isPlayingSilence: Bool = false  // 歌曲结束后播放静音, 保持 audio session 活跃
     private var pendingPlay: Bool = false
     private var pendingSeek: Double? = nil
     private(set) var volume: Float = 1.0
@@ -121,6 +123,8 @@ class NativeAudioEngine: NSObject, ObservableObject {
 
         timeControlStatusObs = player.observe(\.timeControlStatus, options: [.new]) { [weak self] p, _ in
             guard let self = self else { return }
+            // seek/静音期间屏蔽 pause/playing 事件, 避免 UI 播放键闪烁
+            if self.isPlayingSilence { return }
             let playing = (p.timeControlStatus == .playing)
             let changed = (playing != self.isPlaying)
             self.isPlaying = playing
@@ -134,11 +138,19 @@ class NativeAudioEngine: NSObject, ObservableObject {
     // MARK: - 载入 / 播放 / 暂停 / 跳转 (供 JS 桥调用)
 
     func load(url: URL) {
+        NSLog("[NativeAudio] load: %@", url.absoluteString)
+        // 停止静音播放 (如果有), 恢复音量
+        if isPlayingSilence {
+            isPlayingSilence = false
+            player.pause()
+        }
+        player.volume = volume
         if let old = playerItem { removeObservers(for: old) }
         currentTime = 0
         duration = 0
         pendingPlay = false
         pendingSeek = nil
+        hasLoggedTapStatus = false
         notifyWeb("emptied")
 
         let item = AVPlayerItem(url: url)
@@ -149,6 +161,7 @@ class NativeAudioEngine: NSObject, ObservableObject {
     }
 
     func play() {
+        NSLog("[NativeAudio] play called, itemStatus=%@", playerItem?.status == .readyToPlay ? "ready" : "notReady")
         if playerItem?.status == .readyToPlay {
             player.play()
             isPlaying = true
@@ -163,6 +176,8 @@ class NativeAudioEngine: NSObject, ObservableObject {
     }
 
     func pause() {
+        isPlayingSilence = false
+        player.volume = volume
         pendingPlay = false
         player.pause()
         isPlaying = false
@@ -174,8 +189,10 @@ class NativeAudioEngine: NSObject, ObservableObject {
         guard seconds.isFinite else { return }
         let target = CMTime(seconds: max(0, seconds), preferredTimescale: 600)
         if playerItem?.status == .readyToPlay {
-            player.seek(to: target, toleranceBefore: .zero, toleranceAfter: .zero) { [weak self] _ in
-                self?.notifyWeb("seeked")
+            player.seek(to: target, toleranceBefore: .positiveInfinity, toleranceAfter: .positiveInfinity) { [weak self] _ in
+                guard let self = self else { return }
+                self.currentTime = CMTimeGetSeconds(self.player.currentTime())
+                self.notifyWeb("seeked")
             }
         } else {
             pendingSeek = seconds
@@ -188,6 +205,8 @@ class NativeAudioEngine: NSObject, ObservableObject {
     }
 
     func stop() {
+        isPlayingSilence = false
+        player.volume = volume
         player.pause()
         player.replaceCurrentItem(with: nil)
         if let old = playerItem { removeObservers(for: old) }
@@ -214,6 +233,7 @@ class NativeAudioEngine: NSObject, ObservableObject {
                     self.seek(to: s)
                 }
                 if self.pendingPlay {
+                    NSLog("[NativeAudio] itemReady → pendingPlay → play()")
                     self.pendingPlay = false
                     self.player.play()
                     self.isPlaying = true
@@ -263,9 +283,16 @@ class NativeAudioEngine: NSObject, ObservableObject {
     }
 
     @objc private func itemDidPlayToEndTime() {
-        notifyWeb("ended")
-        player.seek(to: .zero)
         currentTime = 0
+        try? AVAudioSession.sharedInstance().setActive(true)
+        NSLog("[NativeAudio] itemDidPlayToEndTime → notifyWeb(ended)")
+        notifyWeb("ended")
+        // 播放静音保持 audio session 活跃: 网页 nextTrack() 是 async, 需要 await API 请求获取下一首 URL,
+        // 这段时间内无音频输出, 系统会挂起 app 导致 JS 被暂停。播放静音 (volume=0) 让 session 保持活跃。
+        isPlayingSilence = true
+        player.seek(to: .zero)
+        player.volume = 0
+        player.play()
         updateNowPlayingInfo()
     }
 
@@ -450,13 +477,40 @@ class NativeAudioEngine: NSObject, ObservableObject {
 
     @objc private func displayLinkTick() {
         guard isPlaying else { return }
+        guard !isPlayingSilence else { return }
         let now = CACurrentMediaTime()
         guard now - lastFreqPush >= freqPushInterval else { return }
         lastFreqPush = now
 
+        // 读取 player 实时位置, 而非 periodic time observer 的缓存值。
+        // periodic time observer 每 100ms 才更新一次 currentTime, 导致推送给网页的
+        // state.currentTime 最多落后实际音频 100ms, 歌词/进度条与音频不同步。
+        // 直接读 player.currentTime() 保证 30fps 推送的是实时精确位置。
+        let liveTime = CMTimeGetSeconds(player.currentTime())
+        if liveTime.isFinite && liveTime >= 0 {
+            currentTime = liveTime
+        }
+
         let samples = readSamplesForFFT()
-        let bins = computeFrequencyBins(samples)
-        let timeDomain = computeTimeDomain(samples)
+        let hasRealData = ringTotalWritten > 0
+
+        // 一次性诊断: 确认 tap 是否在喂数据
+        if !hasLoggedTapStatus {
+            hasLoggedTapStatus = true
+            NSLog("[NativeAudio] tapStatus: ringTotalWritten=%d, hasRealData=%@", ringTotalWritten, hasRealData ? "YES" : "NO")
+        }
+
+        let bins: [UInt8]
+        let timeDomain: [UInt8]
+        if hasRealData {
+            bins = computeFrequencyBins(samples)
+            timeDomain = computeTimeDomain(samples)
+        } else {
+            // MTAudioProcessingTap 未工作 (模拟器常见): 合成兜底频谱,
+            // 让可视化器保持基本活力。基于时间生成柔和脉动, 非真实频谱。
+            bins = synthesizeSpectrumBins()
+            timeDomain = synthesizeTimeDomain()
+        }
 
         let freqB64 = Data(bins).base64EncodedString()
         let timeB64 = Data(timeDomain).base64EncodedString()
@@ -472,6 +526,36 @@ class NativeAudioEngine: NSObject, ObservableObject {
         guard let data = try? JSONSerialization.data(withJSONObject: payload),
               let json = String(data: data, encoding: .utf8) else { return }
         webView?.evaluateJavaScript("window.__nativeAudioTick(\(json))", completionHandler: nil)
+    }
+
+    // MARK: - 合成频谱兜底 (tap 不可用时, 如 iOS 模拟器)
+
+    private func synthesizeSpectrumBins() -> [UInt8] {
+        let n = 1024
+        var bins = [UInt8](repeating: 0, count: n)
+        let t = CACurrentMediaTime()
+        // 低频强、高频弱的整体形态 + 随时间脉动
+        for i in 0..<n {
+            let freq = Double(i) / Double(n)
+            let envelope = pow(1.0 - freq, 1.8) * 200.0
+            let pulse = sin(t * 2.5 + Double(i) * 0.08) * 25.0 + sin(t * 5.1 + Double(i) * 0.03) * 15.0
+            let noise = Double.random(in: -10...10)
+            let val = max(0, min(255, envelope + pulse + noise))
+            bins[i] = UInt8(val)
+        }
+        return bins
+    }
+
+    private func synthesizeTimeDomain() -> [UInt8] {
+        let n = 2048
+        var out = [UInt8](repeating: 128, count: n)
+        let t = CACurrentMediaTime()
+        for i in 0..<n {
+            let phase = Double(i) / Double(n) * .pi * 2.0
+            let v = sin(t * 3.0 + phase * 3.0) * 30.0 + sin(t * 6.0 + phase * 7.0) * 15.0
+            out[i] = UInt8(max(0, min(255, 128 + Int(v))))
+        }
+        return out
     }
 
     // MARK: - 向网页派发事件
