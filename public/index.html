@@ -3155,6 +3155,12 @@ html.touch-coarse .home-mosaic-radio-btn{height:24px!important;min-width:48px!im
         <button data-performance-quality="high">高</button>
         <button data-performance-quality="ultra">超高</button>
       </div>
+      <div class="fx-section-label">帧率上限</div>
+      <div class="fx-seg" id="render-fps-cap-seg" title="控制渲染帧率上限，默认 30fps 省电；高配设备可调高">
+        <button data-render-fps-cap="30">30fps</button>
+        <button data-render-fps-cap="45">45fps</button>
+        <button data-render-fps-cap="60">60fps</button>
+      </div>
       <div class="fx-toggle-grid">
         <div class="fx-toggle" id="t-liveBackgroundKeep" onclick="toggleFx('liveBackgroundKeep')" title="开启后后台或最小化时保持视觉渲染，不进入低占用暂停"><span>直播后台保持</span><span class="dot"></span></div>
       </div>
@@ -4358,6 +4364,7 @@ var fxDefaults = {
   shelfAccentColor: '#ffffff',
   performanceBackground: 'auto',
   performanceQuality: 'high',
+  renderFpsCap: 30,
   liveBackgroundKeep: false,
   cam: 'off',
   danmakuMode: 'card',
@@ -4430,6 +4437,7 @@ var PACKAGED_DEFAULT_FX_SNAPSHOT = Object.freeze({
   desktopLyricsFps: 60,
   performanceBackground: 'auto',
   performanceQuality: 'high',
+  renderFpsCap: 30,
   liveBackgroundKeep: false,
   particleLyrics: true,
   backCover: false,
@@ -4845,7 +4853,8 @@ var RENDER_DPR_CAP = 1.35;
 var RENDER_PIXEL_BUDGET = 5200000;
 var RENDER_MIN_DPR = 0.72;
 // 0 = display vsync. Keep visible playback high-refresh capable instead of capping 120Hz+ screens to 60/72.
-var RENDER_VISIBLE_VSYNC = true;
+// 仅桌面(非触屏)走显示器原生刷新；触屏/模拟器强制走限帧逻辑，避免 GPU 满负载发热
+var RENDER_VISIBLE_VSYNC = !RENDER_IS_COARSE;
 // iPad / 触屏：默认播放档限 30fps（vsync 60fps 撑不住复杂 WebGL shader，发热严重）；桌面保持 vsync。
 var RENDER_ACTIVE_FPS = (typeof window !== 'undefined' && window.__mineradioFastBoot) ? 24 : (RENDER_IS_COARSE ? 30 : 0);
 var RENDER_LARGE_FPS = (typeof window !== 'undefined' && window.__mineradioFastBoot) ? 18 : 0;
@@ -9070,6 +9079,10 @@ function normalizePerformanceQuality(v) {
   var value = String(v || '');
   return /^(eco|balanced|high|ultra)$/.test(value) ? value : fxDefaults.performanceQuality;
 }
+function normalizeRenderFpsCap(v) {
+  var n = Number(v) || 0;
+  return [30, 45, 60].indexOf(n) >= 0 ? n : fxDefaults.renderFpsCap;
+}
 function coverParticleGridForResolution(v) {
   var grid = Math.round(118 * normalizeCoverResolution(v));
   grid = Math.max(88, Math.min(183, grid));
@@ -9165,6 +9178,7 @@ function readSavedLyricLayout() {
       desktopLyricsFps: desktopLyricsSchemaReady ? normalizeDesktopLyricsFps(raw.desktopLyricsFps) : fxDefaults.desktopLyricsFps,
       performanceBackground: normalizePerformanceBackgroundMode(raw.performanceBackground, raw.liveBackgroundKeep === true),
       performanceQuality: normalizePerformanceQuality(raw.performanceQuality),
+      renderFpsCap: normalizeRenderFpsCap(raw.renderFpsCap),
       liveBackgroundKeep: normalizePerformanceBackgroundMode(raw.performanceBackground, raw.liveBackgroundKeep === true) === 'keep',
       wallpaperMode: false,
       wallpaperModeMode: raw.wallpaperModeMode === 'overlay' ? 'overlay' : 'desktop-level',
@@ -9263,6 +9277,7 @@ function saveLyricLayout() {
       desktopLyricsFps: normalizeDesktopLyricsFps(fx.desktopLyricsFps),
       performanceBackground: normalizePerformanceBackgroundMode(fx.performanceBackground, fx.liveBackgroundKeep === true),
       performanceQuality: normalizePerformanceQuality(fx.performanceQuality),
+      renderFpsCap: normalizeRenderFpsCap(fx.renderFpsCap),
       liveBackgroundKeep: normalizePerformanceBackgroundMode(fx.performanceBackground, fx.liveBackgroundKeep === true) === 'keep',
       wallpaperMode: false,
       wallpaperModeMode: fx.wallpaperModeMode === 'overlay' ? 'overlay' : 'desktop-level',
@@ -9289,6 +9304,7 @@ function saveLyricLayout() {
       danmakuSpeed: clampRange(Number(fx.danmakuSpeed) || fxDefaults.danmakuSpeed, 1, 5),
       danmakuFontSize: clampRange(Number(fx.danmakuFontSize) || fxDefaults.danmakuFontSize, 1, 3),
       danmakuOpacity: clampRange(Number(fx.danmakuOpacity) == null ? fxDefaults.danmakuOpacity : Number(fx.danmakuOpacity), 0.3, 1),
+      renderFpsCap: normalizeRenderFpsCap(fx.renderFpsCap),
     }));
   } catch (e) {}
 }
@@ -23490,6 +23506,7 @@ function normalizeFxArchiveSnapshot(raw) {
     desktopLyricsFps: normalizeDesktopLyricsFps(Object.prototype.hasOwnProperty.call(raw, 'desktopLyricsFps') ? raw.desktopLyricsFps : fxDefaults.desktopLyricsFps),
     performanceBackground: normalizePerformanceBackgroundMode(raw.performanceBackground, raw.liveBackgroundKeep === true),
     performanceQuality: normalizePerformanceQuality(raw.performanceQuality),
+    renderFpsCap: normalizeRenderFpsCap(raw.renderFpsCap),
     liveBackgroundKeep: normalizePerformanceBackgroundMode(raw.performanceBackground, raw.liveBackgroundKeep === true) === 'keep',
     particleLyrics: raw.particleLyrics !== false,
     backCover: !!raw.backCover,
@@ -24796,6 +24813,10 @@ function updatePerformanceControls() {
   document.querySelectorAll('#performance-quality-seg [data-performance-quality]').forEach(function(btn){
     btn.classList.toggle('active', btn.getAttribute('data-performance-quality') === fx.performanceQuality);
   });
+  fx.renderFpsCap = normalizeRenderFpsCap(fx.renderFpsCap);
+  document.querySelectorAll('#render-fps-cap-seg [data-render-fps-cap]').forEach(function(btn){
+    btn.classList.toggle('active', Number(btn.getAttribute('data-render-fps-cap')) === fx.renderFpsCap);
+  });
   var liveBackgroundKeepToggle = document.getElementById('t-liveBackgroundKeep');
   if (liveBackgroundKeepToggle) liveBackgroundKeepToggle.classList.toggle('on', fx.liveBackgroundKeep === true);
 }
@@ -24822,6 +24843,15 @@ function setPerformanceQualityMode(mode, silent) {
   if (!silent) {
     var label = next === 'eco' ? '低' : (next === 'balanced' ? '中' : (next === 'ultra' ? '超高' : '高'));
     showToast('画质档位: ' + label);
+  }
+}
+function setRenderFpsCap(mode, silent) {
+  var next = normalizeRenderFpsCap(mode);
+  fx.renderFpsCap = next;
+  updatePerformanceControls();
+  saveLyricLayout();
+  if (!silent) {
+    showToast('帧率上限: ' + next + 'fps');
   }
 }
 function updateFxInputs() {
@@ -25526,6 +25556,11 @@ function bindFxPanel() {
   document.querySelectorAll('#performance-quality-seg [data-performance-quality]').forEach(function(btn){
     btn.addEventListener('click', function(){
       setPerformanceQualityMode(btn.getAttribute('data-performance-quality'));
+    });
+  });
+  document.querySelectorAll('#render-fps-cap-seg [data-render-fps-cap]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      setRenderFpsCap(Number(btn.getAttribute('data-render-fps-cap')));
     });
   });
   updateFxInputs();
@@ -29984,16 +30019,23 @@ function isMainSceneCoveredBySplash() {
 }
 function getAdaptiveRenderFps() {
   if (isDeepBackgroundMode()) return 1;
+  // 手动帧率上限：30/45/60，默认 30；高配设备可手动调高
+  var cap = (typeof fx !== 'undefined' && fx) ? normalizeRenderFpsCap(fx.renderFpsCap) : fxDefaults.renderFpsCap;
+  if (cap) return cap;
   if (RENDER_VISIBLE_VSYNC) return 0;
   var tier = (typeof getRenderLoadTier === 'function') ? getRenderLoadTier() : 0;
+  var fps;
   if (typeof isRenderInteractionActive === 'function' && isRenderInteractionActive()) {
-    if (tier >= 2) return RENDER_INTERACTION_HUGE_FPS;
-    if (tier >= 1) return RENDER_INTERACTION_LARGE_FPS;
-    return RENDER_INTERACTION_FPS;
+    if (tier >= 2) fps = RENDER_INTERACTION_HUGE_FPS;
+    else if (tier >= 1) fps = RENDER_INTERACTION_LARGE_FPS;
+    else fps = RENDER_INTERACTION_FPS;
+  } else {
+    if (tier >= 2) fps = RENDER_HUGE_FPS;
+    else if (tier >= 1) fps = RENDER_LARGE_FPS;
+    else fps = RENDER_ACTIVE_FPS;
   }
-  if (tier >= 2) return RENDER_HUGE_FPS;
-  if (tier >= 1) return RENDER_LARGE_FPS;
-  return RENDER_ACTIVE_FPS;
+  if (RENDER_IS_COARSE && !fps) fps = 30;
+  return fps;
 }
 function shouldSkipAdaptiveRenderFrame(now) {
   var fps = getAdaptiveRenderFps();

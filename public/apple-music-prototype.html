@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Mineradio — Apple Music 风格原型 v2</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { height: 100%; margin: 0; overflow: hidden; }
+
+    :root {
+      --art: #ff6a88;
+      --art-2: #ff99ac;
+      --bg: #000000;
+      --surface: #121212;
+      --surface-2: #161616;
+      --surface-hi: #2a2a2c;
+      --line: rgba(255,255,255,0.07);
+      --t1: #f5f5f7;
+      --t2: #a1a1a6;
+      --t3: #6e6e73;
+      --accent: #ff375f;
+      --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      --r-sm: 7px; --r-md: 10px; --r-lg: 13px; --r-xl: 18px; --r-full: 100px;
+      --e-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+      --e-std: cubic-bezier(0.32, 0.72, 0, 1);
+      --player: 72px;
+      --player-safe: 92px;
+      --side: 240px;
+      --tab: 56px;
+      --safe-t: env(safe-area-inset-top, 0px);
+      --safe-b: env(safe-area-inset-bottom, 0px);
+    }
+
+    body {
+      font-family: var(--font); color: var(--t1); background: var(--bg);
+      -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; user-select: none;
+    }
+
+    /* 顶部柔焦环境光（随专辑主色变化） */
+    .ambient { position: fixed; inset: 0; z-index: 0; pointer-events: none; transition: background 1s var(--e-std);
+      background:
+        radial-gradient(115% 78% at 82% -16%, color-mix(in srgb, var(--art) 38%, transparent), transparent 60%),
+        radial-gradient(95% 70% at 12% 112%, color-mix(in srgb, var(--art-2) 28%, transparent), transparent 62%),
+        linear-gradient(180deg, #0b0b0d, #000);
+    }
+    .ambient::after { content:''; position:absolute; inset:0; backdrop-filter: blur(70px) saturate(1.2); -webkit-backdrop-filter: blur(70px) saturate(1.2); }
+
+    .app { position: relative; z-index: 1; height: 100%; display: flex; padding-bottom: var(--player-safe); }
+
+    /* 侧边栏 */
+    .side { width: var(--side); height: 100%; flex-shrink: 0; padding: 22px 14px 10px;
+      display: flex; flex-direction: column; gap: 4px;
+      background: rgba(0,0,0,0.28); border-right: 1px solid var(--line);
+      backdrop-filter: blur(38px); -webkit-backdrop-filter: blur(38px); }
+    .brand { font-size: 21px; font-weight: 800; letter-spacing: -0.4px; padding: 4px 12px 18px; }
+    .brand b { color: var(--accent); }
+    .nav { height: 42px; padding: 0 12px; border-radius: var(--r-md); display: flex; align-items: center; gap: 12px;
+      font-size: 15px; font-weight: 500; color: var(--t2); cursor: pointer; transition: background .18s, color .18s; }
+    .nav:hover { background: var(--surface-hi); color: var(--t1); }
+    .nav.on { background: var(--surface-hi); color: var(--t1); font-weight: 600; }
+    .nav svg { width: 21px; height: 21px; }
+    .side-foot { margin-top: auto; padding: 14px 12px 6px; font-size: 11px; letter-spacing: .4px; text-transform: uppercase; color: var(--t3); }
+    .lib-row { font-size: 14px; color: var(--t2); height: 34px; display:flex; align-items:center; padding: 0 12px; border-radius: var(--r-md); cursor:pointer; }
+    .lib-row:hover { background: var(--surface-hi); color: var(--t1); }
+
+    /* 主区 */
+    .main { flex: 1; min-width: 0; height: 100%; overflow-y: auto; scroll-behavior: smooth;
+      padding: 26px 34px 34px; }
+    .main::-webkit-scrollbar { width: 0; }
+
+    .top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 26px; padding-top: var(--safe-t); }
+    .greet { font-size: 30px; font-weight: 800; letter-spacing: -0.8px; }
+    .av { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, var(--art), var(--art-2));
+      display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff; }
+
+    .sec { margin-top: 34px; }
+    .sec-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 14px; }
+    .sec-title { font-size: 21px; font-weight: 700; letter-spacing: -0.4px; }
+    .sec-more { font-size: 13px; font-weight: 600; color: var(--accent); cursor: pointer; }
+    .sec-more:hover { opacity: .8; }
+
+    /* Hero 卡片 */
+    .hero { height: 232px; border-radius: var(--r-xl); overflow: hidden; position: relative; cursor: pointer;
+      background: linear-gradient(115deg, #15151a 42%, color-mix(in srgb, var(--art) 26%, #141414));
+      box-shadow: 0 18px 48px rgba(0,0,0,.4); transition: transform .35s var(--e-spring); }
+    .hero:hover { transform: translateY(-3px); }
+    .hero:active { transform: scale(.992); }
+    .hero-c { position: absolute; left: 30px; top: 50%; transform: translateY(-50%); max-width: 54%; }
+    .hero-k { font-size: 12px; font-weight: 700; color: var(--t2); text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 10px; }
+    .hero-t { font-size: 30px; font-weight: 800; line-height: 1.08; letter-spacing: -0.6px; margin-bottom: 8px; }
+    .hero-s { font-size: 14px; color: var(--t2); margin-bottom: 20px; }
+    .hero-btn { height: 42px; padding: 0 22px; border-radius: var(--r-md); background: #fff; color: #000;
+      font-weight: 700; font-size: 14px; border: none; cursor: pointer; transition: transform .15s; }
+    .hero-btn:hover { transform: scale(1.03); }
+    .hero-btn:active { transform: scale(.97); }
+    .hero-cover { position: absolute; right: 30px; top: 50%; transform: translateY(-50%); width: 168px; height: 168px;
+      border-radius: var(--r-lg); box-shadow: 0 18px 44px rgba(0,0,0,.45); }
+
+    /* 横向专辑流 */
+    .row { display: flex; gap: 18px; overflow-x: auto; padding: 4px 2px 14px; scroll-snap-type: x mandatory; }
+    .row::-webkit-scrollbar { display: none; }
+    .card { flex: 0 0 auto; width: 152px; cursor: pointer; scroll-snap-align: start; transition: transform .25s var(--e-spring); }
+    .card:hover { transform: translateY(-5px); }
+    .card:active { transform: scale(.97); }
+    .cov { width: 152px; height: 152px; border-radius: var(--r-lg); box-shadow: 0 8px 20px rgba(0,0,0,.3); margin-bottom: 11px; position: relative; overflow: hidden; }
+    .cov::after { content:''; position:absolute; inset:0; background: linear-gradient(140deg, rgba(255,255,255,.12), rgba(255,255,255,0) 55%); }
+    .c-title { font-size: 14px; font-weight: 600; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .c-sub { font-size: 12px; color: var(--t2); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 18px; }
+
+    /* 底部播放条 */
+    .mini { position: fixed; left: 0; right: 0; bottom: 0; height: var(--player); z-index: 60;
+      padding: 11px 16px; padding-bottom: calc(11px + var(--safe-b));
+      background: rgba(20,20,22,.86); border-top: 1px solid var(--line);
+      backdrop-filter: blur(42px) saturate(1.3); -webkit-backdrop-filter: blur(42px) saturate(1.3);
+      display: flex; align-items: center; gap: 13px; cursor: pointer; transition: transform .4s var(--e-std); }
+    .mini.hide { transform: translateY(110%); }
+    .mini-cov { width: 48px; height: 48px; border-radius: var(--r-sm); flex-shrink: 0; box-shadow: 0 4px 12px rgba(0,0,0,.3); }
+    .mini-meta { flex: 1; min-width: 0; }
+    .mini-t { font-size: 14.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .mini-a { font-size: 12px; color: var(--t2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .mini-ctrl { display: flex; align-items: center; gap: 6px; }
+    .mb { width: 40px; height: 40px; border-radius: 50%; border: none; background: transparent; color: var(--t1);
+      display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background .15s; }
+    .mb:hover { background: var(--surface-hi); }
+    .mb:active { transform: scale(.94); }
+    .mb svg { width: 20px; height: 20px; }
+
+    /* 全屏播放页 */
+    .np { position: fixed; inset: 0; z-index: 100; background: #000; transform: translateY(100%);
+      transition: transform .5s var(--e-spring); display: flex; flex-direction: column; overflow: hidden; }
+    .np.open { transform: translateY(0); }
+    .np-bg { position: absolute; inset: 0; pointer-events: none;
+      background:
+        radial-gradient(150% 85% at 50% -28%, color-mix(in srgb, var(--art) 46%, transparent), transparent 60%),
+        radial-gradient(120% 80% at 50% 115%, color-mix(in srgb, var(--art-2) 34%, transparent), transparent 60%), #000; }
+    .np-bg::after { content:''; position:absolute; inset:0; backdrop-filter: blur(64px); -webkit-backdrop-filter: blur(64px); }
+    .np-top { position: relative; z-index: 2; height: 50px; display: flex; align-items: center; justify-content: center; padding-top: var(--safe-t); flex-shrink: 0; }
+    .np-grip { width: 38px; height: 5px; border-radius: 3px; background: rgba(255,255,255,.22); }
+    .np-x { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); margin-top: calc(var(--safe-t)/2);
+      width: 40px; height: 40px; border-radius: 50%; border: none; background: transparent; color: var(--t2); cursor: pointer; display:flex; align-items:center; justify-content:center; }
+    .np-x:hover { background: var(--surface-hi); color: var(--t1); }
+    .np-x svg { width: 19px; height: 19px; }
+    .np-body { position: relative; z-index: 2; flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 34px 30px; }
+    .np-body::-webkit-scrollbar { width: 0; }
+    .np-cov { width: min(310px, 62vw); aspect-ratio: 1; border-radius: var(--r-xl); box-shadow: 0 34px 80px rgba(0,0,0,.55); margin-bottom: 38px; position: relative; overflow: hidden; flex-shrink: 0;
+      background: linear-gradient(135deg, var(--art), var(--art-2)); }
+    .np-cov::after { content:''; position:absolute; inset:0; background: linear-gradient(140deg, rgba(255,255,255,.14), rgba(255,255,255,0) 55%); }
+    .np-info { width: 100%; max-width: 430px; margin-bottom: 22px; display: flex; justify-content: space-between; align-items: flex-start; }
+    .np-t { font-size: 27px; font-weight: 700; letter-spacing: -0.6px; line-height: 1.14; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .np-a { font-size: 18px; color: var(--t2); margin-top: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .np-acts { display: flex; gap: 4px; }
+    .np-ab { width: 40px; height: 40px; border-radius: 50%; border: none; background: transparent; color: var(--t2); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+    .np-ab:hover { background: var(--surface-hi); color: var(--t1); }
+    .np-ab svg { width: 19px; height: 19px; }
+    .np-prog { width: 100%; max-width: 430px; margin-bottom: 26px; }
+    .np-bar { height: 5px; border-radius: 3px; background: rgba(255,255,255,.2); cursor: pointer; position: relative; overflow: hidden; }
+    .np-fill { position: absolute; inset: 0 auto 0 0; width: 38%; background: var(--t1); border-radius: 3px; }
+    .np-fill::after { content:''; position:absolute; right:-5px; top:50%; transform: translateY(-50%); width: 11px; height: 11px; border-radius: 50%; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.4); }
+    .np-time { display: flex; justify-content: space-between; font-size: 11px; color: var(--t3); margin-top: 7px; font-variant-numeric: tabular-nums; }
+    .np-ctrl { display: flex; align-items: center; justify-content: center; gap: 30px; margin-bottom: 30px; }
+    .nc { border: none; background: transparent; color: var(--t1); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform .15s; }
+    .nc:hover { transform: scale(1.08); }
+    .nc:active { transform: scale(.94); }
+    .nc.main { width: 74px; height: 74px; border-radius: 50%; background: #fff; color: #000; }
+    .nc svg { width: 23px; height: 23px; }
+    .nc.main svg { width: 30px; height: 30px; }
+    .np-foot { width: 100%; max-width: 430px; display: flex; justify-content: space-between; color: var(--t3); }
+    .np-foot svg { width: 21px; height: 21px; }
+
+    .view { display: none; } .view.on { display: block; }
+    .box { height: 44px; width: 100%; max-width: 700px; border-radius: var(--r-md); border: none; padding: 0 16px;
+      background: var(--surface-2); color: var(--t1); font-size: 16px; font-family: inherit; margin-bottom: 18px; }
+    .box::placeholder { color: var(--t3); }
+    .chips { display: flex; gap: 9px; overflow-x: auto; margin-bottom: 22px; }
+    .chips::-webkit-scrollbar { display: none; }
+    .chip { flex-shrink: 0; padding: 8px 17px; border-radius: var(--r-full); background: var(--surface-2); color: var(--t1); font-size: 13px; font-weight: 600; cursor: pointer; transition: background .15s; }
+    .chip:hover { background: var(--surface-hi); }
+    .chip.on { background: var(--t1); color: #000; }
+    .li { height: 56px; display: flex; align-items: center; gap: 13px; border-radius: var(--r-sm); padding: 0 8px; cursor: pointer; transition: background .15s; }
+    .li:hover { background: var(--surface-2); }
+    .li-cov { width: 44px; height: 44px; border-radius: var(--r-sm); flex-shrink: 0; box-shadow: 0 3px 8px rgba(0,0,0,.25); }
+    .li-meta { flex: 1; min-width: 0; }
+    .li-t { font-size: 15px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .li-s { font-size: 12px; color: var(--t2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .li-more { width: 32px; height: 32px; border-radius: 50%; border: none; background: transparent; color: var(--t3); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+    .li-more:hover { background: var(--surface-hi); color: var(--t1); }
+
+    .tabbar { display: none; position: fixed; left: 0; right: 0; bottom: var(--player); height: var(--tab); z-index: 50;
+      background: rgba(0,0,0,.8); border-top: 1px solid var(--line); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
+      justify-content: space-around; align-items: center; padding-bottom: var(--safe-b); }
+    .ti { flex: 1; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: var(--t3); font-size: 10px; cursor: pointer; }
+    .ti.on { color: var(--t1); }
+    .ti svg { width: 22px; height: 22px; }
+
+    @media (max-width: 900px) {
+      .side { display: none; }
+      .main { padding: 18px 18px 22px; }
+      .greet { font-size: 24px; }
+      .hero { height: 208px; }
+      .hero-c { left: 22px; max-width: 60%; }
+      .hero-t { font-size: 24px; }
+      .hero-cover { width: 126px; height: 126px; right: 22px; }
+      .tabbar { display: flex; }
+      .app { padding-bottom: calc(var(--player-safe) + var(--tab)); }
+      .mini { bottom: var(--tab); }
+    }
+    @media (min-width: 901px) { .tabbar { display: none; } }
+  </style>
+</head>
+<body>
+  <div class="ambient" id="ambient"></div>
+
+  <div class="app">
+    <aside class="side">
+      <div class="brand">Mine<b>radio</b></div>
+      <div class="nav on" data-v="home"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3 2 8.4V10h2v10h6v-6h4v6h6V10h2V8.4L12 3z"/></svg>现在就听</div>
+      <div class="nav" data-v="browse"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-1 17.9c-3.9-.5-7-3.9-7-7.9 0-.6.1-1.2.2-1.8L9 15v1c0 1.1.9 2 2 2v1.9zM17 13h-2a3 3 0 0 1-3-3V8h5v5zm-1.6 6.6c-.3-.8-1-1.4-1.9-1.4h-1v-3c0-.6-.4-1-1-1H8v-2h2c.6 0 1-.4 1-1V7h2c1.1 0 2-.9 2-2v-.4c2.9 1.2 5 4 5 7.4 0 2.1-.8 4-2.1 5.4z"/></svg>浏览</div>
+      <div class="nav"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>电台</div>
+      <div class="nav" data-v="library"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.3 18.2 21l-1.6-7L22 9.2l-7.2-.6L12 2 9.2 8.6 2 9.2l5.5 4.8L5.8 21z"/></svg>资料库</div>
+      <div class="nav" data-v="search"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.8l-.3-.3A6.5 6.5 0 1 0 9.5 16c1.6 0 3.1-.6 4.2-1.6l.3.3v.8l5 5 1.5-1.5-5-5zM4.5 9.5A5 5 0 1 1 9.5 14.5 5 5 0 0 1 4.5 9.5z"/></svg>搜索</div>
+      <div class="side-foot">播放列表</div>
+      <div class="lib-row">我的私藏</div>
+      <div class="lib-row">深夜电台</div>
+    </aside>
+
+    <main class="main" id="main">
+      <div class="view on" id="view-home">
+        <div class="top">
+          <div class="greet">早上好</div>
+          <div class="av">Y</div>
+        </div>
+
+        <div class="hero" onclick="playHero()">
+          <div class="hero-c">
+            <div class="hero-k">为你精选</div>
+            <div class="hero-t">宇宙级漫游电台</div>
+            <div class="hero-s">根据你的口味生成 · 45 分钟</div>
+            <button class="hero-btn">播放</button>
+          </div>
+          <div class="hero-cover art" data-art="0"></div>
+        </div>
+
+        <section class="sec">
+          <div class="sec-head"><div class="sec-title">最近播放</div><div class="sec-more">全部</div></div>
+          <div class="row" id="recent"></div>
+        </section>
+
+        <section class="sec">
+          <div class="sec-head"><div class="sec-title">为你推荐</div><div class="sec-more">全部</div></div>
+          <div class="grid" id="foryou"></div>
+        </section>
+      </div>
+
+      <div class="view" id="view-search">
+        <div class="top"><div class="greet">搜索</div><div class="av">Y</div></div>
+        <input class="box" placeholder="歌曲、艺人、专辑、歌单">
+        <div class="chips">
+          <div class="chip on">综合</div><div class="chip">歌曲</div><div class="chip">艺人</div><div class="chip">专辑</div><div class="chip">歌单</div><div class="chip">播客</div>
+        </div>
+        <div id="search-res"></div>
+      </div>
+
+      <div class="view" id="view-library">
+        <div class="top"><div class="greet">资料库</div><div class="av">Y</div></div>
+        <div class="chips" style="margin-bottom:16px">
+          <div class="chip on">歌曲</div><div class="chip">艺人</div><div class="chip">专辑</div><div class="chip">歌单</div>
+        </div>
+        <div id="lib-list"></div>
+      </div>
+    </main>
+  </div>
+
+  <div class="tabbar" id="tabbar">
+    <div class="ti on" data-v="home"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3 2 8.4V10h2v10h6v-6h4v6h6V10h2V8.4L12 3z"/></svg>现在就听</div>
+    <div class="ti" data-v="browse"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2z"/></svg>浏览</div>
+    <div class="ti" data-v="library"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.3 18.2 21l-1.6-7L22 9.2l-7.2-.6L12 2 9.2 8.6 2 9.2l5.5 4.8L5.8 21z"/></svg>资料库</div>
+    <div class="ti" data-v="search"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.8l-.3-.3A6.5 6.5 0 1 0 9.5 16c1.6 0 3.1-.6 4.2-1.6l.3.3v.8l5 5 1.5-1.5-5-5zM4.5 9.5A5 5 0 1 1 9.5 14.5 5 5 0 0 1 4.5 9.5z"/></svg>搜索</div>
+  </div>
+
+  <div class="mini" id="mini" onclick="openNP()">
+    <div class="mini-cov art" data-art="0"></div>
+    <div class="mini-meta"><div class="mini-t" id="m-t">夏日漱石</div><div class="mini-a" id="m-a">橘子海</div></div>
+    <div class="mini-ctrl" onclick="event.stopPropagation()">
+      <button class="mb" id="m-prev"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg></button>
+      <button class="mb" id="m-play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
+      <button class="mb" id="m-next"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6z"/></svg></button>
+    </div>
+  </div>
+
+  <div class="np" id="np">
+    <div class="np-bg"></div>
+    <div class="np-top">
+      <div class="np-grip"></div>
+      <button class="np-x" onclick="closeNP()"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7.4 8.6 12 13.2l4.6-4.6L18 10l-6 6-6-6z"/></svg></button>
+    </div>
+    <div class="np-body">
+      <div class="np-cov art" data-art="0" id="np-cov"></div>
+      <div class="np-info">
+        <div style="min-width:0">
+          <div class="np-t" id="np-t">夏日漱石</div>
+          <div class="np-a" id="np-a">橘子海</div>
+        </div>
+        <div class="np-acts">
+          <button class="np-ab"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.4 10.6 20C5.4 15.4 2 12.4 2 8.6 2 5.6 4.4 3.2 7.4 3.2c1.7 0 3.4.8 4.6 2.1C13.2 4 14.9 3.2 16.6 3.2 19.6 3.2 22 5.6 22 8.6c0 3.8-3.4 6.8-8.6 11.4z"/></svg></button>
+          <button class="np-ab"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm0 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm0 6a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/></svg></button>
+        </div>
+      </div>
+      <div class="np-prog">
+        <div class="np-bar" onclick="seek(event)"><div class="np-fill" id="np-fill"></div></div>
+        <div class="np-time"><span id="np-cur">0:52</span><span id="np-dur">3:24</span></div>
+      </div>
+      <div class="np-ctrl" onclick="event.stopPropagation()">
+        <button class="nc"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M10.6 9.2 5.4 4 4 5.4 9.2 10.6 10.6 9.2zM14.5 4l2.9 2.9-8.5 8.5-4.3-4.2L4 12.4l5.2 5.2 8.5-8.5L20.5 12V4z"/></svg></button>
+        <button class="nc" id="np-prev"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg></button>
+        <button class="nc main" id="np-play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
+        <button class="nc" id="np-next"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6z"/></svg></button>
+        <button class="nc"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 6V3L8 7l4 4V8a3 3 0 0 1 3 3c0 1.6-1.3 2.9-2.9 3L11 14.4A5 5 0 0 0 14 11c0-5-2-5-2-5zm-6 8c0-1.6.7-3.1 1.7-4.2L5.3 8.3A7 7 0 0 0 3 14c0 5 4 9 9 9v3l4-4-4-4v3c-3.3 0-6-2.7-6-6z"/></svg></button>
+      </div>
+      <div class="np-foot">
+        <button class="np-ab"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9z"/></svg></button>
+        <button class="np-ab"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 22h12l-6-8zM12 2l6 8H8z"/></svg></button>
+        <button class="np-ab"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zm0-8h14V7H7v2z"/></svg></button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 真实感的「专辑封面」= 多层网格渐变；每个曲目一组精致配色
+    const palette = [
+      { a:'#ff9a8b', b:'#ff6a88', c:'#ff99ac', d:'#c0392b' },
+      { a:'#b741ff', b:'#ff416c', c:'#7b2ff7', d:'#ff4d6d' },
+      { a:'#ffd1dc', b:'#ffb6c1', c:'#f8a5c2', d:'#e75480' },
+      { a:'#4dc9d9', b:'#7b61ff', c:'#36d1dc', d:'#5b86e5' },
+      { a:'#74c0fc', b:'#4dabf7', c:'#a5d8ff', d:'#ffd43b' },
+      { a:'#ff8fab', b:'#4cc9f0', c:'#ffadc6', d:'#4895ef' },
+      { a:'#00b4d8', b:'#ff9f1c', c:'#48cae4', d:'#fb8500' },
+      { a:'#e63946', b:'#2a9d8f', c:'#f4a261', d:'#264653' },
+    ];
+    const tracks = [
+      { t:'夏日漱石', ar:'橘子海' }, { t:'Blinding Lights', ar:'The Weeknd' }, { t:'红豆', ar:'王菲' },
+      { t:'Levitating', ar:'Dua Lipa' }, { t:'晴天', ar:'周杰伦' }, { t:'Stay', ar:'Justin Bieber' },
+      { t:'想去海边', ar:'夏日入侵企画' }, { t:'浮夸', ar:'陈奕迅' },
+    ];
+
+    function artGradient(p) {
+      return `radial-gradient(120% 120% at 18% 12%, ${p.a}, transparent 55%),
+              radial-gradient(120% 120% at 86% 22%, ${p.b}, transparent 50%),
+              radial-gradient(140% 140% at 70% 92%, ${p.c}, transparent 60%),
+              linear-gradient(135deg, ${p.d}, #1a1a1f)`;
+    }
+    function applyArt(el, i) {
+      const p = palette[i % palette.length];
+      el.style.background = artGradient(p);
+    }
+
+    let idx = 0, playing = true;
+    const root = document.documentElement;
+
+    function setTrack(i) {
+      idx = (i + tracks.length) % tracks.length;
+      const p = palette[idx];
+      root.style.setProperty('--art', p.a);
+      root.style.setProperty('--art-2', p.b);
+      const tr = tracks[idx];
+      m_t.textContent = tr.t; m_a.textContent = tr.ar;
+      np_t.textContent = tr.t; np_a.textContent = tr.ar;
+      // 同步所有封面
+      document.querySelectorAll('[data-art]').forEach(el => { if (el.id !== 'np-cov') applyArt(el, idx); });
+      applyArt(np_cov, idx);
+    }
+
+    const m_t = document.getElementById('m-t'), m_a = document.getElementById('m-a');
+    const np_t = document.getElementById('np-t'), np_a = document.getElementById('np-a'), np_cov = document.getElementById('np-cov');
+
+    function cardHTML(i) {
+      const tr = tracks[i];
+      return `<div class="card" onclick="playTrack(${i})">
+        <div class="cov art" data-art="${i}"></div>
+        <div class="c-title">${tr.t}</div><div class="c-sub">${tr.ar}</div></div>`;
+    }
+    function listHTML(i) {
+      const tr = tracks[i];
+      return `<div class="li" onclick="playTrack(${i})">
+        <div class="li-cov art" data-art="${i}"></div>
+        <div class="li-meta"><div class="li-t">${tr.t}</div><div class="li-s">${tr.ar}</div></div>
+        <button class="li-more" onclick="event.stopPropagation()"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm0 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm0 6a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/></svg></button></div>`;
+    }
+
+    function render() {
+      document.getElementById('recent').innerHTML = tracks.slice(0,6).map((_,i)=>cardHTML(i)).join('');
+      document.getElementById('foryou').innerHTML = tracks.map((_,i)=>cardHTML(i)).join('');
+      document.getElementById('search-res').innerHTML = tracks.slice(0,6).map((_,i)=>listHTML(i)).join('');
+      document.getElementById('lib-list').innerHTML = tracks.map((_,i)=>listHTML(i)).join('');
+      document.querySelectorAll('[data-art]').forEach(el => applyArt(el, +el.dataset.art));
+    }
+
+    function playTrack(i){ setTrack(i); playing = true; updPlay(); }
+    function playHero(){ playTrack(0); }
+
+    function updPlay() {
+      const ic = playing
+        ? '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>'
+        : '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+      m_play.innerHTML = ic; np_play.innerHTML = ic;
+    }
+    const m_play = document.getElementById('m-play'), np_play = document.getElementById('np-play');
+    function toggle(e){ if(e) e.stopPropagation(); playing=!playing; updPlay(); }
+    function prev(){ playTrack(idx-1); } function next(){ playTrack(idx+1); }
+    function openNP(){ document.getElementById('np').classList.add('open'); }
+    function closeNP(){ document.getElementById('np').classList.remove('open'); }
+    function seek(e){ const r=e.currentTarget.getBoundingClientRect(); const p=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width));
+      document.getElementById('np-fill').style.width=(p*100)+'%'; const cur=Math.floor(204*p);
+      document.getElementById('np-cur').textContent=`${Math.floor(cur/60)}:${String(cur%60).padStart(2,'0')}`; }
+
+    function show(v){ document.querySelectorAll('.view').forEach(x=>x.classList.remove('on'));
+      document.getElementById('view-'+v)?.classList.add('on');
+      document.querySelectorAll('.nav').forEach(n=>n.classList.toggle('on', n.dataset.v===v));
+      document.querySelectorAll('.ti').forEach(n=>n.classList.toggle('on', n.dataset.v===v)); }
+    document.querySelectorAll('.nav[data-v], .ti[data-v]').forEach(el=>el.addEventListener('click',()=>show(el.dataset.v)));
+    m_play.onclick = toggle; np_play.onclick = toggle;
+    document.getElementById('m-prev').onclick = prev; document.getElementById('m-next').onclick = next;
+    document.getElementById('np-prev').onclick = prev; document.getElementById('np-next').onclick = next;
+
+    setTrack(0); render(); updPlay();
+  </script>
+</body>
+</html>
