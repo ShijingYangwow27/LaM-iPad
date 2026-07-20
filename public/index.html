@@ -176,6 +176,22 @@ html.touch-coarse .fc-touch-layer{display:block}
 .fc-fab:active{transform:scale(.93)}
 .fc-fab svg{width:21px;height:21px}
 body.fc-active .fc-fab{background:rgba(255,255,255,.92);border-color:rgba(255,255,255,.48);color:#000;box-shadow:0 14px 36px rgba(0,0,0,.40),0 0 28px rgba(0,245,212,.30),inset 0 1px 0 rgba(255,255,255,.55)}
+/* 主页时底部固定按钮虚化：降低不透明度，让背后主页卡片透出，避免按钮压迫内容 */
+body.empty-home-active #fx-fab,
+body.empty-home-active .fc-fab{
+  opacity:.42!important;
+  background:rgba(255,255,255,.04)!important;
+  border-color:rgba(255,255,255,.12)!important;
+  box-shadow:0 8px 20px rgba(0,0,0,.16),inset 0 1px 0 rgba(255,255,255,.08)!important
+}
+body.empty-home-active #fx-fab:hover,
+body.empty-home-active #fx-fab.active,
+body.empty-home-active .fc-fab:active{
+  opacity:1!important;
+  background:rgba(0,245,212,.075)!important;
+  border-color:rgba(0,245,212,.50)!important;
+  color:#fff!important
+}
 /* 移动摇杆：左下角，FAB 正上方 */
 .fc-joystick{left:18px;bottom:calc(var(--ipad-fab-bottom) + var(--ipad-fab-size) + 16px + env(safe-area-inset-bottom,0px));width:128px;height:128px;border-radius:50%;border:.5px solid rgba(255,255,255,.18);background:rgba(28,28,30,.42);-webkit-backdrop-filter:blur(26px) saturate(1.8);backdrop-filter:blur(26px) saturate(1.8);display:none;touch-action:none;box-shadow:inset 0 .5px 0 rgba(255,255,255,.18),0 12px 32px rgba(0,0,0,.30)}
 body.fc-active .fc-joystick{display:block}
@@ -2003,6 +2019,9 @@ html.control-glass-svg-ok #visual-guide-btn:hover{
 @keyframes lyr-in{0%{opacity:0;transform:translate3d(var(--inx,-60px),var(--iny,40px),-160px) rotateX(var(--inrx,28deg)) rotateY(var(--inry,-22deg)) scale(.7);filter:blur(14px) drop-shadow(0 4px 22px rgba(143,233,255,.30))}55%{opacity:1;filter:blur(0) drop-shadow(0 4px 22px rgba(143,233,255,.30))}100%{opacity:1;transform:translate3d(var(--bx,0px),0,0) rotateX(0deg) rotateY(0deg) scale(1);filter:blur(0) drop-shadow(0 4px 22px rgba(143,233,255,.30))}}
 @keyframes lyr-out{0%{opacity:1;transform:translate3d(var(--bx,0px),0,0) rotateX(0) rotateY(0) scale(1);filter:blur(0)}100%{opacity:0;transform:translate3d(var(--outx,60px),var(--outy,-40px),-120px) rotateX(var(--outrx,-22deg)) rotateY(var(--outry,18deg)) scale(.78);filter:blur(10px)}}
 
+/*  歌词预览 (附加效果：当前句 + 上一句/下一句渐隐)              */
+/* ============================================================ */
+
 /* ============================================================ */
 /*  手势 HUD + 手骨架                                            */
 /* ============================================================ */
@@ -2093,6 +2112,10 @@ html.control-glass-svg-ok .comment-card .cc-inner{background:rgba(0,0,0,.10);bac
 .comment-card .cc-divider{height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.08) 20%,rgba(255,255,255,.08) 80%,transparent);margin:14px 0}
 .comment-card .cc-text{font-size:15px;color:rgba(255,255,255,.93);line-height:1.65;letter-spacing:.01em;max-height:180px;overflow-y:auto;scrollbar-width:none;-ms-overflow-style:none}
 .comment-card .cc-text::-webkit-scrollbar{width:0;height:0}
+/* 长评论折叠：默认截断 5 行，点击「展开全文」看完整内容 */
+.comment-card .cc-text.clamped{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:5;overflow:hidden;max-height:none}
+.comment-card .cc-expand{display:none;margin-top:10px;font-size:12px;font-weight:600;letter-spacing:.02em;color:color-mix(in srgb,var(--home-accent,#00f5d4) 75%,white);cursor:pointer;user-select:none;pointer-events:auto;opacity:.82;transition:opacity .15s}
+.comment-card .cc-expand:hover{opacity:1}
 .comment-card .cc-footer{display:flex;align-items:center;justify-content:space-between;margin-top:14px}
 .comment-card .cc-source{font-size:9px;color:rgba(255,255,255,.55);letter-spacing:.04em}
 .comment-card .cc-counter{font-size:10px;color:color-mix(in srgb,var(--home-accent,#00f5d4) 40%,rgba(255,255,255,.25));font-variant-numeric:tabular-nums;font-weight:500}
@@ -2271,6 +2294,39 @@ input,textarea,[contenteditable]{-webkit-touch-callout:default;-webkit-user-sele
   .home-mosaic-radio-btn{padding:5px 11px;font-size:12px}
   .home-mosaic-shortcut-label{font-size:12.5px}
   .home-mosaic-shortcut-hint{font-size:9.5px}
+  /* 11 英寸 iPad Pro 横屏（1024-1279 CSS px，高度 834）：紧凑布局 */
+  @media (min-width:1024px) and (max-width:1279px) and (max-height:900px){
+    :root{
+      --ipad-card-min-h:clamp(108px,12vh,132px);
+      --ipad-rail-max-h:clamp(200px,24vh,260px);
+      --ipad-tile-cover-h:clamp(62px,7vw,82px);
+      --ipad-gap:clamp(10px,1.2vw,14px);
+    }
+    #empty-home{top:max(76px,calc(env(safe-area-inset-top,0px) + 56px));bottom:80px}
+    .empty-home-shell{gap:12px;align-content:center;align-items:stretch}
+    .home-hero{padding:14px clamp(14px,1.6vw,18px)}
+    .home-mosaic{height:clamp(200px,22vh,240px);min-height:180px;gap:10px}
+    .home-mosaic-radio{padding:12px 12px 32px;justify-content:flex-start}
+    .home-mosaic-radio-head{justify-content:flex-start}
+    .home-mosaic-radio-title{font-size:14px}
+    .home-mosaic-radio-desc{display:none}
+    .home-mosaic-radio-btns{bottom:6px;left:6px;right:6px;justify-content:center}
+    .home-mosaic-radio-btn{padding:5px 12px;font-size:11px}
+    .home-mosaic-shortcut-label{font-size:12.5px}
+    .home-mosaic-shortcut-hint{font-size:10px}
+    .home-card{padding:14px;min-height:var(--ipad-card-min-h)}
+    .home-card-title{font-size:15px}
+    .home-card-sub{font-size:11px}
+    .home-card-art{width:clamp(64px,7vw,84px);height:clamp(64px,7vw,84px);border-radius:16px}
+    .home-now-card{padding:14px;gap:12px}
+    .home-now-cover{width:clamp(68px,8vw,92px);height:clamp(68px,8vw,92px)}
+    .home-now-btn{width:34px;height:34px}
+    .home-now-play{width:40px;height:40px}
+    .home-tile{min-height:auto;padding:8px}
+    .home-tile-title{font-size:12.5px}
+    .home-tile-sub{font-size:10.5px}
+    .home-section-head{min-height:36px}
+  }
   /* 13" Pro M5 (1366) 给 mosaic 留更多垂直空间 */
   @media (min-width:1280px){
     .home-mosaic{height:clamp(220px,26vh,260px);min-height:200px;margin-top:12px;gap:12px}
@@ -2498,6 +2554,12 @@ html.touch-coarse .comment-card .cc-text{font-size:18px;line-height:1.7;max-heig
 html.touch-coarse .comment-card .cc-source{font-size:12px}
 html.touch-coarse .comment-card .cc-counter{font-size:13px}
 html.touch-coarse .comment-card .cc-divider{margin:16px 0}
+/* 11" iPad Pro 横屏：评论卡片紧凑化，避免被顶出屏幕顶部 */
+@media (min-width:1024px) and (max-width:1279px) and (max-height:900px){
+  html.touch-coarse #comment-card-container{bottom:57%!important}
+  html.touch-coarse .comment-card{width:420px!important}
+  html.touch-coarse .comment-card .cc-text{font-size:15px;line-height:1.6;max-height:150px}
+}
 /* 触屏 iPad：弹幕字号也同步放大 */
 html.touch-coarse .danmaku-item{font-size:16px;padding:8px 20px}
 /* 触屏 iPad：清理视觉控制台无意义项
@@ -31218,6 +31280,7 @@ document.addEventListener('DOMContentLoaded', function() {
         '</div>' +
         '<div class="cc-divider"></div>' +
         '<div class="cc-text">' + escHtml(text) + '</div>' +
+        '<div class="cc-expand"></div>' +
         '<div class="cc-footer">' +
           '<span class="cc-source">来自网易云音乐热评</span>' +
           '<span class="cc-counter">' + idx + ' / ' + total + '</span>' +
@@ -31229,7 +31292,28 @@ document.addEventListener('DOMContentLoaded', function() {
       var img = card.querySelector('.cc-avatar img');
       if (img) img.src = safeAvatarUrl;
     }
-    requestAnimationFrame(function() { card.classList.add('visible'); });
+    requestAnimationFrame(function() {
+      card.classList.add('visible');
+      var ccText = card.querySelector('.cc-text');
+      var ccExpand = card.querySelector('.cc-expand');
+      if (ccText && ccExpand) {
+        /* 测量未折叠状态下是否超出 max-height，决定是否启用折叠 */
+        ccText.classList.remove('clamped');
+        var overflow = ccText.scrollHeight - ccText.clientHeight > 4;
+        if (overflow) {
+          ccText.classList.add('clamped');
+          ccExpand.textContent = '展开全文';
+          ccExpand.style.display = 'block';
+          ccExpand.addEventListener('click', function(e) {
+            e.stopPropagation();
+            var isClamped = ccText.classList.toggle('clamped');
+            ccExpand.textContent = isClamped ? '展开全文' : '收起';
+          });
+        } else {
+          ccExpand.style.display = 'none';
+        }
+      }
+    });
   }
 
   function hideCurrentCard() {
