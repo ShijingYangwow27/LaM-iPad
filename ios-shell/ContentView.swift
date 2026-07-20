@@ -1,10 +1,20 @@
 import SwiftUI
 import WebKit
 
+/// 读取 Info.plist 中的 WEB_BASE_URL（由 project.yml 的 INFOPLIST_KEY_WEB_BASE_URL 注入，可在构建时配置）。
+/// 未配置时回退到 Mac 本机 dev server，便于模拟器/本地调试。
+func appWebBaseURL() -> String {
+    if let v = Bundle.main.object(forInfoDictionaryKey: "WEB_BASE_URL") as? String,
+       !v.trimmingCharacters(in: .whitespaces).isEmpty {
+        return v
+    }
+    return "http://127.0.0.1:3001"
+}
+
 func swiftLog(_ step: String, _ extra: [String: Any] = [:]) {
     var payload: [String: Any] = ["step": "swift_" + step]
     for (k, v) in extra { payload[k] = v }
-    guard let url = URL(string: "http://192.168.31.251:3000/api/qq/qr/log"),
+    guard let url = URL(string: appWebBaseURL() + "/api/qq/qr/log"),
           let body = try? JSONSerialization.data(withJSONObject: payload) else { return }
     var req = URLRequest(url: url)
     req.httpMethod = "POST"
@@ -309,7 +319,7 @@ struct WebView: UIViewRepresentable {
 
 struct ContentView: View {
     private var devURL: String {
-        "http://127.0.0.1:3001/?v=" + String(Int(Date().timeIntervalSince1970))
+        "\(appWebBaseURL())/?v=" + String(Int(Date().timeIntervalSince1970))
     }
 
     @State private var cacheCleared = false

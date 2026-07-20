@@ -38,6 +38,7 @@ targets:
         INFOPLIST_KEY_UIStatusBarHidden: YES
         INFOPLIST_KEY_UIRequiresFullScreen: YES
         INFOPLIST_KEY_LSApplicationCategoryType: "public.app-category.music"
+        INFOPLIST_KEY_WEB_BASE_URL: "http://127.0.0.1:3001"
         INFOPLIST_KEY_UIBackgroundModes:
           - audio
           - fetch
