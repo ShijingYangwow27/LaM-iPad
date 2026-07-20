@@ -19,7 +19,13 @@ const {
   user_account,
   user_playlist,
   user_record,
+  listen_data_total,
+  listen_data_report,
+  listen_data_today_song,
+  listen_data_realtime_report,
+  record_recent_song,
   comment_music,
+  style_preference,
   artist_detail,
   artists,
   artist_top_song,
@@ -42,6 +48,7 @@ const {
   user_audio,
   dj_paygift,
   record_recent_voice,
+  scrobble,
   sati_resource_sub_list,
   lyric,
   lyric_new,
@@ -57,6 +64,9 @@ const tls = require('tls');
 const { once } = require('events');
 const { fileURLToPath } = require('url');
 const { analyzePodcastDjStream, analyzePodcastDjIntro } = require('./dj-analyzer');
+// NCBL 加密版听歌打卡（仿网易云桌面客户端 PLV/PLD 上报）。
+// 这是经小号验证可真正写入「最近播放」的通道；node_modules 的 weapi scrobble 已被网易云风控静默丢弃。
+const scrobbleV1 = require('./tools/meting/scrobble_v1');
 
 const PORT = process.env.PORT || 3000;
 const HOST = process.env.HOST || '0.0.0.0';
@@ -189,6 +199,7 @@ function rawCookieFallback(input) {
 }
 let userCookie = '';
 let listenReportCache = null; // { ts, uid, data } 听歌报告 5 分钟内存缓存
+let listenStyleCache = null;  // { ts, uid, data } 听歌风格标签 5 分钟内存缓存
 let artistInfoCache = {};     // { id: { ts, data } } 艺人头像 5 分钟内存缓存
 try { if (fs.existsSync(COOKIE_FILE)) userCookie = fs.readFileSync(COOKIE_FILE, 'utf8').trim(); }
 catch (e) { userCookie = ''; }
@@ -4448,9 +4459,10 @@ const server = http.createServer(async (req, res) => {
 
   // ---------- 听歌报告：真实播放记录（网易云 user/record） ----------
   if (pn === '/api/listen-report') {
-    // 带 5 分钟内存缓存，避免反复打网易云
+    // 带 5 分钟内存缓存，避免反复打网易云；?force=1 时跳过缓存(打开报告即拉最新)
     const _now = Date.now();
-    if (listenReportCache && listenReportCache.ts && (_now - listenReportCache.ts) < 5 * 60 * 1000
+    const _force = url.searchParams.get('force') === '1' || url.searchParams.get('force') === 'true';
+    if (!_force && listenReportCache && listenReportCache.ts && (_now - listenReportCache.ts) < 5 * 60 * 1000
         && listenReportCache.uid === (await getLoginInfo().then(i => i.userId))) {
       sendJSON(res, listenReportCache.data);
       return;
@@ -4461,7 +4473,9 @@ const server = http.createServer(async (req, res) => {
       const r = await user_record({ uid: info.userId, type: 0, cookie: userCookie, timestamp: Date.now() });
       const body = (r && r.body) || {};
       const allData = body.allData || [];
-      const weekData = body.weekData || [];
+      // user_record type=0 只返回 allData，周数据需单独 type=1 拉取
+      const rWeek = await user_record({ uid: info.userId, type: 1, cookie: userCookie, timestamp: Date.now() });
+      const weekData = (rWeek && rWeek.body && rWeek.body.weekData) || [];
       function normalize(list) {
         return (list || []).map(function (it) {
           const song = it.song || {};
@@ -4516,19 +4530,165 @@ const server = http.createServer(async (req, res) => {
       const lvBody = (lvRes && lvRes.body) || {};
       const lvData = lvBody.data || lvBody;
       const listenSongs = lvData.nowPlayCount || lvData.listenSongs || 0;
+      // 累计听歌时长（精确）：来自「听歌足迹-总收听时长」接口；user_record 的 Top100 估算严重偏低（约 1/5）
+      const totalRes = await listen_data_total({ cookie: userCookie, timestamp: Date.now() }).catch(function(){ return null; });
+      const totalDuration = (totalRes && totalRes.body && totalRes.body.data && totalRes.body.data.totalDuration) || 0;
+      // 解析 "2次" / "18次收听" / "123分钟" 中的数字
+      function parseNum(t) {
+        if (!t) return 0;
+        var m = String(t).match(/(\d+)/);
+        return m ? Number(m[1]) : 0;
+      }
+      // 解析「123分钟」/「381分」-> 123 / 381
+      function parseMinText(t) {
+        if (!t) return 0;
+        var m = String(t).match(/(\d+)\s*(分钟|分)/);
+        return m ? Number(m[1]) : 0;
+      }
+      // durationDetails.period 使用北京时间 'YYYY-MM-DD'，不能用 UTC 日期匹配
+      function beijingDateStr(d) {
+        var bj = new Date(d.getTime() + 8 * 3600 * 1000);
+        return bj.toISOString().slice(0, 10);
+      }
+      // 自然周/月时长：listen_data_realtime_report(type:'month') 返回当前自然月按天时长
+      // （period=北京时间YYYY-MM-DD, duration=分钟）。累加「本周一~周日」「本月YYYY-MM」的天数即得
+      // 自然周/月总时长（已含今天，无需再并今日）。注：歌曲/艺人列表网易云只给滚动窗口口径，无法按自然周/月拆分。
+      async function fetchNaturalDurations(cookie) {
+        try {
+          const rt = await listen_data_realtime_report({ cookie: cookie, type: 'month', timestamp: Date.now() });
+          const dd = (rt && rt.body && rt.body.data && rt.body.data.listenTimeDistributionBlock && rt.body.data.listenTimeDistributionBlock.durationDetails) || [];
+          const bj = new Date(Date.now() + 8 * 3600 * 1000);
+          const monthPrefix = bj.getUTCFullYear() + '-' + String(bj.getUTCMonth() + 1).padStart(2, '0');
+          // 本周一 00:00（北京时间）。getUTCDay: 0=周日..6=周六
+          const day = bj.getUTCDay();
+          const diffToMon = (day === 0) ? 6 : (day - 1);
+          const monday = new Date(bj.getTime() - diffToMon * 86400000);
+          const sunday = new Date(monday.getTime() + 6 * 86400000);
+          const weekStart = monday.toISOString().slice(0, 10);
+          const weekEnd = sunday.toISOString().slice(0, 10);
+          const todayStr = beijingDateStr(new Date());
+          let weekMin = 0, monthMin = 0, todayMin = 0;
+          dd.forEach(function (x) {
+            if (!x.period) return;
+            if (x.period === todayStr) todayMin += (x.duration || 0);
+            if (x.period >= weekStart && x.period <= weekEnd) weekMin += (x.duration || 0);
+            if (x.period.indexOf(monthPrefix) === 0) monthMin += (x.duration || 0);
+          });
+          return { todayMinutes: todayMin, weekMinutes: weekMin, monthMinutes: monthMin };
+        } catch (e) { return { todayMinutes: 0, weekMinutes: 0, monthMinutes: 0 }; }
+      }
+      // 统一用 record_recent_song（最近播放，带 playTime 时间戳）按「自然窗口」过滤歌曲列表。
+      // 这样 今日⊂本周⊂本月 在结构上保证，今日=本周时歌曲数必然相等，彻底消除滚动窗口串数据问题。
+      // 注：record_recent_song 记录所有终端（含手机网易云 app）的播放，比 listen_data_today_song 更完整。
+      async function fetchRecentPlays(cookie) {
+        const events = [];
+        try {
+          for (let off = 0; off < 4000; off += 500) {
+            const r = await record_recent_song({ cookie: cookie, limit: 500, offset: off, timestamp: Date.now() });
+            const list = (r && r.body && r.body.data && r.body.data.list) || [];
+            if (!list.length) break;
+            list.forEach(function (x) {
+              const d = x.data || {};
+              const playTime = x.playTime;
+              if (!playTime || !d.id) return;
+              const bj = new Date(playTime + 8 * 3600 * 1000);
+              events.push({
+                id: d.id,
+                title: d.name || '未知歌曲',
+                artist: (d.ar || []).map(function (a) { return a.name; }).join('/'),
+                artistIds: (d.ar || []).map(function (a) { return a.id; }).filter(Boolean),
+                coverUrl: (d.al && d.al.picUrl) || '',
+                durationMs: d.dt || 0,
+                bjDate: bj.toISOString().slice(0, 10),
+                hour: bj.getUTCHours()
+              });
+            });
+            if (list.length < 500) break;
+          }
+        } catch (e) {}
+        return events;
+      }
+      // 按自然窗口起点(startStr=北京时间 YYYY-MM-DD)过滤并聚合歌曲/艺人/时段分布
+      function buildRange(events, startStr) {
+        const inWin = events.filter(function (e) { return e.bjDate >= startStr; });
+        const songMap = {};
+        inWin.forEach(function (e) {
+          if (!songMap[e.id]) songMap[e.id] = { id: e.id, title: e.title, artist: e.artist, artistIds: e.artistIds, coverUrl: e.coverUrl, durationMs: e.durationMs, plays: 0 };
+          songMap[e.id].plays++;
+        });
+        const songs = Object.keys(songMap).map(function (k) { return songMap[k]; });
+        songs.sort(function (a, b) { return (b.plays - a.plays) || a.title.localeCompare(b.title); });
+        const amap = {}; const aidmap = {};
+        songs.forEach(function (s) {
+          s.artist.split('/').forEach(function (a, i) {
+            a = (a || '').trim(); if (!a) return;
+            amap[a] = (amap[a] || 0) + s.plays;
+            if (!aidmap[a] && s.artistIds && s.artistIds[i]) aidmap[a] = s.artistIds[i];
+          });
+        });
+        const topArtists = Object.keys(amap)
+          .map(function (k) { return { name: k, score: amap[k], artistId: aidmap[k] || null, coverUrl: '' }; })
+          .sort(function (a, b) { return b.score - a.score; }).slice(0, 10);
+        const hourMap = new Array(24).fill(0);
+        let peakHour = 0, maxHour = 0;
+        inWin.forEach(function (e) { if (e.hour >= 0 && e.hour < 24) { hourMap[e.hour]++; if (hourMap[e.hour] > maxHour) { maxHour = hourMap[e.hour]; peakHour = e.hour; } } });
+        return { songs: songs, topArtists: topArtists, totalPlays: inWin.length, distinctSongs: songs.length, uniqueArtists: Object.keys(amap).length, hourMap: hourMap, peakHour: peakHour };
+      }
+      const nat = await fetchNaturalDurations(userCookie);
+      const events = await fetchRecentPlays(userCookie);
+      // 计算自然窗口起点（北京时间）
+      const _now = new Date(Date.now() + 8 * 3600 * 1000);
+      const _todayStr = _now.toISOString().slice(0, 10);
+      const _day = _now.getUTCDay();
+      const _diffToMon = (_day === 0) ? 6 : (_day - 1);
+      const _monday = new Date(_now.getTime() - _diffToMon * 86400000);
+      const _monStr = _monday.toISOString().slice(0, 10);
+      const _monthStr = _now.getUTCFullYear() + '-' + String(_now.getUTCMonth() + 1).padStart(2, '0') + '-01';
+      const today = buildRange(events, _todayStr); today.durationSec = nat.todayMinutes * 60;
+      const week = buildRange(events, _monStr); week.durationSec = nat.weekMinutes * 60;
+      const month = buildRange(events, _monthStr); month.durationSec = nat.monthMinutes * 60;
       const data = {
         loggedIn: true,
         provider: 'netease',
         hasData: (allData.length + weekData.length) > 0,
         createTime: info.createTime || 0,
         listenSongs: listenSongs,
+        totalDuration: totalDuration,
         all: aggregate(allData),
-        week: aggregate(weekData)
+        today: today,
+        week: week,
+        month: month
       };
       listenReportCache = { ts: _now, uid: info.userId, data: data };
       sendJSON(res, data);
     } catch (err) {
       console.error('[ListenReport]', err);
+      sendJSON(res, { error: err.message, loggedIn: false, hasData: false }, 500);
+    }
+    return;
+  }
+
+  // ---------- 听歌风格标签（网易云「曲风偏好」） ----------
+  if (pn === '/api/listen-style') {
+    if (listenStyleCache && listenStyleCache.ts && (Date.now() - listenStyleCache.ts) < 5 * 60 * 1000
+        && listenStyleCache.uid === (await getLoginInfo().then(i => i.userId))) {
+      sendJSON(res, listenStyleCache.data);
+      return;
+    }
+    try {
+      const info = await getLoginInfo();
+      if (!info.loggedIn || !info.userId) { sendJSON(res, { loggedIn: false, hasData: false }); return; }
+      const r = await style_preference({ cookie: userCookie, timestamp: Date.now() });
+      const body = (r && r.body) || {};
+      const data = (body.data) || {};
+      const tags = (data.tagPreferenceVos || []).map(function(t){
+        return { tagId: t.tagId, tagName: t.tagName || '', ratio: Number(t.ratio) || 0, picUrl: t.picUrl || '' };
+      });
+      const out = { loggedIn: true, hasData: tags.length > 0, tags: tags };
+      listenStyleCache = { ts: Date.now(), uid: info.userId, data: out };
+      sendJSON(res, out);
+    } catch (err) {
+      console.error('[ListenStyle]', err);
       sendJSON(res, { error: err.message, loggedIn: false, hasData: false }, 500);
     }
     return;
@@ -4639,6 +4799,32 @@ const server = http.createServer(async (req, res) => {
       sendJSON(res, { loggedIn: true, id, liked: nextLike, code, body: r.body || r });
     } catch (err) {
       console.error('[Like]', err);
+      sendJSON(res, { error: err.message }, 500);
+    }
+    return;
+  }
+
+  // ---------- 播放打点（听歌打卡：回写网易云播放量 / 听歌报告 / 推荐种子） ----------
+  if (pn === '/api/scrobble') {
+    try {
+      const info = await requireLogin(res);
+      if (!info) return;
+      const body = req.method === 'POST' ? await readRequestBody(req) : {};
+      const id = body.id || url.searchParams.get('id');
+      const time = Number(body.time || url.searchParams.get('time') || 0);
+      const total = Number(body.total || url.searchParams.get('total') || 0);
+      if (!id) { sendJSON(res, { error: 'Missing song id' }, 400); return; }
+      const safeTime = Math.max(1, Math.floor(time || 0));
+      const safeTotal = Math.max(1, Math.floor(total || 0));
+      // 用 NCBL 加密版（仿桌面客户端）替代被风控的 weapi scrobble，
+      // sourceid='al' 沿用社区验证可用的播放来源标识。
+      // total = 歌曲真实时长(秒)，让 PLV 里的歌曲时长字段正确（否则网易云会把歌记成 time 那么长）。
+      const r = await scrobbleV1({ id: String(id), time: safeTime, total: safeTotal, sourceid: 'al', cookie: userCookie });
+      const code = (r.body && r.body.code) || r.code || 200;
+      console.log('[Scrobble] NCBL id=' + id + ' time=' + safeTime + ' total=' + safeTotal + ' code=' + code);
+      sendJSON(res, { loggedIn: true, id: String(id), time: safeTime, code, body: r.body || r });
+    } catch (err) {
+      console.error('[Scrobble]', err);
       sendJSON(res, { error: err.message }, 500);
     }
     return;

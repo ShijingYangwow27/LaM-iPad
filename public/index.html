@@ -109,10 +109,8 @@ body.platform-darwin.desktop-shell .desktop-window-controls .desktop-window-btn[
 .desktop-mode-btn.on{color:#fff;border-color:rgba(255,83,103,.50);background:rgba(255,83,103,.13);box-shadow:0 12px 34px rgba(255,83,103,.09),inset 0 1px 0 rgba(255,255,255,.08)}
 .desktop-mode-btn.on::before{background:#ff5367;box-shadow:0 0 16px rgba(255,83,103,.56)}
 body.desktop-shell #desktop-titlebar #visual-guide-btn,
-body.desktop-shell #desktop-titlebar #contact-author-btn,
 body.desktop-shell #desktop-titlebar #update-entry{width:30px;height:30px;border-radius:10px;box-shadow:none;background:rgba(4,8,10,.42);border-color:rgba(255,255,255,.08);color:rgba(224,250,255,.70);backdrop-filter:none;-webkit-backdrop-filter:none}
-body.desktop-shell #desktop-titlebar #visual-guide-btn,
-body.desktop-shell #desktop-titlebar #contact-author-btn{font-size:14px}
+body.desktop-shell #desktop-titlebar #visual-guide-btn{font-size:14px}
 body.desktop-shell #desktop-titlebar #update-entry.available{display:flex}
 body.desktop-shell #desktop-titlebar #update-entry svg{width:18px;height:18px}
 body.desktop-shell #desktop-titlebar #update-entry::before,
@@ -166,6 +164,34 @@ body.idle-guide-dragging #canvas-container{cursor:grabbing}
 #free-camera-hint{position:fixed;z-index:22;left:24px;bottom:92px;max-width:min(420px,calc(100vw - 48px));padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.10);background:rgba(5,6,8,.78);box-shadow:0 18px 52px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.08);backdrop-filter:blur(18px) saturate(1.08);-webkit-backdrop-filter:blur(18px) saturate(1.08);color:rgba(255,255,255,.72);font-size:11px;line-height:1.45;opacity:0;transform:translateY(8px);pointer-events:none;transition:opacity .2s,transform .2s}
 #free-camera-hint.show{opacity:1;transform:translateY(0)}
 #free-camera-hint b{color:#fff;font-weight:780}
+
+/* ---------- iPad 触控自由镜头控制层（Apple Music 风格：磨砂玻璃 + SF 图标） ---------- */
+.fc-touch-layer{position:fixed;inset:0;z-index:1200;pointer-events:none;display:none;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","PingFang SC","Helvetica Neue",Helvetica,Arial,sans-serif}
+html.touch-coarse .fc-touch-layer{display:block}
+.fc-touch-layer .fc-fab,
+.fc-touch-layer .fc-joystick,
+.fc-touch-layer .fc-rail{position:fixed;pointer-events:auto}
+/* 进入/退出悬浮钮：与右下角视觉控制台按钮完全镜像（同尺寸变量/青色边框/辉光/渐变背景） */
+.fc-fab{left:18px;bottom:calc(var(--ipad-fab-bottom) + env(safe-area-inset-bottom,0px));width:var(--ipad-fab-size);height:var(--ipad-fab-size);border-radius:50%;border:1px solid rgba(0,245,212,.30);background:linear-gradient(145deg,rgba(255,255,255,.16),rgba(255,255,255,.055) 48%,rgba(0,245,212,.055));color:rgba(232,236,239,.88);display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-backdrop-filter:blur(26px) saturate(1.34);backdrop-filter:blur(26px) saturate(1.34);box-shadow:0 14px 40px rgba(0,0,0,.34),0 0 24px rgba(0,245,212,.07),inset 0 1px 0 rgba(255,255,255,.18);transition:bottom .38s cubic-bezier(.16,1,.3,1),transform .28s cubic-bezier(.16,1,.3,1),background .28s,border-color .28s,color .28s,box-shadow .28s}
+.fc-fab:active{transform:scale(.93)}
+.fc-fab svg{width:21px;height:21px}
+body.fc-active .fc-fab{background:rgba(255,255,255,.92);border-color:rgba(255,255,255,.48);color:#000;box-shadow:0 14px 36px rgba(0,0,0,.40),0 0 28px rgba(0,245,212,.30),inset 0 1px 0 rgba(255,255,255,.55)}
+/* 移动摇杆：左下角，FAB 正上方 */
+.fc-joystick{left:18px;bottom:calc(var(--ipad-fab-bottom) + var(--ipad-fab-size) + 16px + env(safe-area-inset-bottom,0px));width:128px;height:128px;border-radius:50%;border:.5px solid rgba(255,255,255,.18);background:rgba(28,28,30,.42);-webkit-backdrop-filter:blur(26px) saturate(1.8);backdrop-filter:blur(26px) saturate(1.8);display:none;touch-action:none;box-shadow:inset 0 .5px 0 rgba(255,255,255,.18),0 12px 32px rgba(0,0,0,.30)}
+body.fc-active .fc-joystick{display:block}
+.fc-joystick::after{content:'';position:absolute;left:50%;top:50%;width:1px;height:16px;background:rgba(255,255,255,.20);transform:translate(-50%,-50%)}
+.fc-joystick-knob{position:absolute;left:50%;top:50%;width:50px;height:50px;margin:-25px 0 0 -25px;border-radius:50%;background:rgba(255,255,255,.92);box-shadow:0 6px 18px rgba(0,0,0,.40);transition:transform .04s linear}
+/* 动作栏：右侧，视觉控制台按钮上方，避免重叠 */
+.fc-rail{right:18px;bottom:calc(var(--ipad-fab-bottom) + var(--ipad-fab-size) + 18px + env(safe-area-inset-bottom,0px));display:none;flex-direction:column;gap:6px;align-items:center;padding:8px;border-radius:24px;border:.5px solid rgba(255,255,255,.14);background:rgba(28,28,30,.52);-webkit-backdrop-filter:blur(26px) saturate(1.8);backdrop-filter:blur(26px) saturate(1.8);box-shadow:0 12px 34px rgba(0,0,0,.36),inset 0 .5px 0 rgba(255,255,255,.18)}
+body.fc-active .fc-rail{display:flex}
+.fc-act{width:46px;height:46px;border-radius:14px;border:0;background:transparent;color:rgba(255,255,255,.92);display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;touch-action:none;transition:background .15s,transform .12s}
+.fc-act svg{width:23px;height:23px}
+.fc-act:active{background:rgba(255,255,255,.16);transform:scale(.94)}
+.fc-act.fc-act-save:active{background:rgba(0,245,212,.22)}
+.fc-act.fc-act-exit:active{background:rgba(255,55,95,.30)}
+.fc-rail .fc-sep{width:26px;height:.5px;background:rgba(255,255,255,.14);margin:1px 0}
+html.touch-coarse #free-camera-hint{left:50%;transform:translateX(-50%) translateY(8px);bottom:auto;top:14px;max-width:calc(100vw - 32px);text-align:center;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC",sans-serif}
+html.touch-coarse #free-camera-hint.show{transform:translateX(-50%) translateY(0)}
 
 /* ---------- 启动页 ---------- */
 #splash{position:fixed;inset:0;z-index:300;background:#010304;display:flex;align-items:center;justify-content:center;pointer-events:auto;opacity:1;overflow:hidden;transition:opacity 1180ms cubic-bezier(.16,1,.3,1),transform 1180ms cubic-bezier(.16,1,.3,1);box-shadow:inset 0 0 180px rgba(0,0,0,.88)}
@@ -379,6 +405,9 @@ body.home-wallpaper-preview #canvas-container{filter:none}
 .home-wave-track span{flex:1;min-width:3px;border-radius:999px;background:linear-gradient(180deg,#fff,var(--home-accent));box-shadow:0 0 12px color-mix(in srgb,var(--home-accent) 55%,transparent);height:5px;transform-origin:bottom;transition:height .08s linear,opacity .08s linear}
 @keyframes home-disc-turn{to{transform:rotate(360deg)}}
 @keyframes home-eq-rise{0%,100%{transform:scaleY(.68);opacity:.66}45%{transform:scaleY(1);opacity:1}}
+/* 离开 home 页时暂停唱片旋转 + 频谱条跳动发光（home 不可见时这两者无门控仍白跑，省 GPU，尤其 box-shadow glow 动画） */
+body:not(.empty-home-active) .home-disc,
+body:not(.empty-home-active) .home-eq span{animation-play-state:paused}
 .home-mosaic{grid-column:1 / -1;grid-row:4;align-self:end;display:grid;grid-template-columns:1.18fr 1fr 1fr;grid-template-rows:1fr 1fr;gap:12px;height:min(260px,32vh);min-height:190px;margin-top:18px}
 .home-portrait{grid-column:1 / -1;grid-row:1;display:flex;align-items:center;gap:clamp(20px,2.5vw,32px);padding:clamp(12px,1.4vw,16px) clamp(20px,2.4vw,30px);border-radius:18px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);backdrop-filter:blur(20px) saturate(1.06);-webkit-backdrop-filter:blur(20px) saturate(1.06);margin-bottom:10px}
 .home-portrait-left{display:flex;align-items:center;gap:clamp(12px,1.4vw,18px);flex-shrink:0}
@@ -485,7 +514,6 @@ body.empty-home-active .home-visual{animation:home-visual-drift 8.8s ease-in-out
 #upload-btn:hover{border-color:rgba(0,245,212,.50);background:rgba(0,245,212,.075);color:#fff;box-shadow:0 16px 46px rgba(0,245,212,.08),inset 0 1px 0 rgba(255,255,255,.10)}
 #visual-guide-btn{font-size:18px;font-weight:780;line-height:1;color:rgba(255,255,255,.68);border-color:rgba(255,255,255,.10);background:rgba(255,255,255,.04)}
 #visual-guide-btn:hover{color:#fff;border-color:rgba(255,83,103,.40);background:rgba(255,83,103,.10);box-shadow:0 14px 38px rgba(255,83,103,.08)}
-#contact-author-btn{font-size:18px;font-weight:780;line-height:1;color:rgba(255,255,255,.68);border-color:rgba(255,255,255,.10);background:rgba(255,255,255,.04)}
 #upload-actions{position:relative;display:flex;align-items:center;gap:8px;height:58px}
 body.desktop-shell:not(.desktop-fullscreen) #upload-actions{margin-top:0}
 html:fullscreen body.desktop-shell #upload-actions,
@@ -1425,40 +1453,6 @@ body.desktop-shell.diy-mode #bottom-bar.stage-mode{left:50%;width:min(1080px,cal
 .fx-advanced-body{margin-top:0}
 .fx-fold,.fx-advanced{background:rgba(255,255,255,.024)}
 
-.hotkey-modal{position:fixed;inset:0;z-index:1450;display:none;align-items:center;justify-content:center;padding:22px;background:rgba(0,0,0,.48);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
-.hotkey-modal.show{display:flex}
-.hotkey-dialog{width:min(760px,calc(100vw - 36px));max-height:min(720px,calc(100vh - 44px));overflow:auto;border-radius:18px;border:1px solid rgba(255,255,255,.12);background:linear-gradient(180deg,rgba(14,15,20,.96),rgba(5,6,8,.96));box-shadow:0 32px 110px rgba(0,0,0,.62),inset 0 1px 0 rgba(255,255,255,.08);padding:18px;color:#fff}
-.hotkey-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,.08)}
-.hotkey-title{font-size:16px;font-weight:800;letter-spacing:.04em}
-.hotkey-sub{margin-top:5px;font-size:11.5px;line-height:1.5;color:rgba(255,255,255,.48)}
-.hotkey-close{width:30px;height:30px;border-radius:10px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.04);color:rgba(255,255,255,.66);font-size:18px;line-height:1;cursor:pointer}
-.hotkey-close:hover{background:rgba(255,255,255,.09);color:#fff}
-.hotkey-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:14px 0}
-.hotkey-tabs{display:flex;gap:8px}
-.hotkey-tabs button{height:30px;border-radius:10px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.035);color:rgba(255,255,255,.58);font:760 12px/1 var(--font-sans);cursor:pointer;padding:0 13px}
-.hotkey-tabs button.active{border-color:rgba(var(--fc-accent-rgb),.35);background:rgba(var(--fc-accent-rgb),.12);color:#fff}
-.hotkey-note{font-size:11px;color:rgba(255,255,255,.42);text-align:right}
-.hotkey-section{display:none}
-.hotkey-section.active{display:block}
-.hotkey-group{margin-top:12px}
-.hotkey-group-title{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:rgba(var(--fc-accent-rgb),.78);margin:0 0 8px}
-.hotkey-row{display:grid;grid-template-columns:minmax(112px,1fr) 180px 86px minmax(126px,1.15fr);gap:9px;align-items:center;min-height:46px;margin:6px 0;padding:9px;border-radius:12px;border:1px solid rgba(255,255,255,.065);background:rgba(255,255,255,.028)}
-.hotkey-name{min-width:0;font-size:12.5px;font-weight:760;color:rgba(255,255,255,.88);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.hotkey-key{height:30px;border-radius:9px;border:1px solid rgba(255,255,255,.11);background:rgba(0,0,0,.22);color:#fff;font:760 11.5px/1 var(--font-sans);cursor:pointer;padding:0 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.hotkey-key:hover,.hotkey-key.capturing{border-color:rgba(var(--fc-accent-rgb),.42);background:rgba(var(--fc-accent-rgb),.10)}
-.hotkey-reset{height:30px;border-radius:9px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.035);color:rgba(255,255,255,.55);font:700 11px/1 var(--font-sans);cursor:pointer}
-.hotkey-reset:hover{background:rgba(255,255,255,.08);color:#fff}
-.hotkey-status{min-width:0;font-size:11px;color:rgba(255,255,255,.46);display:flex;align-items:center;gap:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.hotkey-status.ok{color:rgba(126,226,168,.78)}
-.hotkey-status.conflict{color:rgba(255,206,112,.86)}
-.hotkey-status .source-icon{width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;background:rgba(255,206,112,.12);color:#ffce70;font-size:11px;flex:0 0 auto}
-.hotkey-capture-tip{display:none;margin-top:10px;padding:9px 11px;border-radius:12px;border:1px solid rgba(var(--fc-accent-rgb),.22);background:rgba(var(--fc-accent-rgb),.075);font-size:12px;color:rgba(255,255,255,.74)}
-.hotkey-modal.capturing .hotkey-capture-tip{display:block}
-@media (max-width:720px){
-  .hotkey-row{grid-template-columns:1fr;gap:7px}
-  .hotkey-toolbar{align-items:flex-start;flex-direction:column}
-  .hotkey-note{text-align:left}
-}
 
 /* ============================================================ */
 /*  歌单/队列面板                                                 */
@@ -2105,7 +2099,7 @@ html.control-glass-svg-ok .comment-card .cc-inner{background:rgba(0,0,0,.10);bac
 
 /* 弹幕容器 */
 #danmaku-container{position:fixed;z-index:79;top:50%;left:0;right:0;bottom:0;overflow:hidden;pointer-events:none}
-.danmaku-item{position:absolute;white-space:nowrap;padding:6px 16px;border-radius:20px;background:rgba(0,0,0,.10);backdrop-filter:blur(12px) saturate(1.8) brightness(1.16);-webkit-backdrop-filter:blur(12px) saturate(1.8) brightness(1.16);border:0;color:rgba(255,255,255,.88);font-size:13px;will-change:transform;animation:dm-fly linear forwards;box-shadow:inset 0 0 2px 1px rgba(255,255,255,.25),inset 0 0 8px 3px rgba(255,255,255,.08),0 2px 10px rgba(17,17,26,.06);overflow:hidden}
+.danmaku-item{position:absolute;white-space:nowrap;padding:6px 16px;border-radius:20px;background:rgba(8,10,18,.42);border:0;color:rgba(255,255,255,.88);font-size:13px;will-change:transform;animation:dm-fly linear forwards;box-shadow:inset 0 0 2px 1px rgba(255,255,255,.25),inset 0 0 8px 3px rgba(255,255,255,.08),0 2px 10px rgba(17,17,26,.06);overflow:hidden}
 html.control-glass-svg-ok .danmaku-item{backdrop-filter:url(#mineradio-control-glass-filter) saturate(1);-webkit-backdrop-filter:url(#mineradio-control-glass-filter) saturate(1)}
 .danmaku-item .dm-gradient{position:absolute;inset:0;border-radius:20px;opacity:.25;pointer-events:none;z-index:-1}
 .danmaku-item.hot{box-shadow:inset 0 0 2px 1px rgba(255,255,255,.30),inset 0 0 10px 4px rgba(255,255,255,.10),0 2px 10px rgba(17,17,26,.06),inset 0 0 0 1px var(--home-accent,#00f5d4)}
@@ -2161,7 +2155,7 @@ input,textarea,[contenteditable]{-webkit-touch-callout:default;-webkit-user-sele
   html.touch-coarse body.splash-active{background:#08090B!important}
   /* 性能降级：仅保留 3 层玻璃，其它元素透明化 */
   .search-history-chip,.search-result,.home-card,.home-tile,.fx-mini-btn,
-  .hotkey-btn,#top-right,.control-cluster,#album-bg{
+  #top-right,.control-cluster,#album-bg{
     backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
     box-shadow:inset 0 1px 0 rgba(255,255,255,.06)!important
   }
@@ -2259,7 +2253,7 @@ input,textarea,[contenteditable]{-webkit-touch-callout:default;-webkit-user-sele
   html.touch-coarse body.splash-active{background:#08090B!important}
   /* 性能降级：保留 3 层玻璃，关闭玻璃 SVG filter */
   .search-history-chip,.search-result,.home-card,.home-tile,.fx-mini-btn,
-  .hotkey-btn,#top-right,.control-cluster,#album-bg{
+  #top-right,.control-cluster,#album-bg{
     backdrop-filter:none!important;-webkit-backdrop-filter:none!important
   }
   .ctrl-btn,.glass-saved-button,.danmaku-item,#bottom-bar{backdrop-filter:blur(18px) saturate(1.5)!important;-webkit-backdrop-filter:blur(18px) saturate(1.5)!important}
@@ -2356,6 +2350,24 @@ input,textarea,[contenteditable]{-webkit-touch-callout:default;-webkit-user-sele
   .report-hour::after{content:attr(data-h);position:absolute;bottom:-17px;left:50%;transform:translateX(-50%);font-size:8.5px;color:rgba(235,235,245,.4);font-feature-settings:"tnum"}
   .report-hour.peak{background:linear-gradient(180deg,#FFD0E0,#FF2D6F);box-shadow:0 0 14px rgba(255,45,111,.7)}
 
+  /* 听歌风格标签（全部视图） */
+  .report-styles{display:flex;flex-direction:column;padding:4px 2px 6px;position:relative;overflow:hidden;border-radius:16px}
+  .report-styles-bg{position:absolute;inset:0;background-color:#1a1426;background-size:cover;background-position:center;filter:blur(36px) brightness(.5) saturate(1.15);transform:scale(1.25);z-index:0;pointer-events:none}
+  .report-styles-scrim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,6,16,.30),rgba(8,6,16,.62));z-index:0;pointer-events:none}
+  .report-styles-legend{display:flex;flex-wrap:wrap;gap:6px 14px;justify-content:center;font-size:11px;color:rgba(255,255,255,.85);position:relative;z-index:1}
+  .report-legend-item{display:flex;align-items:center;gap:5px}
+  .report-legend-item i{width:8px;height:8px;border-radius:50%;display:inline-block;flex:none}
+  .report-bubbles-canvas{position:relative;height:220px;margin-top:6px;z-index:1}
+  .report-bubble{position:absolute;transform:translate(-50%,-50%) scale(0);border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;transition:transform .6s cubic-bezier(.22,1.5,.4,1);will-change:transform;overflow:hidden}
+  .report-bubble.in{transform:translate(-50%,-50%) scale(1)}
+  .report-bubble.in.float{animation:bubbleFloat 7s ease-in-out infinite}
+  .report-bubble::after{content:'';position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.5),rgba(255,255,255,0) 55%);pointer-events:none}
+  @keyframes bubbleFloat{0%,100%{transform:translate(-50%,-50%) scale(1) translateY(0)}50%{transform:translate(-50%,-50%) scale(1) translateY(-5px)}}
+  .report-bubble-pct{font-size:14px;font-weight:700;font-feature-settings:"tnum";text-shadow:0 1px 4px rgba(0,0,0,.35);line-height:1;position:relative;z-index:1}
+  .report-bubble-name{font-size:10.5px;font-weight:600;opacity:.95;margin-top:3px;text-shadow:0 1px 4px rgba(0,0,0,.35);max-width:92%;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;position:relative;z-index:1}
+  .report-styles-note{font-size:10.5px;color:rgba(255,255,255,.6);text-align:center;margin-top:6px;position:relative;z-index:1}
+
+
   /* 一句话总结 */
   .report-summary{text-align:center;font-size:14px;font-weight:600;color:rgba(255,255,255,.9);padding:16px 18px;background:linear-gradient(135deg,rgba(255,94,138,.16),rgba(255,45,111,.08));border-radius:16px;border:1px solid rgba(255,94,138,.22);margin-top:8px;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif}
 
@@ -2425,7 +2437,7 @@ html.touch-coarse body.fx-fab-auto-hide #fx-fab,
 html.touch-coarse body.fx-fab-auto-hide.fx-fab-peek #fx-fab{
   right:18px!important;opacity:1!important;visibility:visible!important;pointer-events:auto!important
 }
-/* 触屏 iPad：顶部功能按钮栏（引导/联系作者/DIY）——让隐藏的 #desktop-titlebar 显示，
+/* 触屏 iPad：顶部功能按钮栏（引导/DIY）——让隐藏的 #desktop-titlebar 显示，
    但隐藏桌面专属的拖拽区、窗口控制按钮、更新入口 */
 html.touch-coarse #desktop-titlebar{
   display:flex!important;
@@ -2498,7 +2510,12 @@ html.touch-coarse #cam-seg,
 html.touch-coarse .lyric-source-row:has(#lyric-source-seg),
 html.touch-coarse .fx-section-label:has(+ .lyric-source-row #lyric-source-seg),
 html.touch-coarse .fx-section-label:has(+ #cam-seg){display:none!important}
-/* 触屏 iPad：home-grid 占满剩余空间，由 JS 计算卡片高度吃掉空白 */
+/* 触屏 iPad：视觉控制台位于 fx-fab 按钮上方，避免固定按钮遮挡面板底部按键
+   用 bottom 把面板底部抬到 fx-fab 顶部之上，而不是两个 fixed 元素硬叠 */
+html.touch-coarse #fx-panel{
+  bottom:calc(var(--ipad-fab-bottom) + var(--ipad-fab-size) + 16px + env(safe-area-inset-bottom, 0px));
+  max-height:min(650px, calc(100vh - 132px - var(--ipad-fab-size) - 16px - env(safe-area-inset-bottom, 0px)))
+}
 html.touch-coarse .home-grid{align-content:start!important}
 /* 触屏 iPad：限制 home-card 标题为一行，防止长歌名换行导致某些卡片偏高 */
 html.touch-coarse .home-card-title{
@@ -2577,6 +2594,7 @@ html.touch-coarse .home-mosaic-radio-btn{height:24px!important;min-width:48px!im
 }
 
 /* ==================== /iPad / 触屏适配 ==================== */
+
 </style>
 </head>
 <body>
@@ -2589,7 +2607,6 @@ html.touch-coarse .home-mosaic-radio-btn{height:24px!important;min-width:48px!im
   </div>
   <div class="desktop-window-controls">
     <button id="visual-guide-btn" class="icon-btn" type="button" onclick="startVisualGuide({ manual: true })" title="查看使用引导" aria-label="查看使用引导">?</button>
-    <button id="contact-author-btn" class="icon-btn" type="button" title="联系作者" aria-label="联系作者" onclick="showContactAuthor()">!</button>
     <button id="update-entry" class="update-entry" type="button" onclick="openUpdatePanel()" title="发现新版本" aria-label="发现新版本">
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <circle class="update-ring" cx="12" cy="12" r="8.8"></circle>
@@ -3292,6 +3309,25 @@ html.touch-coarse .home-mosaic-radio-btn{height:24px!important;min-width:48px!im
 <input type="file" id="background-image-input" accept=".jpg,.jpeg,.png,.webp,.mp4,.webm,.mov,image/jpeg,image/png,image/webp,video/mp4,video/webm,video/quicktime" style="display:none">
 <div id="drop-overlay"><div class="drop-text">拖放音乐或封面</div></div>
 <div id="free-camera-hint"><b>自由镜头</b> R 固定/退出 · WASD 移动 · 鼠标转向 · Shift 加速 · Space/Ctrl 升降 · Q/E 轻微旋转 · 滚轮景深 · K 回正</div>
+
+<!-- iPad 触控自由镜头控制层 (仅 touch-coarse 显示) -->
+<div id="fc-touch" class="fc-touch-layer">
+  <button id="fc-toggle" class="fc-fab" type="button" title="进入/退出自由镜头" aria-label="自由镜头">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5A2 2 0 0 1 5 6.5h2.5l1.6-2h5.8l1.6 2H19a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><circle cx="12" cy="13" r="3.6"/></svg>
+  </button>
+  <div id="fc-joystick" class="fc-joystick"><div class="fc-joystick-knob"></div></div>
+  <div id="fc-rail" class="fc-rail">
+    <button class="fc-act" type="button" data-fc-key="Space" title="上升" aria-label="上升"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M6 11l6-6 6 6"/></svg></button>
+    <button class="fc-act" type="button" data-fc-key="ControlLeft" title="下降" aria-label="下降"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M6 13l6 6 6-6"/></svg></button>
+    <button class="fc-act" type="button" data-fc-key="KeyQ" title="向左旋转" aria-label="向左旋转"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M10 8L5 12l5 4"/><path d="M5 12h9a5 5 0 0 1 5 5v1"/></svg></button>
+    <button class="fc-act" type="button" data-fc-key="KeyE" title="向右旋转" aria-label="向右旋转"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 8l5 4-5 4"/><path d="M19 12H10a5 5 0 0 0-5 5v1"/></svg></button>
+    <button class="fc-act" type="button" data-fc-key="ShiftLeft" title="加速" aria-label="加速"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4 14h6l-1 8 9-12h-6z"/></svg></button>
+    <button class="fc-act" type="button" data-fc-action="reset" title="回正视角" aria-label="回正视角"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V5.5A1.5 1.5 0 0 1 5.5 4H9"/><path d="M20 9V5.5A1.5 1.5 0 0 0 18.5 4H15"/><path d="M4 15v3.5A1.5 1.5 0 0 0 5.5 20H9"/><path d="M20 15v3.5a1.5 1.5 0 0 1-1.5 1.5H15"/></svg></button>
+    <div class="fc-sep"></div>
+    <button class="fc-act fc-act-save" type="button" data-fc-action="save" title="钉住当前机位" aria-label="钉住当前机位"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.5 7-11a7 7 0 1 0-14 0c0 4.5 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/></svg></button>
+    <button class="fc-act fc-act-exit" type="button" data-fc-action="exit" title="退出自由镜头（已钉住的机位会保留）" aria-label="退出自由镜头"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  </div>
+</div>
 <div id="loading-overlay"><div class="spinner"></div></div>
 
 <canvas id="login-guide-canvas" aria-hidden="true"></canvas>
@@ -3558,6 +3594,7 @@ var USER_CAPSULE_AUTO_HIDE_STORE_KEY = 'mineradio-user-capsule-auto-hide-v1';
 var FX_FAB_AUTO_HIDE_STORE_KEY = 'mineradio-fx-fab-auto-hide-v1';
 var CONTROLS_AUTO_HIDE_STORE_KEY = 'mineradio-controls-auto-hide-v1';
 var FREE_CAMERA_STORE_KEY = 'mineradio-free-camera-v1';
+var FREE_CAMERA_BOOKMARK_KEY = 'mineradio-free-camera-bookmark-v1';
 var HOTKEY_SETTINGS_STORE_KEY = 'mineradio-hotkey-settings-v1';
 var VISUAL_GUIDE_SEEN_STORE_KEY = 'mineradio-visual-guide-seen-v2';
 var LOCAL_BEATMAP_STORE_KEY = 'mineradio-local-beatmaps-v1';
@@ -3833,10 +3870,8 @@ function layoutFullscreenDiyZone() {
 }
 function shouldSuppressFullscreenDiyPeek() {
   var fxPanel = document.getElementById('fx-panel');
-  var hotkeyModal = document.getElementById('hotkey-modal');
   var fxPanelOpen = !!(fxPanel && (fxPanel.classList.contains('peek') || fxPanel.classList.contains('show')));
-  var hotkeyOpen = !!(hotkeyModal && hotkeyModal.classList.contains('show'));
-  return !!(visualGuideActive || fxPanelOpen || hotkeyOpen);
+  return !!(visualGuideActive || fxPanelOpen);
 }
 function updateFullscreenDiyPeekFromPointer(x, y) {
   var isFullscreen = !!(desktopRuntimeState.fullscreen || desktopFullscreenActive || document.fullscreenElement || document.body.classList.contains('desktop-fullscreen'));
@@ -4742,13 +4777,15 @@ function installRenderPowerHooks() {
 var scene = new THREE.Scene();
 scene.background = null;
 var camera = new THREE.PerspectiveCamera(45, innerWidth / innerHeight, 0.1, 100);
+// 触屏（iPad 等）：pointer:coarse。用于降帧/降像素比，缓解 GPU 发热。
+var RENDER_IS_COARSE = (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
 var RENDER_DPR_CAP = 1.35;
 var RENDER_PIXEL_BUDGET = 5200000;
 var RENDER_MIN_DPR = 0.72;
 // 0 = display vsync. Keep visible playback high-refresh capable instead of capping 120Hz+ screens to 60/72.
 var RENDER_VISIBLE_VSYNC = true;
-// iPad / 触屏：强制 24fps 渲染上限（A10X / 老设备 GPU 撑不住 60fps WebGL 复杂 shader）
-var RENDER_ACTIVE_FPS = (typeof window !== 'undefined' && window.__mineradioFastBoot) ? 24 : 0;
+// iPad / 触屏：默认播放档限 30fps（vsync 60fps 撑不住复杂 WebGL shader，发热严重）；桌面保持 vsync。
+var RENDER_ACTIVE_FPS = (typeof window !== 'undefined' && window.__mineradioFastBoot) ? 24 : (RENDER_IS_COARSE ? 30 : 0);
 var RENDER_LARGE_FPS = (typeof window !== 'undefined' && window.__mineradioFastBoot) ? 18 : 0;
 var RENDER_HUGE_FPS = (typeof window !== 'undefined' && window.__mineradioFastBoot) ? 12 : 0;
 var RENDER_INTERACTION_FPS = (typeof window !== 'undefined' && window.__mineradioFastBoot) ? 30 : 0;
@@ -4770,7 +4807,8 @@ function getRenderPixelRatio() {
   var cssPixels = Math.max(1, innerWidth * innerHeight);
   var quality = renderQualityProfile();
   var budgetCap = Math.sqrt(quality.budget / cssPixels);
-  var cap = Math.min(quality.cap, budgetCap);
+  // iPad / 触屏：pixelRatio 上限封顶 1.0（避免 2x/3x backbuffer 撑爆 GPU），但仍尊重画质档位的更低位（eco 仍可降到 0.95）
+  var cap = Math.min(RENDER_IS_COARSE ? 1.0 : quality.cap, budgetCap);
   return Math.max(quality.min, Math.min(device, cap));
 }
 function getRenderPixelLoad() {
@@ -4854,8 +4892,52 @@ function defaultFreeCameraState() {
     resetTween: null
   };
 }
+function saveFreeCameraBookmark() {
+  if (!freeCamera) return;
+  try {
+    localStorage.setItem(FREE_CAMERA_BOOKMARK_KEY, JSON.stringify({
+      position: { x: freeCamera.position.x, y: freeCamera.position.y, z: freeCamera.position.z },
+      yaw: freeCamera.yaw,
+      pitch: freeCamera.pitch,
+      roll: freeCamera.roll,
+      fov: freeCamera.fov
+    }));
+  } catch (e) {}
+  showToast('机位已保存');
+}
+function loadFreeCameraBookmark() {
+  try {
+    var raw = JSON.parse(localStorage.getItem(FREE_CAMERA_BOOKMARK_KEY) || '{}') || {};
+    if (raw.position) {
+      return {
+        position: new THREE.Vector3(
+          clampRange(Number(raw.position.x) || 0, -80, 80),
+          clampRange(Number(raw.position.y) || 0, -80, 80),
+          clampRange(Number(raw.position.z) || 6.6, -80, 80)
+        ),
+        yaw: clampRange(Number(raw.yaw) || 0, -Math.PI * 8, Math.PI * 8),
+        pitch: clampRange(Number(raw.pitch) || 0, -Math.PI * 0.49, Math.PI * 0.49),
+        roll: clampRange(Number(raw.roll) || 0, -Math.PI, Math.PI),
+        fov: clampRange(Number(raw.fov) || BASE_FOV, 26, 72)
+      };
+    }
+  } catch (e) {}
+  return null;
+}
 function readFreeCameraState() {
   var state = defaultFreeCameraState();
+  // 用户显式保存的机位（Save 按钮）优先级最高，且不随退出被清除
+  var bookmark = loadFreeCameraBookmark();
+  if (bookmark) {
+    state.position.copy(bookmark.position);
+    state.yaw = bookmark.yaw;
+    state.pitch = bookmark.pitch;
+    state.roll = bookmark.roll;
+    state.fov = bookmark.fov;
+    state.locked = true;
+    state.active = false;
+    return state;
+  }
   try {
     var raw = JSON.parse(localStorage.getItem(FREE_CAMERA_STORE_KEY) || '{}') || {};
     if (raw.position) {
@@ -4966,16 +5048,132 @@ function applyFreeCameraToCamera() {
 }
 function updateFreeCameraHint() {
   var el = document.getElementById('free-camera-hint');
-  if (el) el.classList.toggle('show', !!(freeCamera && freeCamera.active));
+  var active = !!(freeCamera && freeCamera.active);
+  var touch = document.documentElement.classList.contains('touch-coarse');
+  if (el) {
+    if (!el.dataset.desk) el.dataset.desk = el.innerHTML;
+    el.classList.toggle('show', active);
+    if (active && touch) {
+      el.innerHTML = '<b>自由镜头</b> 左下「镜」钮退出 · 拖动画面转向 · 双指捏合景深 · 右侧 升/降/旋转/加速/回正/钉住机位/退出 · 退出返回普通视角（已钉住的机位会保留）';
+    } else if (!active && el.dataset.desk) {
+      el.innerHTML = el.dataset.desk;
+    }
+  }
+  document.body.classList.toggle('fc-active', active);
 }
-function resetFreeCameraToDefault() {
+function setupTouchFreeCamera() {
+  var layer = document.getElementById('fc-touch');
+  if (!layer) return;
+  // 进入/退出悬浮钮
+  var toggle = document.getElementById('fc-toggle');
+  if (toggle) toggle.addEventListener('click', function(e){ e.preventDefault(); toggleFreeCamera(); });
+
+  // 移动摇杆：按下=持续移动，松手=停
+  var joy = document.getElementById('fc-joystick');
+  var knob = joy ? joy.querySelector('.fc-joystick-knob') : null;
+  function setJoyKeys(dx, dy) {
+    if (!freeCamera) return;
+    freeCamera.keys = freeCamera.keys || {};
+    var th = 14;
+    freeCamera.keys['KeyW'] = dy < -th;
+    freeCamera.keys['KeyS'] = dy > th;
+    freeCamera.keys['KeyA'] = dx < -th;
+    freeCamera.keys['KeyD'] = dx > th;
+    markRenderInteraction('free-camera', 900);
+  }
+  if (joy && knob) {
+    var joyId = null, joyCx = 0, joyCy = 0, joyR = 0;
+    function moveJoy(x, y) {
+      var dx = x - joyCx, dy = y - joyCy;
+      var dist = Math.hypot(dx, dy);
+      var max = joyR - 23;
+      if (dist > max && dist > 0) { dx = dx / dist * max; dy = dy / dist * max; }
+      knob.style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
+      setJoyKeys(dx, dy);
+    }
+    function endJoy(e) { if (joyId !== e.pointerId) return; joyId = null; setJoyKeys(0, 0); knob.style.transform = 'translate(0,0)'; }
+    joy.addEventListener('pointerdown', function(e){
+      e.preventDefault();
+      if (joy.setPointerCapture) { try { joy.setPointerCapture(e.pointerId); } catch (err) {} }
+      var r = joy.getBoundingClientRect();
+      joyCx = r.left + r.width / 2; joyCy = r.top + r.height / 2; joyR = r.width / 2;
+      joyId = e.pointerId; moveJoy(e.clientX, e.clientY);
+    });
+    joy.addEventListener('pointermove', function(e){ if (joyId === e.pointerId) moveJoy(e.clientX, e.clientY); });
+    joy.addEventListener('pointerup', endJoy);
+    joy.addEventListener('pointercancel', endJoy);
+  }
+
+  // 动作栏：按住=持续；回正/退出=单次
+  var rail = document.getElementById('fc-rail');
+  if (rail) {
+    rail.querySelectorAll('.fc-act').forEach(function(btn){
+      var key = btn.getAttribute('data-fc-key');
+      var action = btn.getAttribute('data-fc-action');
+      function down(e) {
+        e.preventDefault();
+        if (action === 'reset') { resetFreeCameraToDefault(); return; }
+        if (action === 'save') { saveFreeCameraBookmark(); return; }
+        if (action === 'exit') { toggleFreeCamera(); return; }
+        if (key) { freeCamera.keys = freeCamera.keys || {}; freeCamera.keys[key] = true; markRenderInteraction('free-camera', 900); }
+      }
+      function up() { if (key) { freeCamera.keys = freeCamera.keys || {}; freeCamera.keys[key] = false; } }
+      btn.addEventListener('pointerdown', down);
+      btn.addEventListener('pointerup', up);
+      btn.addEventListener('pointercancel', up);
+      btn.addEventListener('pointerleave', up);
+    });
+  }
+
+  // 画布：单指拖动转向 + 双指捏合景深 (仅自由镜头激活时)
+  var canvas = renderer && renderer.domElement;
+  if (canvas) {
+    var look = { id: null, x: 0, y: 0 };
+    var pinch = { active: false, dist: 0 };
+    var pts = new Map();
+    canvas.style.touchAction = 'none';
+    function pinchDist() { var a = Array.from(pts.values()); return a.length < 2 ? 0 : Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y); }
+    canvas.addEventListener('pointerdown', function(e){
+      if (!freeCamera || !freeCamera.active) return;
+      pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (pts.size === 1) { look.id = e.pointerId; look.x = e.clientX; look.y = e.clientY; }
+      else if (pts.size === 2) { pinch.active = true; pinch.dist = pinchDist(); }
+    });
+    canvas.addEventListener('pointermove', function(e){
+      if (!freeCamera || !freeCamera.active || !pts.has(e.pointerId)) return;
+      pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (pinch.active && pts.size >= 2) {
+        var d = pinchDist();
+        freeCamera.fov = clampRange((freeCamera.fov || BASE_FOV) - (d - pinch.dist) * 0.06, 26, 72);
+        pinch.dist = d;
+        return;
+      }
+      if (e.pointerId === look.id) {
+        var dx = e.clientX - look.x, dy = e.clientY - look.y;
+        look.x = e.clientX; look.y = e.clientY;
+        freeCamera.yaw -= dx * 0.00125;
+        freeCamera.pitch = clampRange(freeCamera.pitch - dy * 0.00125, -Math.PI * 0.49, Math.PI * 0.49);
+        markRenderInteraction('free-camera', 900);
+      }
+    });
+    function clearPt(e) {
+      pts.delete(e.pointerId);
+      if (e.pointerId === look.id) look.id = null;
+      if (pts.size < 2) pinch.active = false;
+    }
+    canvas.addEventListener('pointerup', clearPt);
+    canvas.addEventListener('pointercancel', clearPt);
+  }
+}
+setupTouchFreeCamera();
+function resetFreeCameraToDefault(exitAfter, toPose, mode) {
   if (!freeCamera) return;
   if (freeCameraDeferredSaveTimer) {
     clearTimeout(freeCameraDeferredSaveTimer);
     freeCameraDeferredSaveTimer = 0;
   }
   var fromPos = freeCamera.position ? freeCamera.position.clone() : new THREE.Vector3(0, 0, 6.6);
-  var resetPose = getDefaultFreeCameraResetPose();
+  var resetPose = toPose || getDefaultFreeCameraResetPose();
   freeCamera.resetTween = {
     start: performance.now(),
     duration: 620,
@@ -4994,25 +5192,27 @@ function resetFreeCameraToDefault() {
       fov: resetPose.fov
     }
   };
+  freeCamera.resetMode = mode || (exitAfter ? 'exit' : 'recenter');
+  // tween 接管期间冻结输入；退出时立即隐藏控制层，回正时保留在自由模式
   freeCamera.active = false;
   freeCamera.locked = true;
   freeCamera.keys = {};
   if (freeCamera.velocity) freeCamera.velocity.set(0, 0, 0);
   try { if (document.pointerLockElement === renderer.domElement) document.exitPointerLock(); } catch (e) {}
-  updateFreeCameraHint();
-  showToast('自由镜头正在平滑回正');
+  var hintEl = document.getElementById('free-camera-hint');
+  if (hintEl) hintEl.classList.remove('show');
+  document.body.classList.toggle('fc-active', !exitAfter);
+  if (mode === 'exit-bookmark') showToast('正在返回已钉住的机位');
+  else showToast(exitAfter ? '正在退出自由镜头' : '视角正在回正');
 }
 function toggleFreeCamera() {
   if (!freeCamera) freeCamera = defaultFreeCameraState();
   if (freeCamera.active) {
-    freeCamera.active = false;
-    freeCamera.locked = true;
-    freeCamera.keys = {};
-    if (freeCamera.velocity) freeCamera.velocity.set(0, 0, 0);
-    try { if (document.pointerLockElement === renderer.domElement) document.exitPointerLock(); } catch (e) {}
-    saveFreeCameraState();
-    updateFreeCameraHint();
-    showToast('自由镜头已固定');
+    // 退出：若存在已钉住的机位，平滑回到该机位并停住（不回正、不 recenter）；
+    // 否则平滑回到普通视角（不保留临时机位）
+    var bookmark = loadFreeCameraBookmark();
+    if (bookmark) resetFreeCameraToDefault(true, bookmark, 'exit-bookmark');
+    else resetFreeCameraToDefault(true);
     return;
   }
   captureFreeCameraFromCurrent();
@@ -5052,12 +5252,31 @@ function updateFreeCamera(dt) {
       freeCamera.roll = tw.to.roll;
       freeCamera.fov = tw.to.fov;
       freeCamera.resetTween = null;
-      freeCamera.active = false;
-      freeCamera.locked = false;
-      saveFreeCameraState();
-      updateFreeCameraHint();
-      recenterCamera();
-      showToast('自由镜头已回正');
+      var exitMode = freeCamera.resetMode;
+      freeCamera.resetMode = null;
+      if (exitMode === 'exit-bookmark') {
+        // 退出到已钉住的机位：保持在该机位（locked），不 recenter、不回正
+        freeCamera.active = false;
+        freeCamera.locked = true;
+        saveFreeCameraState();
+        updateFreeCameraHint();
+        showToast('已退出 · 停在已钉住机位');
+      } else if (exitMode === 'exit') {
+        // 退出：彻底交还普通视角，不保留机位
+        freeCamera.active = false;
+        freeCamera.locked = false;
+        try { recenterCamera(); } catch (e) {}
+        saveFreeCameraState();
+        updateFreeCameraHint();
+        showToast('已退出自由镜头');
+      } else {
+        // 回正：停留在自由模式，可继续飞行
+        freeCamera.active = true;
+        freeCamera.locked = true;
+        saveFreeCameraState();
+        updateFreeCameraHint();
+        showToast('视角已回正');
+      }
     }
     return;
   }
@@ -5418,7 +5637,7 @@ function processRealtimeBeatEngine(dt) {
   dt = Math.max(0.001, Math.min(0.080, dt || 0.016));
   var dj = djMode.active;
   beatAnalyser.getByteFrequencyData(beatFrequencyData);
-  beatAnalyser.getByteTimeDomainData(beatTimeDomainData);
+  if (window.__nativeRms == null) beatAnalyser.getByteTimeDomainData(beatTimeDomainData);
   var sr = audioCtx.sampleRate || 44100;
   var sub = beatBandRms(beatFrequencyData, sr, beatAnalyser.fftSize, 38, 74);
   var kick = beatBandRms(beatFrequencyData, sr, beatAnalyser.fftSize, 52, 165);
@@ -5427,11 +5646,15 @@ function processRealtimeBeatEngine(dt) {
   var snap = beatBandRms(beatFrequencyData, sr, beatAnalyser.fftSize, 1800, 9200);
   var low = Math.min(1, kick * 0.86 + sub * 0.42);
   var rms = 0;
-  for (var i = 0; i < beatTimeDomainData.length; i++) {
-    var tv = (beatTimeDomainData[i] - 128) / 128;
-    rms += tv * tv;
+  if (window.__nativeRms != null) {
+    rms = window.__nativeRms;
+  } else {
+    for (var i = 0; i < beatTimeDomainData.length; i++) {
+      var tv = (beatTimeDomainData[i] - 128) / 128;
+      rms += tv * tv;
+    }
+    rms = Math.sqrt(rms / beatTimeDomainData.length);
   }
-  rms = Math.sqrt(rms / beatTimeDomainData.length);
 
   function follow(cur, next, upTau, downTau) {
     var tau = next > cur ? upTau : downTau;
@@ -6598,6 +6821,7 @@ function updateParticlePointerFrame() {
 }
 
 function beginParticlePointerDrag(e) {
+  if (freeCamera && freeCamera.active) return;
   if (e.button === 2) return;
   if (isPointerOverUi(e)) return;
   markRenderInteraction('canvas-drag', 1200);
@@ -16901,9 +17125,7 @@ function renderHomePortrait() {
   function fmtTime(ms) {
     var totalMin = Math.round(ms / 60000);
     if (totalMin < 60) return totalMin + '分钟';
-    var h = Math.floor(totalMin / 60);
-    var m = totalMin % 60;
-    return h + '小时' + (m > 0 ? m + '分钟' : '');
+    return (totalMin / 60).toFixed(1) + '小时';
   }
   var streak = 0;
   var checkDate = new Date(today);
@@ -17677,8 +17899,112 @@ var listenTracker = {
   current: null, // { songId, title, artist, coverUrl, startedAt }
   lastTickAt: 0,
   tickInterval: null,
-  flushInterval: null
+  flushInterval: null,
+  scrobbleSec: 0 // 本会话真实累计播放秒数（墙钟累加、排除暂停），用作 scrobble 的 time
 };
+
+// ---------- 播放打点（scrobble）：把一次真实播放回写网易云 ----------
+// 仅在真实播放达到阈值(默认 30s)时上报一次，避免每 tick 重复；一首歌一次连续播放只报一次。
+var SCROBBLE_THRESHOLD = 30;
+var scrobbleState = { songId: '', reported: false, total: 0 };
+function resetScrobbleSession(songId, total){
+  scrobbleState.songId = songId || '';
+  scrobbleState.reported = false;
+  scrobbleState.total = total || getCurrentSongDurationSec();
+}
+// ---------- scrobble 持久化队列（server 掉线/请求失败时也不丢播放记录） ----------
+var SCROBBLE_QUEUE_KEY = 'mineradio_scrobble_queue';
+var scrobbleFlushInFlight = false;
+function loadScrobbleQueue(){
+  try { return JSON.parse(localStorage.getItem(SCROBBLE_QUEUE_KEY) || '[]') || []; }
+  catch(e){ return []; }
+}
+function saveScrobbleQueue(q){
+  try { localStorage.setItem(SCROBBLE_QUEUE_KEY, JSON.stringify(q.slice(-50))); } catch(e){}
+}
+// 发送队列头部一条；成功则出队，失败保留待重试（不会因 server 掉线而丢播放）
+function flushScrobbleQueue(){
+  if (scrobbleFlushInFlight) return;
+  var q = loadScrobbleQueue();
+  if (!q.length) return;
+  scrobbleFlushInFlight = true;
+  var entry = q[0];
+  fetch('/api/scrobble', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id: entry.id, time: entry.time, total: entry.total })
+  }).then(function(r){ return r.json().catch(function(){ return {}; });   }).then(function(resp){
+    // 仅在「成功」或「明确未登录(401)」时出队；其它(网络错/瞬时 5xx)保留待重试
+    var drop = false;
+    if (resp && (resp.loggedIn === true || resp.code === 200)) drop = true;
+    else if (resp && resp.error === 'LOGIN_REQUIRED') drop = true; // 未登录：丢弃，登录后下首歌会重新打点
+    if (drop) {
+      var nq = loadScrobbleQueue();
+      var idx = -1;
+      for (var i=0;i<nq.length;i++){ if (nq[i].key === entry.key){ idx = i; break; } }
+      if (idx >= 0) { nq.splice(idx, 1); saveScrobbleQueue(nq); }
+    }
+  }).catch(function(){
+    /* 网络失败：保留在队列，等下次重试（不出队） */
+  }).then(function(){ scrobbleFlushInFlight = false; });
+}
+function getCurrentSongDurationSec(){
+  // 歌曲真实时长(秒)。优先取队列里的 dt(网易云毫秒)，回退到 audio.duration(原生桥接秒)。
+  try {
+    var song = (currentIdx >= 0 && playQueue[currentIdx]) ? playQueue[currentIdx] : null;
+    var d = 0;
+    if (song && song.dt) d = Number(song.dt);
+    else if (typeof audio !== 'undefined' && audio && audio.duration && isFinite(audio.duration)) d = Number(audio.duration);
+    if (!d || d <= 0) return 0;
+    if (d > 10000) d = d / 1000; // 毫秒 -> 秒 归一化
+    return Math.max(1, Math.round(d));
+  } catch(e){ return 0; }
+}
+function scrobbleSong(id, time, total){
+  // 只回写网易云数字 id 的歌曲（本地/其他源跳过）
+  if (!/^\d+$/.test(String(id))) return;
+  var q = loadScrobbleQueue();
+  var entry = { id: String(id), time: Math.max(1, Math.floor(time||0)), total: Math.max(1, Math.floor(total||0)) || Math.max(1, Math.floor(time||0)), ts: Date.now(), key: String(id) + '_' + Date.now() };
+  // 去重：同一首歌 60s 内已排队则不重复入队
+  var dup = q.some(function(e){ return e.id === entry.id && (Date.now() - e.ts) < 60000; });
+  if (!dup) { q.push(entry); saveScrobbleQueue(q); }
+  flushScrobbleQueue();
+}
+// 仅在「离开当前歌曲」时上报一次真实播放时长：歌曲自然播完(ended) / 切到下一首(play) / App 切后台或关闭(pagehide)。
+// 这样网易云记的是真实听了多久（完整听完 = 完整时长），而非固定 30 秒。
+// 防重靠「本次会话 reported 标志」：同一连续播放只报一次；但隔了一首/切回来后再次播放同一首（新会话）会重新上报，才是真实的重复收听。
+function reportCurrentSong(){
+  if (!scrobbleState.songId) return;
+  if (scrobbleState.reported) return; // 本次会话已上报，防重复（同一连续播放只报一次）
+  // time = 本会话真实累计播放秒数（墙钟累加、排除暂停），不受 seek 跳变污染
+  var t = Math.floor(listenTracker.scrobbleSec || 0);
+  if (t < SCROBBLE_THRESHOLD) return; // 太短不记（没认真听）
+  scrobbleState.reported = true;
+  scrobbleSong(scrobbleState.songId, t, scrobbleState.total || getCurrentSongDurationSec());
+}
+function tryScrobble(){ reportCurrentSong(); } // 兼容旧调用点
+// play / playing 事件统一处理：原生桥接(NativeAudioEngine)在缓冲后开始播放时
+// 回传的是 'playing' 而非 'play'，前端两事件都必须监听，否则首次播放打点会话不开启。
+function onAudioPlay(){
+  var m = getCurrentSongMeta();
+  var nearStart = (typeof audio !== 'undefined' && audio && audio.currentTime < 3);
+  // 换歌 或 从头(near beginning)重播 → 离开上一首，先把上一首真实时长上报（reset 之前 scrobbleState 仍是上一首）
+  if (m.songId && (scrobbleState.songId !== m.songId || nearStart)) {
+    reportCurrentSong();
+  }
+  if (m.songId) {
+    if (!listenTracker.current || listenTracker.current.songId !== m.songId) {
+      listenTracker.current = { ...m, startedAt: Date.now() };
+      listenTracker.lastTickAt = Date.now();
+    }
+    // 换歌 或 从头重播 → 新打点会话；中途暂停后继续则沿用旧会话避免重复上报
+    if (scrobbleState.songId !== m.songId || nearStart) {
+      resetScrobbleSession(m.songId, getCurrentSongDurationSec());
+      listenTracker.scrobbleSec = 0; // 新会话从头累计真实播放秒数
+    }
+  }
+  flushScrobbleQueue(); // 播放开始即尝试补发上一次失败/未联网时堆积的打点
+}
 
 function getListenHistory(){
   try { return JSON.parse(localStorage.getItem(REPORT_STORAGE_KEY) || '[]') || []; }
@@ -17690,7 +18016,7 @@ function saveListenHistory(arr){
 }
 function getCurrentSongMeta(){
   // 从全局变量取当前播放歌曲的信息
-  var meta = { songId: '', title: '', artist: '', coverUrl: '' };
+  var meta = { songId: '', title: '', artist: '', coverUrl: '', artistId: '' };
   try {
     // 优先从 DOM 取
     var titleEl = document.getElementById('home-now-title') || document.querySelector('.now-title, .track-title');
@@ -17730,8 +18056,17 @@ function getCurrentSongMeta(){
       }
       meta.coverUrl = coverUrl;
     }
-    // 用 audio.src 作为 songId
-    if (typeof audio !== 'undefined' && audio && audio.src) {
+    // 用当前队列歌曲对象做更可靠的数据源（artistId / 真实 songId）
+    var song = (currentIdx >= 0 && playQueue[currentIdx]) ? playQueue[currentIdx] : null;
+    if (song) {
+      if (!meta.title) meta.title = (song.name || song.title || '').toString().trim();
+      if (!meta.artist) meta.artist = (song.artist || song.ar || song.author || '').toString().trim();
+      if (!meta.coverUrl) meta.coverUrl = (song.cover || '').toString().trim();
+      meta.artistId = currentArtistId(song) || '';
+      if (song.id) meta.songId = String(song.id);
+    }
+    // 兜底：用 audio.src 作为 songId
+    if (!meta.songId && typeof audio !== 'undefined' && audio && audio.src) {
       meta.songId = audio.src;
     }
   } catch(e) {}
@@ -17814,6 +18149,7 @@ function startListenTracking(){
       var now = Date.now();
       var delta = (now - listenTracker.lastTickAt) / 1000;
       listenTracker.lastTickAt = now;
+      listenTracker.scrobbleSec = (listenTracker.scrobbleSec || 0) + delta; // 本会话真实累计播放秒数（用作 scrobble 的 time）
       // 累计到 history
       var history = getListenHistory();
       var last = history[history.length - 1];
@@ -17823,11 +18159,13 @@ function startListenTracking(){
       if (last && last.songId === listenTracker.current.songId && (now - lastUpdated) < 10000) {
         last.duration += delta;
         last.updatedAt = now;
+        if (!last.artistId && listenTracker.current.artistId) last.artistId = listenTracker.current.artistId;
       } else {
         history.push({
           songId: listenTracker.current.songId,
           title: listenTracker.current.title,
           artist: listenTracker.current.artist,
+          artistId: listenTracker.current.artistId || '',
           coverUrl: listenTracker.current.coverUrl,
           startedAt: listenTracker.current.startedAt,
           duration: delta,
@@ -17844,22 +18182,25 @@ function startListenTracking(){
           }
         }
       }
-      saveListenHistory(history);
+      saveListenHistory(history); // 注：回传打点在离开歌曲时(ended/切歌/pagehide)触发 reportCurrentSong，不在每 tick 上报
     }, 5000);
   }
   // 切歌时刷新 current（play/pause 监听仅注册一次, 防止重复绑定）
   if (!listenTracker.eventsBound) {
     listenTracker.eventsBound = true;
-    audio.addEventListener('play', function(){
-      var m = getCurrentSongMeta();
-      if (m.songId && (!listenTracker.current || listenTracker.current.songId !== m.songId)) {
-        listenTracker.current = { ...m, startedAt: Date.now() };
-        listenTracker.lastTickAt = Date.now();
-      }
-    });
+    audio.addEventListener('play', onAudioPlay);
+    // 原生桥接(NativeAudioEngine)首次播放走 pendingPlay 分支, 回传的是 'playing' 而非 'play',
+    // 不监听 'playing' 会导致打点会话(含 scrobbleState.songId)永不开启 → 回传丢失。
+    audio.addEventListener('playing', onAudioPlay);
     audio.addEventListener('pause', function(){
       listenTracker.current = null;
     });
+    audio.addEventListener('ended', function(){
+      reportCurrentSong(); // 自然播完：上报真实完整时长（reported 守卫防重复）
+    });
+    // 兜底：App 切后台/关闭时，若当前歌尚未上报，按已听真实时长补报一次（防止后台播完但 ended 未触发而丢失）
+    window.addEventListener('pagehide', function(){ reportCurrentSong(); });
+    document.addEventListener('visibilitychange', function(){ if (document.visibilityState === 'hidden') reportCurrentSong(); });
   }
 }
 
@@ -17909,10 +18250,18 @@ function aggregateReportData(range){
     if (!songMap[songKey].coverUrl && h.coverUrl) songMap[songKey].coverUrl = h.coverUrl;
 
     if (h.artist) {
-      if (!artistMap[h.artist]) artistMap[h.artist] = { count: 0, duration: 0, coverUrl: h.coverUrl || '' };
-      artistMap[h.artist].count += 1;
-      artistMap[h.artist].duration += h.duration;
-      if (!artistMap[h.artist].coverUrl && h.coverUrl) artistMap[h.artist].coverUrl = h.coverUrl;
+      var artistNames = splitArtistNames(h.artist);
+      if (artistNames.length === 0 && h.artist.trim()) artistNames = [h.artist.trim()];
+      artistNames.forEach(function(a, i){
+        a = a.trim();
+        if (!a) return;
+        if (!artistMap[a]) artistMap[a] = { count: 0, duration: 0, coverUrl: h.coverUrl || '', artistId: '' };
+        artistMap[a].count += 1;
+        artistMap[a].duration += h.duration;
+        if (!artistMap[a].coverUrl && h.coverUrl) artistMap[a].coverUrl = h.coverUrl;
+        // artistId 只对应第一顺位歌手（currentArtistId 取第一个）
+        if (i === 0 && h.artistId && !artistMap[a].artistId) artistMap[a].artistId = h.artistId;
+      });
     }
     hourMap[d.getHours()] += h.duration;
   });
@@ -17942,7 +18291,7 @@ function aggregateReportData(range){
 
   // Top 10 artists
   var topArtists = Object.keys(artistMap)
-    .map(function(k){ return { name: k, count: artistMap[k].count, duration: artistMap[k].duration, coverUrl: artistMap[k].coverUrl || '' }; })
+    .map(function(k){ return { name: k, count: artistMap[k].count, duration: artistMap[k].duration, coverUrl: artistMap[k].coverUrl || '', artistId: artistMap[k].artistId || '' }; })
     .sort(function(a,b){ return b.count - a.count; })
     .slice(0, 10);
 
@@ -17994,10 +18343,30 @@ function artistColorHash(name){
   for (var i = 0; i < (name||'').length; i++) h = (h * 31 + (name||'').charCodeAt(i)) & 0xffffffff;
   return colors[Math.abs(h) % colors.length];
 }
+function hexA(hex, a){
+  var m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  if (!m) return 'rgba(255,140,200,' + a + ')';
+  return 'rgba(' + parseInt(m[1],16) + ',' + parseInt(m[2],16) + ',' + parseInt(m[3],16) + ',' + a + ')';
+}
+function styleBubbleColor(name){
+  // Apple Music 风明快色板：[高光中心色, 边缘基色]
+  var pal = [
+    ['#FF7AA2', '#FF2D6F'], ['#B98CFF', '#8A4DFF'], ['#5AC8FA', '#0A84FF'],
+    ['#6FE3C4', '#15B58C'], ['#7BE08A', '#34C759'], ['#FFB45A', '#FF9F0A'],
+    ['#FF8A95', '#FF3B30'], ['#8E8CFF', '#5E5CE6']
+  ];
+  var h = 0;
+  for (var i = 0; i < (name || '').length; i++) h = (h * 31 + (name || '').charCodeAt(i)) & 0xffffffff;
+  return pal[Math.abs(h) % pal.length];
+}
 function artistInitial(name){
   if (!name) return '?';
   // 简单取首字符
   return (name.match(/[一-龥]/) || name[0] || '?')[0];
+}
+function splitArtistNames(artistStr){
+  if (!artistStr) return [];
+  return artistStr.split(/\s*\/\s*|\s*,\s*|\s*、\s*|\s*&\s*/).filter(function(a){ return a.trim(); });
 }
 
 function countUpNumber(el, target, format){
@@ -18019,10 +18388,12 @@ function countUpNumber(el, target, format){
 // 真实记录（服务端 user/record）会话缓存
 var reportServerCache = null;
 var reportServerCacheTs = 0;
-function fetchServerReport(){
+function fetchServerReport(force){
   var now = Date.now();
-  if (reportServerCache && (now - reportServerCacheTs) < 60000) return Promise.resolve(reportServerCache);
-  return apiJson('/api/listen-report').then(function(j){
+  // force(打开报告)模式: 15s 去抖避免狂点刷爆网易云接口(风控); 非 force: 60s 缓存
+  if (force && reportServerCache && (now - reportServerCacheTs) < 15000) return Promise.resolve(reportServerCache);
+  if (!force && reportServerCache && (now - reportServerCacheTs) < 60000) return Promise.resolve(reportServerCache);
+  return apiJson('/api/listen-report' + (force ? '?force=1' : ''), { cache: 'no-store' }).then(function(j){
     reportServerCache = j; reportServerCacheTs = now; return j;
   }).catch(function(e){ console.warn('[report] server fetch failed', e); return null; });
 }
@@ -18032,7 +18403,7 @@ function localToReport(local){
     totalPlays: local.totalSongs,
     distinctSongs: local.distinctSongs,
     uniqueArtists: local.uniqueArtists,
-    topArtists: local.topArtists.map(function(a){ return { name: a.name, count: a.count, coverUrl: a.coverUrl }; }),
+    topArtists: local.topArtists.map(function(a){ return { name: a.name, count: a.count, coverUrl: a.coverUrl, artistId: a.artistId }; }),
     topSongs: local.topSongs.map(function(s){ return { title: s.title, artist: s.artist, coverUrl: s.coverUrl, count: s.count }; }),
     hourMap: local.hourMap,
     peakHour: local.peakHour,
@@ -18144,6 +18515,24 @@ function fetchArtistPic(artistId, cb){
     }
   }).catch(function(e){ console.warn('[artist pic]', e); });
 }
+// 按艺人名搜索 ID（本地累计无 artistId 时兜底）
+var artistNameIdCache = {};
+function fetchArtistIdByName(name, cb){
+  if (!name || artistNameIdCache[name] !== undefined) { cb(artistNameIdCache[name] || null); return; }
+  apiJson('/api/artist/search?keywords=' + encodeURIComponent(name) + '&limit=1').then(function(j){
+    var a = (j && j.artists && j.artists[0]) || null;
+    artistNameIdCache[name] = a;
+    cb(a);
+  }).catch(function(e){ artistNameIdCache[name] = null; cb(null); });
+}
+function setReportArtistAvatar(avatar, picUrl){
+  if (!avatar || !picUrl) return;
+  var proxy = coverProxySrc(coverUrlWithSize(picUrl, 180)) || coverProxySrc(picUrl);
+  if (!proxy) return;
+  avatar.style.background = 'linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.45)), url(' + proxy + ') center/cover';
+  var initial = avatar.querySelector('.report-artist-initial');
+  if (initial) initial.style.opacity = '0';
+}
 function paintReportArtists(data){
   var el = document.getElementById('report-artists');
   if (!data.topArtists || data.topArtists.length === 0) { el.innerHTML = '<div class="report-empty">暂无数据</div>'; return; }
@@ -18151,13 +18540,14 @@ function paintReportArtists(data){
     var colors = artistColorHash(a.name);
     var initial = artistInitial(a.name);
     var artistIdAttr = a.artistId ? (' data-artist-id="' + a.artistId + '"') : '';
+    var artistNameAttr = ' data-artist-name="' + escHtml(a.name) + '"';
     var bg = 'linear-gradient(135deg,' + colors[0] + ',' + colors[1] + ')';
     if (!a.artistId && a.coverUrl) {
       var proxy = isProxyableCoverUrl(a.coverUrl) ? coverProxySrc(coverUrlWithSize(a.coverUrl, 180)) : a.coverUrl;
       if (proxy) bg = 'url(' + proxy + '), linear-gradient(135deg,' + colors[0] + ',' + colors[1] + ')';
     }
     return '<div class="report-artist" title="' + escHtml(a.name) + (a.count ? (' · ' + a.count + ' 次') : '') + '">' +
-      '<div class="report-artist-avatar"' + artistIdAttr + ' style="background-image:' + bg + '">' +
+      '<div class="report-artist-avatar"' + artistIdAttr + artistNameAttr + ' style="background-image:' + bg + '">' +
         '<span class="report-artist-initial">' + initial + '</span>' +
         '<div class="report-artist-name">' + (a.name.length > 4 ? escHtml(a.name.slice(0,4) + '…') : escHtml(a.name)) + '</div>' +
       '</div>' +
@@ -18167,13 +18557,16 @@ function paintReportArtists(data){
   // 异步拉取并显示艺人真实头像
   Array.from(el.querySelectorAll('.report-artist-avatar[data-artist-id]')).forEach(function(avatar){
     var id = avatar.getAttribute('data-artist-id');
-    fetchArtistPic(id, function(picUrl){
-      if (!picUrl || !avatar) return;
-      var proxy = coverProxySrc(coverUrlWithSize(picUrl, 180));
-      if (!proxy) return;
-      avatar.style.background = 'linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.45)), url(' + proxy + ') center/cover';
-      var initial = avatar.querySelector('.report-artist-initial');
-      if (initial) initial.style.opacity = '0';
+    fetchArtistPic(id, function(picUrl){ setReportArtistAvatar(avatar, picUrl); });
+  });
+  // 本地累计无 artistId 时，按艺人名搜索并显示真实头像
+  Array.from(el.querySelectorAll('.report-artist-avatar:not([data-artist-id])')).forEach(function(avatar){
+    var name = avatar.getAttribute('data-artist-name');
+    if (!name) return;
+    fetchArtistIdByName(name, function(a){
+      if (!a) return;
+      if (a.avatar) setReportArtistAvatar(avatar, a.avatar);
+      else if (a.id) fetchArtistPic(a.id, function(picUrl){ setReportArtistAvatar(avatar, picUrl); });
     });
   });
 }
@@ -18211,6 +18604,59 @@ function paintReportHours(data){
     return '<div class="report-hour' + (isPeak ? ' peak' : '') + '" style="height:' + h + 'px" data-h="' + i + '"></div>';
   }).join('');
 }
+// 听歌风格标签（全部视图）：拉取网易云「曲风偏好」渲染占比条形
+var reportStylesCache = null;
+function paintReportStyles(){
+  var el = document.getElementById('report-styles');
+  if (!el) return;
+  if (reportStylesCache) { renderReportStyles(el, reportStylesCache); return; }
+  el.innerHTML = '<div class="report-empty">加载中…</div>';
+  apiJson('/api/listen-style').then(function(j){
+    if (j && j.loggedIn && j.tags && j.tags.length) {
+      reportStylesCache = j.tags;
+      renderReportStyles(el, j.tags);
+    } else {
+      el.innerHTML = '<div class="report-empty">暂无风格数据（未登录或网易云无记录）</div>';
+    }
+  }).catch(function(e){
+    console.warn('[report styles]', e);
+    el.innerHTML = '<div class="report-empty">风格数据加载失败</div>';
+  });
+}
+function renderReportStyles(el, tags){
+  var maxRatio = tags.reduce(function(m, t){ return Math.max(m, t.ratio || 0); }, 1) || 1;
+  var maxR = 50, minR = 20;
+  // 按占比降序：大圆在上方左右，小圆在下方，自然错落（Apple Music 风）
+  var sorted = tags.slice().sort(function(a, b){ return (b.ratio || 0) - (a.ratio || 0); });
+  var anchors = [[32, 40], [68, 38], [83, 72], [48, 76], [18, 72]];
+  var bubbles = sorted.map(function(t, i){
+    var c = styleBubbleColor(t.tagName || 'style');
+    var ratio = t.ratio || 0;
+    var r = minR + Math.sqrt(ratio) / Math.sqrt(maxRatio) * (maxR - minR);
+    var a = anchors[i] || [50, 50];
+    var showName = r >= 26;
+    return '<div class="report-bubble" style="left:' + a[0] + '%;top:' + a[1] + '%;width:' + (2 * r) + 'px;height:' + (2 * r) + 'px;' +
+      'background:radial-gradient(circle at 35% 30%,' + c[0] + ',' + c[1] + ');' +
+      'box-shadow:0 0 26px ' + hexA(c[1], 0.45) + '" data-i="' + i + '">' +
+      '<span class="report-bubble-pct">' + Math.round(ratio) + '%</span>' +
+      (showName ? '<span class="report-bubble-name">' + escHtml(t.tagName) + '</span>' : '') +
+    '</div>';
+  }).join('');
+  var legend = '<div class="report-styles-legend">' + sorted.map(function(t){
+    var c = styleBubbleColor(t.tagName || 'style');
+    return '<span class="report-legend-item"><i style="background:' + c[0] + ';box-shadow:0 0 6px ' + hexA(c[1], 0.7) + '"></i>' + escHtml(t.tagName) + ' ' + Math.round(t.ratio || 0) + '%</span>';
+  }).join('') + '</div>';
+  // 整块模糊背景：用占比最高的主风格图铺满 section（经 /api/cover 代理，iPad 可用），前景气泡清晰浮于其上
+  var bgTag = sorted[0];
+  var bgUrl = (bgTag && bgTag.picUrl) ? coverProxySrc(bgTag.picUrl) : '';
+  el.innerHTML = '<div class="report-styles-bg"' + (bgUrl ? ' style="background-image:url(\'' + bgUrl + '\')"' : '') + '></div><div class="report-styles-scrim"></div>' + legend + '<div class="report-bubbles-canvas">' + bubbles + '</div>' + '<div class="report-styles-note">基于网易云曲风偏好 · 全站累计</div>';
+  // 入场弹入，随后轻微漂浮
+  Array.from(el.querySelectorAll('.report-bubble')).forEach(function(b, i){
+    b.style.transitionDelay = (i * 70) + 'ms';
+    requestAnimationFrame(function(){ b.classList.add('in'); });
+    setTimeout(function(){ b.classList.add('float'); }, 750 + i * 70);
+  });
+}
 function paintReportSummary(data){
   var el = document.getElementById('report-summary');
   if (!data.hasData) { el.textContent = '开始听歌，开启你的听歌旅程 ✨'; return; }
@@ -18234,9 +18680,17 @@ function paintReport(data, sourceLabel){
   paintReportStats(data);
   paintReportArtists(data);
   paintReportSongs(data);
-  paintReportHours(data);
-  paintReportSummary(data);
-  var srcEl = document.getElementById('report-source-text');
+  // 「全部」视图展示听歌风格标签，其余视图展示 24 小时时段分布
+  var isAll = (reportCurrentRange === 'all');
+  var titleEl = document.getElementById('report-time-title');
+  var hoursEl = document.getElementById('report-hours');
+  var stylesEl = document.getElementById('report-styles');
+  if (titleEl) titleEl.textContent = isAll ? '听歌风格' : '24 小时时段分布';
+  if (hoursEl) hoursEl.style.display = isAll ? 'none' : '';
+  if (stylesEl) stylesEl.style.display = isAll ? '' : 'none';
+  if (isAll) { paintReportStyles(); }
+  else { paintReportHours(data); }
+  paintReportSummary(data);  var srcEl = document.getElementById('report-source-text');
   if (srcEl) srcEl.textContent = sourceLabel || '本地累计';
   // 诚实标注：真实记录下，时长/播放仅覆盖网易云播放最多的前 100 首
   var noteEl = document.getElementById('report-note');
@@ -18249,32 +18703,91 @@ function paintReport(data, sourceLabel){
     }
   }
 }
-function renderReport(range){
-  reportCurrentRange = range;
-  var local = aggregateReportData(range);
-  var localData = localToReport(local);
-  // today/month 仅有本地数据
-  if (range === 'today' || range === 'month') {
-    paintReport(localData, '本地累计');
-    return;
+// 用本地 Mineradio 播放记录(每次播放+1)覆盖今日/本周/本月歌曲次数; 时长/列表仍来自网易云足迹
+function reportWindowStart(range){
+  var now = new Date();
+  var y = now.getFullYear(), m = now.getMonth(), d = now.getDate();
+  if (range === 'today') return new Date(y, m, d, 0, 0, 0, 0).getTime();
+  if (range === 'month') return new Date(y, m, 1, 0, 0, 0, 0).getTime();
+  if (range === 'week') {
+    var day = now.getDay();
+    var diffToMon = (day === 0) ? 6 : (day - 1);
+    return new Date(y, m, d - diffToMon, 0, 0, 0, 0).getTime();
   }
-  // all/week：先画本地兜底，再拉服务端真实记录合并后覆盖
-  paintReport(localData, '本地累计');
-  fetchServerReport().then(function(server){
-    if (server && server.loggedIn && server[range] && server[range].songs && server[range].songs.length > 0) {
-      // 用报告自身拉到的账号数据，不依赖 loginStatus 异步时序（冷启动可能未就绪）
-      if (server.createTime) reportAccountCreateTime = server.createTime;
-      if (server.listenSongs) reportAccountListenSongs = server.listenSongs;
-      var merged = mergeReport(local, server[range].songs);
-      // 「不同歌曲」用网易云真实累计 listenSongs（如 4652），而非 Top100 条数
-      if (range === 'all' && reportAccountListenSongs > 0) {
-        merged.distinctSongs = reportAccountListenSongs;
-      }
-      paintReport(merged, '真实记录 + 本机');
-    } else {
-      paintReport(localData, '本地累计');
+  return 0;
+}
+function applyLocalPlays(range, sd){
+  var start = reportWindowStart(range);
+  var hist = getListenHistory();
+  var localPlays = {};
+  hist.forEach(function(h){
+    if (!h.startedAt || h.startedAt < start) return;
+    var k = reportNormKey(h.title, h.artist);
+    localPlays[k] = (localPlays[k] || 0) + 1;
+  });
+  var songs = (sd.songs || []).map(function(s){
+    var k = reportNormKey(s.title || s.songName, s.artist);
+    var lp = localPlays[k] || 0;
+    var plays = lp > 0 ? lp : (s.plays || 1); // 本地有则优先用本地次数, 否则保留足迹(出现过=1)
+    return Object.assign({}, s, { plays: plays });
+  });
+  var amap = {};
+  songs.forEach(function(s){
+    (s.artist || '').split('/').forEach(function(a){
+      a = (a || '').trim(); if (!a) return;
+      amap[a] = (amap[a] || 0) + s.plays;
+    });
+  });
+  var topArtists = Object.keys(amap).map(function(k){
+    var orig = (sd.topArtists || []).filter(function(x){ return x.name === k; })[0] || {};
+    return { name: k, score: amap[k], artistId: orig.artistId || null, coverUrl: orig.coverUrl || '' };
+  }).sort(function(a, b){ return b.score - a.score; }).slice(0, 10);
+  var totalPlays = songs.reduce(function(a, s){ return a + (s.plays || 0); }, 0);
+  return Object.assign({}, sd, { songs: songs, topArtists: topArtists, totalPlays: totalPlays });
+}
+function renderReport(range, force){
+  reportCurrentRange = range;
+  fetchServerReport(force).then(function(server){
+    if (!server || !server.loggedIn) {
+      paintReport({ durationSec: 0, totalPlays: 0, distinctSongs: 0, uniqueArtists: 0, topArtists: [], topSongs: [], hourMap: new Array(24).fill(0), peakHour: 0, hasData: false }, '未登录');
+      return;
     }
-  }).catch(function(e){ console.warn('[report]', e); paintReport(localData, '本地累计'); });
+    if (server.createTime) reportAccountCreateTime = server.createTime;
+    if (server.listenSongs) reportAccountListenSongs = server.listenSongs;
+    var sd = server[range];
+    if (range !== 'all') sd = applyLocalPlays(range, sd); // 次数改用本地 Mineradio 播放计数(每次播放+1); 时长/列表仍来自足迹
+    if (!sd || !sd.songs || sd.songs.length === 0) {
+      paintReport({ durationSec: 0, totalPlays: 0, distinctSongs: 0, uniqueArtists: 0, topArtists: [], topSongs: [], hourMap: new Array(24).fill(0), peakHour: 0, hasData: false }, '网易云真实记录');
+      return;
+    }
+    // 全部用网易云足迹/官方数据，不混合本机记录
+    var topSongs = (sd.songs || []).slice().sort(function(a, b){ return (b.plays || 0) - (a.plays || 0); }).slice(0, 10)
+      .map(function(s){ return { title: s.title || s.songName || '未知歌曲', artist: s.artist || '', coverUrl: s.coverUrl || s.picUrl || '', count: s.plays || 0, songId: s.id || s.songId || '' }; });
+    var topArtists = (sd.topArtists || []).slice(0, 10)
+      .map(function(a){ return { name: a.name || a.artistName || '未知艺人', count: a.score || a.playCount || a.count || 0, coverUrl: a.coverUrl || a.avatarUrl || a.picUrl || '', artistId: a.artistId || null }; });
+    // 不同艺人从歌曲列表去重计算（足迹报告未直接给出总艺人计数）
+    var artistSet = {};
+    (sd.songs || []).forEach(function(s){
+      (s.artist || '').split('/').forEach(function(a){ a = a.trim(); if (a) artistSet[a] = 1; });
+    });
+    var data = {
+      durationSec: sd.durationSec || 0,
+      totalPlays: sd.totalPlays || 0,
+      distinctSongs: sd.distinctSongs || 0,
+      uniqueArtists: Object.keys(artistSet).length || topArtists.length,
+      topArtists: topArtists,
+      topSongs: topSongs,
+      hourMap: (sd.hourMap && sd.hourMap.length === 24) ? sd.hourMap : new Array(24).fill(0),
+      peakHour: sd.peakHour || 0,
+      hasData: true
+    };
+    if (range === 'all' && reportAccountListenSongs > 0) data.distinctSongs = reportAccountListenSongs;
+    if (range === 'all' && server.totalDuration && server.totalDuration > 0) data.durationSec = server.totalDuration;
+    paintReport(data, '网易云真实记录');
+  }).catch(function(e){
+    console.warn('[report]', e);
+    paintReport({ durationSec: 0, totalPlays: 0, distinctSongs: 0, uniqueArtists: 0, topArtists: [], topSongs: [], hourMap: new Array(24).fill(0), peakHour: 0, hasData: false }, '加载失败');
+  });
 }
 
 function openReportModal(){
@@ -18287,7 +18800,7 @@ function openReportModal(){
   Array.from(document.querySelectorAll('.report-tab')).forEach(function(t){
     t.classList.toggle('active', t.getAttribute('data-range') === reportCurrentRange);
   });
-  renderReport(reportCurrentRange);
+  renderReport(reportCurrentRange, true); // 打开弹窗即强制刷新(绕过前端60s缓存); 后端5min缓存仍作接口保护
 }
 function closeReportModal(){
   var modal = document.getElementById('report-modal');
@@ -18319,6 +18832,10 @@ if (document.readyState === 'loading') {
 } else {
   setTimeout(startListenTracking, 100);
 }
+// scrobble 队列兜底：启动时补发上次遗留的打点 + 定时/联网自动重试
+try { flushScrobbleQueue(); } catch(e){}
+setInterval(function(){ try { flushScrobbleQueue(); } catch(e){} }, 60000);
+window.addEventListener('online', function(){ try { flushScrobbleQueue(); } catch(e){} });
 
 // 调试/截图用：URL 查询参数触发自动开 modal
 if (/[?&]demo=1\b/.test(location.search)) {
@@ -19619,7 +20136,7 @@ function renderCollectModal() {
   var list = document.getElementById('collect-list');
   if (!current || !list) return;
   var song = collectTargetSong || {};
-  var cover = songCoverSrc(song, 80);
+  var cover = coverProxySrc(songCoverSrc(song, 80));
   current.innerHTML = (cover ? '<img src="' + cover + '" alt="">' : '<div class="cover-placeholder"></div>') +
     '<div style="min-width:0"><div class="collect-title">' + escHtml(song.name || '当前歌曲') + '</div><div class="collect-sub">' + escHtml(song.artist || '') + '</div></div>';
   if (!loginStatus.loggedIn) {
@@ -19636,7 +20153,7 @@ function renderCollectModal() {
     return;
   }
   list.innerHTML = mine.map(function(pl){
-    var thumb = pl.cover ? coverUrlWithSize(pl.cover, 80) : '';
+    var thumb = pl.cover ? coverProxySrc(coverUrlWithSize(pl.cover, 80)) : '';
     return '<div class="collect-item" data-collect-pid="' + escHtml(String(pl.id || '')) + '" onclick="addCollectTargetToPlaylist(this.getAttribute(\'data-collect-pid\'))">' +
       (thumb ? '<img src="' + thumb + '" alt="">' : '<div class="cover-placeholder"></div>') +
       '<div style="min-width:0"><div class="collect-title">' + escHtml(pl.name || '') + '</div><div class="collect-sub">' + (pl.trackCount || 0) + ' 首</div></div>' +
@@ -21484,10 +22001,13 @@ function applyControlGlassChromaticOffset() {
 function supportsControlGlassSvgFilter() {
   try {
     var ua = navigator.userAgent || '';
-    if ((/Safari/.test(ua) && !/Chrome/.test(ua)) || /Firefox/.test(ua)) return false;
+    // 仅 Firefox 长期对 backdrop-filter 支持不完整，保持禁用；
+    // Safari/WebKit（含 iPad WKWebView）改为真实能力检测，避免一刀切把 iPad 的棱镜玻璃效果也关掉。
+    if (/Firefox/.test(ua)) return false;
     var div = document.createElement('div');
     div.style.backdropFilter = 'url(#mineradio-control-glass-filter)';
-    return div.style.backdropFilter !== '';
+    div.style.webkitBackdropFilter = 'url(#mineradio-control-glass-filter)';
+    return div.style.backdropFilter !== '' || div.style.webkitBackdropFilter !== '';
   } catch (e) {
     return false;
   }
@@ -22062,7 +22582,7 @@ function renderMiniQueuePanel(opts) {
     return;
   }
   $list.innerHTML = playQueue.map(function(song, i){
-    var thumb = songCoverSrc(song, 60);
+    var thumb = coverProxySrc(songCoverSrc(song, 60));
     var imgTag = thumb ? '<img src="' + thumb + '" alt="" loading="lazy" decoding="async" onerror="this.style.opacity=0.2">' : '<div class="mini-queue-cover"></div>';
     return '<div class="mini-queue-item' + (i === currentIdx ? ' now' : '') + '" onclick="playQueueAt(' + i + ')">' +
       imgTag +
@@ -22096,7 +22616,7 @@ function renderQueuePanel(opts) {
     return;
   }
   $ql.innerHTML = playQueue.map(function(song, i){
-    var thumb = songCoverSrc(song, 60);
+    var thumb = coverProxySrc(songCoverSrc(song, 60));
     var imgTag = thumb ? '<img src="' + thumb + '" alt="" loading="lazy" decoding="async" onerror="this.style.opacity=0.2">' : '<div style="width:38px;height:38px;border-radius:6px;background:rgba(255,255,255,.06);flex-shrink:0"></div>';
     return '<div class="queue-item' + (i === currentIdx ? ' now' : '') + '" onclick="playQueueAt(' + i + ')">' +
       imgTag +
@@ -22173,7 +22693,7 @@ function playlistPanelDetailHtml(pl, provider) {
   var rows = loading
     ? '<div class="pl-detail-row"><div style="width:34px;height:34px;border-radius:7px;background:rgba(255,255,255,.06)"></div><div style="flex:1;min-width:0"><div class="pl-detail-row-title">正在载入歌单</div><div class="pl-detail-row-artist">请稍候</div></div></div>'
     : visibleTracks.map(function(song, i){
-        var thumb = songCoverSrc(song, 60);
+        var thumb = coverProxySrc(songCoverSrc(song, 60));
         var imgTag = thumb ? '<img src="' + escHtml(thumb) + '" alt="" loading="lazy" decoding="async" onerror="this.style.opacity=0.2">' : '<div style="width:34px;height:34px;border-radius:7px;background:rgba(255,255,255,.06);flex:0 0 auto"></div>';
         return '<div class="pl-detail-row" data-pl-detail-row="' + i + '">' +
           imgTag +
@@ -24742,215 +25262,10 @@ function shouldSuppressDefaultConfiguredHotkey(e) {
   }
   return false;
 }
-function ensureHotkeySettingsButton() {
-  var panel = document.getElementById('fx-panel');
-  var head = panel && panel.querySelector('.fx-head');
-  if (!head || document.getElementById('hotkey-settings-btn')) return;
-  if (head.firstElementChild) head.firstElementChild.classList.add('fx-head-main');
-  var actions = document.createElement('div');
-  actions.className = 'fx-head-actions';
-  var btn = document.createElement('button');
-  btn.id = 'hotkey-settings-btn';
-  btn.type = 'button';
-  btn.className = 'fx-mini-btn ghost';
-  btn.textContent = '热键';
-  btn.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); openHotkeySettings(); });
-  actions.appendChild(btn);
-  head.appendChild(actions);
-}
-function ensureHotkeyModal() {
-  var modal = document.getElementById('hotkey-modal');
-  if (modal) return modal;
-  modal = document.createElement('div');
-  modal.id = 'hotkey-modal';
-  modal.className = 'hotkey-modal';
-  modal.innerHTML =
-    '<div class="hotkey-dialog" role="dialog" aria-modal="true" aria-label="热键设置">' +
-      '<div class="hotkey-head">' +
-        '<div><div class="hotkey-title">热键设置</div><div class="hotkey-sub">局内热键只在 Mineradio 窗口内生效；全局热键会向系统注册，并检测是否被占用。<br>固定局内热键：P 视觉控制台 · I 沉浸模式 · R 自由镜头 · K 镜头回正 · WASD 镜头移动 · L 歌词面板</div></div>' +
-        '<button class="hotkey-close" type="button" data-hotkey-close aria-label="关闭">×</button>' +
-      '</div>' +
-      '<div class="hotkey-toolbar">' +
-        '<div class="hotkey-tabs"><button type="button" data-hotkey-scope="local" class="active">局内热键</button><button type="button" data-hotkey-scope="global">全局热键</button></div>' +
-        '<div class="hotkey-note">按 Backspace / Delete 可清空当前功能热键</div>' +
-      '</div>' +
-      '<div id="hotkey-local-section" class="hotkey-section active"></div>' +
-      '<div id="hotkey-global-section" class="hotkey-section"></div>' +
-      '<div class="hotkey-capture-tip" id="hotkey-capture-tip">正在录入组合键，按 Esc 取消。</div>' +
-    '</div>';
-  document.body.appendChild(modal);
-  modal.addEventListener('click', function(e){
-    if (e.target === modal || e.target.closest('[data-hotkey-close]')) closeHotkeySettings();
-    var scopeBtn = e.target.closest('[data-hotkey-scope]');
-    if (scopeBtn) setHotkeyModalScope(scopeBtn.getAttribute('data-hotkey-scope'));
-    var bindBtn = e.target.closest('[data-hotkey-bind]');
-    if (bindBtn) startHotkeyCapture(bindBtn.getAttribute('data-hotkey-action'), bindBtn.getAttribute('data-hotkey-bind'));
-    var resetBtn = e.target.closest('[data-hotkey-reset]');
-    if (resetBtn) resetHotkeyBinding(resetBtn.getAttribute('data-hotkey-action'), resetBtn.getAttribute('data-hotkey-reset'));
-  });
-  return modal;
-}
-function hotkeyStatusMarkup(scope, actionKey, binding, duplicate) {
-  if (!binding) return '<span class="hotkey-status">未设置</span>';
-  if (duplicate && duplicate[binding] > 1) return '<span class="hotkey-status conflict"><span class="source-icon">!</span>Mineradio 内部重复</span>';
-  if (scope === 'local') return '<span class="hotkey-status ok">可用</span>';
-  var status = hotkeyGlobalStatus[actionKey];
-  if (!status) return '<span class="hotkey-status">待检测</span>';
-  if (status.ok) return '<span class="hotkey-status ok">可用</span>';
-  var source = status.conflict && status.conflict.sourceName || '系统 / 其他软件';
-  return '<span class="hotkey-status conflict"><span class="source-icon">!</span>' + escHtml(source) + '</span>';
-}
-function renderHotkeyScope(scope) {
-  var wrap = document.getElementById(scope === 'global' ? 'hotkey-global-section' : 'hotkey-local-section');
-  if (!wrap) return;
-  var duplicate = hotkeyDuplicateMap(scope);
-  var html = '';
-  var groups = {};
-  HOTKEY_ACTIONS.forEach(function(action){
-    (groups[action.category] = groups[action.category] || []).push(action);
-  });
-  Object.keys(groups).forEach(function(category){
-    html += '<div class="hotkey-group"><div class="hotkey-group-title">' + escHtml(category) + '</div>';
-    groups[category].forEach(function(action){
-      var binding = (hotkeySettings[scope] && hotkeySettings[scope][action.key]) || '';
-      html += '<div class="hotkey-row">' +
-        '<div class="hotkey-name">' + escHtml(action.label) + '</div>' +
-        '<button class="hotkey-key' + (hotkeyCaptureState && hotkeyCaptureState.scope === scope && hotkeyCaptureState.action === action.key ? ' capturing' : '') + '" type="button" data-hotkey-bind="' + scope + '" data-hotkey-action="' + action.key + '">' + escHtml(hotkeyCaptureState && hotkeyCaptureState.scope === scope && hotkeyCaptureState.action === action.key ? '按下组合键...' : formatHotkey(binding)) + '</button>' +
-        '<button class="hotkey-reset" type="button" data-hotkey-reset="' + scope + '" data-hotkey-action="' + action.key + '">默认</button>' +
-        hotkeyStatusMarkup(scope, action.key, binding, duplicate) +
-      '</div>';
-    });
-    html += '</div>';
-  });
-  wrap.innerHTML = html;
-}
-function renderHotkeySettings() {
-  var modal = ensureHotkeyModal();
-  var active = modal.getAttribute('data-scope') || 'local';
-  modal.classList.toggle('capturing', !!hotkeyCaptureState);
-  modal.querySelectorAll('[data-hotkey-scope]').forEach(function(btn){
-    btn.classList.toggle('active', btn.getAttribute('data-hotkey-scope') === active);
-  });
-  var local = document.getElementById('hotkey-local-section');
-  var global = document.getElementById('hotkey-global-section');
-  if (local) local.classList.toggle('active', active === 'local');
-  if (global) global.classList.toggle('active', active === 'global');
-  renderHotkeyScope('local');
-  renderHotkeyScope('global');
-}
-function setHotkeyModalScope(scope) {
-  var modal = ensureHotkeyModal();
-  modal.setAttribute('data-scope', scope === 'global' ? 'global' : 'local');
-  renderHotkeySettings();
-}
-function openHotkeySettings() {
-  var modal = ensureHotkeyModal();
-  modal.classList.add('show');
-  modal.setAttribute('data-scope', modal.getAttribute('data-scope') || 'local');
-  renderHotkeySettings();
-  registerGlobalHotkeys();
-}
-function closeHotkeySettings() {
-  hotkeyCaptureState = null;
-  var modal = document.getElementById('hotkey-modal');
-  if (modal) modal.classList.remove('show', 'capturing');
-}
-function startHotkeyCapture(action, scope) {
-  hotkeyCaptureState = { action: action, scope: scope === 'global' ? 'global' : 'local' };
-  var modal = ensureHotkeyModal();
-  modal.setAttribute('data-scope', hotkeyCaptureState.scope);
-  renderHotkeySettings();
-}
-function setHotkeyBinding(action, scope, value) {
-  if (!hotkeySettings) hotkeySettings = getHotkeyDefaults();
-  if (!hotkeySettings[scope]) hotkeySettings[scope] = {};
-  hotkeySettings[scope][action] = value || '';
-  saveHotkeySettings();
-  renderHotkeySettings();
-  if (scope === 'global') registerGlobalHotkeys();
-}
-function resetHotkeyBinding(action, scope) {
-  var meta = hotkeyActionMeta(action);
-  if (!meta) return;
-  setHotkeyBinding(action, scope, scope === 'global' ? meta.global : meta.local);
-}
-function registerGlobalHotkeys() {
-  var api = getDesktopWindowApi && getDesktopWindowApi();
-  if (!api || typeof api.configureGlobalHotkeys !== 'function') {
-    hotkeyGlobalStatus = {};
-    renderHotkeySettings();
-    return Promise.resolve();
-  }
-  var duplicate = hotkeyDuplicateMap('global');
-  var bindings = [];
-  HOTKEY_ACTIONS.forEach(function(action){
-    var key = hotkeySettings.global && hotkeySettings.global[action.key];
-    if (!key || duplicate[key] > 1) return;
-    var accelerator = hotkeyToAccelerator(key);
-    if (accelerator) bindings.push({ action: action.key, accelerator: accelerator });
-  });
-  return api.configureGlobalHotkeys(bindings).then(function(res){
-    var next = {};
-    (res && res.results || []).forEach(function(item){
-      next[item.action] = item;
-    });
-    hotkeyGlobalStatus = next;
-    renderHotkeySettings();
-  }).catch(function(){
-    hotkeyGlobalStatus = {};
-    renderHotkeySettings();
-  });
-}
-var globalHotkeyListenerBound = false;
-function bindHotkeySettings() {
-  ensureHotkeySettingsButton();
-  ensureHotkeyModal();
-  if (!globalHotkeyListenerBound) {
-    var api = getDesktopWindowApi && getDesktopWindowApi();
-    if (api && typeof api.onGlobalHotkey === 'function') {
-      globalHotkeyListenerBound = true;
-      api.onGlobalHotkey(function(payload){
-        if (!payload || !payload.action) return;
-        executeHotkeyAction(payload.action, 'global');
-      });
-    }
-  }
-  registerGlobalHotkeys();
-}
-document.addEventListener('keydown', function(e){
-  var hotkeyModal = document.getElementById('hotkey-modal');
-  if (!hotkeyCaptureState) {
-    if (hotkeyModal && hotkeyModal.classList.contains('show') && e.code === 'Escape') {
-      e.preventDefault();
-      e.stopPropagation();
-      closeHotkeySettings();
-    }
-    return;
-  }
-  e.preventDefault();
-  e.stopPropagation();
-  if (e.code === 'Escape') {
-    hotkeyCaptureState = null;
-    renderHotkeySettings();
-    return;
-  }
-  if (e.code === 'Backspace' || e.code === 'Delete') {
-    var clearTarget = hotkeyCaptureState;
-    hotkeyCaptureState = null;
-    setHotkeyBinding(clearTarget.action, clearTarget.scope, '');
-    return;
-  }
-  var combo = normalizeHotkeyEvent(e);
-  if (!combo) return;
-  var target = hotkeyCaptureState;
-  hotkeyCaptureState = null;
-  setHotkeyBinding(target.action, target.scope, combo);
-}, true);
 function bindFxPanel() {
   liftFxFloatingPopups();
   organizeFxPanel();
   relabelFxPanelControls();
-  bindHotkeySettings();
   buildPresetGrid();
   renderUserFxArchives();
   buildLyricColorControls();
@@ -27502,26 +27817,6 @@ function maybeRunStartupVisualGuide(source) {
   }, source === 'splash' ? 3600 : 1400);
   return true;
 }
-function showContactAuthor() {
-  var old = document.getElementById('contact-author-modal');
-  if (old) old.remove();
-  var el = document.createElement('div');
-  el.id = 'contact-author-modal';
-  el.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)';
-  el.innerHTML = '<div style="max-width:320px;width:88%;border-radius:16px;background:rgba(0,0,0,.10);backdrop-filter:blur(40px) saturate(2.2) brightness(1.12);-webkit-backdrop-filter:blur(40px) saturate(2.2) brightness(1.12);border:1.5px solid rgba(255,255,255,.10);box-shadow:0 32px 80px rgba(0,0,0,.35),inset 0 0 0 1px rgba(255,255,255,.04);padding:28px 24px;color:#fff;font-family:inherit;text-align:center">' +
-    '<div style="font-size:18px;font-weight:800;margin-bottom:6px">联系作者</div>' +
-    '<div style="font-size:12px;color:rgba(255,255,255,.50);margin-bottom:20px">MINERADIO·macOS适配版</div>' +
-    '<div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:16px">' +
-      '<span style="font-size:13px;color:rgba(255,255,255,.70)">微信</span>' +
-      '<span style="font-size:15px;font-weight:700;color:#00f5d4;user-select:all;cursor:text">HopeRelife8</span>' +
-      '<button onclick="navigator.clipboard.writeText(\'HopeRelife8\');this.textContent=\'已复制\';setTimeout(function(){this.textContent=\'复制\'}.bind(this),1200)" style="height:22px;border-radius:6px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:rgba(255,255,255,.65);font-family:inherit;font-size:10px;font-weight:600;cursor:pointer;padding:0 8px;transition:all .18s">复制</button>' +
-    '</div>' +
-    '<div style="font-size:12px;color:rgba(255,255,255,.55);line-height:1.7;margin-bottom:20px">本项目永久开源GitHub搜索作者：<span style="color:rgba(255,255,255,.78)">ShijingYangwow27</span> <button onclick="navigator.clipboard.writeText(\'ShijingYangwow27\');this.textContent=\'已复制\';setTimeout(function(){this.textContent=\'复制\'}.bind(this),1200)" style="height:20px;border-radius:6px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:rgba(255,255,255,.65);font-family:inherit;font-size:10px;font-weight:600;cursor:pointer;padding:0 8px;vertical-align:middle;transition:all .18s">复制</button><br>有偿接3D模型粒子预设效果，可添加作者微信。</div>' +
-    '<button onclick="this.closest(\'#contact-author-modal\').remove()" style="height:34px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:rgba(255,255,255,.80);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;padding:0 28px;transition:all .18s">关闭</button>' +
-  '</div>';
-  el.addEventListener('click', function(e) { if (e.target === el) el.remove(); });
-  document.body.appendChild(el);
-}
 function startVisualGuide(opts) {
   opts = opts || {};
   if (document.body.classList.contains('splash-active')) {
@@ -29808,7 +30103,7 @@ function animate() {
   if (analyser && playing && audio && !audio.paused) {
     if (audioCtx && audioCtx.state === 'suspended') resumeAudioAnalysis();
     analyser.getByteFrequencyData(frequencyData);
-    analyser.getByteTimeDomainData(timeDomainData);
+    if (window.__nativeRms == null) analyser.getByteTimeDomainData(timeDomainData);
     var len = frequencyData.length;
     // 精确频段
     var kickEnd  = 7;                          // 60-150 Hz, 鼓 kick
@@ -29820,15 +30115,17 @@ function animate() {
     for (var i = kickEnd; i < vocalEnd; i++) voc += frequencyData[i] / 255;
     for (var i = vocalEnd; i < midEnd; i++) mInst += frequencyData[i] / 255;
     for (var i = midEnd; i < len; i++) tHigh += frequencyData[i] / 255;
-    for (var j = 0; j < timeDomainData.length; j++) {
-      var tv = (timeDomainData[j] - 128) / 128;
-      rms += tv * tv;
+    if (window.__nativeRms == null) {
+      for (var j = 0; j < timeDomainData.length; j++) {
+        var tv = (timeDomainData[j] - 128) / 128;
+        rms += tv * tv;
+      }
     }
     bKick /= kickEnd;
     voc /= (vocalEnd - kickEnd);
     mInst /= Math.max(1, midEnd - vocalEnd);
     tHigh /= Math.max(1, len - midEnd);
-    rms = Math.sqrt(rms / timeDomainData.length);
+    rms = (window.__nativeRms != null) ? window.__nativeRms : Math.sqrt(rms / timeDomainData.length);
 
     // 动态峰值跟踪
     bassPeak = Math.max(bassPeak * 0.994, bKick, 0.030);
@@ -30043,6 +30340,7 @@ function animate() {
 
   // 边缘波浪发光：仅 preset 8/9 + 开关开启时显示
   if (edgeWaveCtx && edgeWaveCanvas && fx && fx.preset >= 8 && edgeGlowEnabled) {
+    if (edgeWaveCanvas.style.display === 'none') edgeWaveCanvas.style.display = '';
     if (now - edgeColorLastChange > EDGE_COLOR_INTERVAL) {
       edgeColorLastChange = now;
       pickRandomEdgeColor();
@@ -30153,10 +30451,8 @@ function animate() {
     }
     drawEdgeWave(pts, r2, g2, b2);
   } else if (edgeWaveCanvas) {
-    // preset 1-7：清空 canvas
-    var cw2 = edgeWaveCanvas.width;
-    var ch2 = edgeWaveCanvas.height;
-    if (cw2 > 0 && ch2 > 0) edgeWaveCtx.clearRect(0, 0, cw2, ch2);
+    // preset 1-7：隐藏 canvas，免每帧对全屏 DPR=N canvas 做 clearRect（波浪本就未绘制）
+    if (edgeWaveCanvas.style.display !== 'none') edgeWaveCanvas.style.display = 'none';
   }
 
   renderer.render(scene, camera);
@@ -31381,8 +31677,9 @@ document.addEventListener('DOMContentLoaded', function() {
       </div>
 
       <div class="report-section">
-        <div class="report-section-h">24 小时时段分布</div>
+        <div class="report-section-h" id="report-time-title">24 小时时段分布</div>
         <div class="report-hours" id="report-hours"></div>
+        <div class="report-styles" id="report-styles"></div>
       </div>
 
       <div class="report-summary" id="report-summary">—</div>

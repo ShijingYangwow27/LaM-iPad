@@ -279,9 +279,8 @@
       freqData = decodeB64ToUint8(payload.freq);
       window.__nativeFreqData = freqData;
     }
-    if (payload.timeDomain) {
-      timeData = decodeB64ToUint8(payload.timeDomain);
-      window.__nativeTimeDomainData = timeData;
+    if (payload.rms != null) {
+      window.__nativeRms = payload.rms;
     }
     // 触发 timeupdate, 让进度条/歌词跟随
     adapter._dispatch('timeupdate');
